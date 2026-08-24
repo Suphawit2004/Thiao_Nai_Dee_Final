@@ -13,6 +13,7 @@ function makeCafe(overrides: Partial<Cafe> = {}): Cafe {
     closedDays: [],
     priceRange: 1,
     tags: [],
+    lifestyleTags: [],
     area: "lakeside",
     lat: 19.16,
     lng: 99.89,

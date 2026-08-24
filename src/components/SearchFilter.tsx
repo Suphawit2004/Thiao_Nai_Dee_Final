@@ -1,22 +1,36 @@
 "use client";
 
-import { AREA_META, AREA_ORDER, TAG_META, TAG_ORDER, type CafeArea, type CafeTag } from "@/data/cafes";
+import {
+  AREA_META,
+  AREA_ORDER,
+  LIFESTYLE_META,
+  LIFESTYLE_ORDER,
+  TAG_META,
+  TAG_ORDER,
+  type CafeArea,
+  type CafeTag,
+  type LifeStyleTag,
+} from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 
 export interface FilterState {
   query: string;
   tags: CafeTag[];
+  life: LifeStyleTag[];
   area: CafeArea | null;
   maxPrice: 0 | 1 | 2;
   openNow: boolean;
+  transitionZone: boolean;
 }
 
 export const INITIAL_FILTERS: FilterState = {
   query: "",
   tags: [],
+  life: [],
   area: null,
   maxPrice: 0,
   openNow: false,
+  transitionZone: false,
 };
 
 interface SearchFilterProps {
@@ -35,12 +49,21 @@ export default function SearchFilter({ state, onChange, onReset }: SearchFilterP
     onChange({ tags: next });
   };
 
+  const toggleLife = (life: LifeStyleTag) => {
+    const next = state.life.includes(life)
+      ? state.life.filter((lt) => lt !== life)
+      : [...state.life, life];
+    onChange({ life: next });
+  };
+
   const dirty =
     state.query !== "" ||
     state.tags.length > 0 ||
+    state.life.length > 0 ||
     state.area !== null ||
     state.maxPrice !== 0 ||
-    state.openNow;
+    state.openNow ||
+    state.transitionZone;
 
   return (
     <div className="rounded-2xl border border-[#eee3d2] bg-white p-4 shadow-sm">
@@ -97,6 +120,19 @@ export default function SearchFilter({ state, onChange, onReset }: SearchFilterP
             🟢 {t("cafes.openNow")}
           </button>
 
+          <button
+            type="button"
+            onClick={() => onChange({ transitionZone: !state.transitionZone })}
+            aria-pressed={state.transitionZone}
+            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+              state.transitionZone
+                ? "bg-coffee text-cream"
+                : "border border-[#e8dcc8] bg-sand/40 text-espresso hover:bg-sand"
+            }`}
+          >
+            🛣️ {t("cafes.zone")}
+          </button>
+
           {dirty && (
             <button
               type="button"
@@ -128,6 +164,30 @@ export default function SearchFilter({ state, onChange, onReset }: SearchFilterP
               }`}
             >
               <span aria-hidden>{TAG_META[tag].emoji}</span> {tr(TAG_META[tag].label)}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-espresso/70">
+          {t("cafes.lifestyleLabel")}
+        </span>
+        {LIFESTYLE_ORDER.map((life) => {
+          const active = state.life.includes(life);
+          return (
+            <button
+              key={life}
+              type="button"
+              onClick={() => toggleLife(life)}
+              aria-pressed={active}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                active
+                  ? "border-emerald-700 bg-emerald-700 text-white"
+                  : "border-[#e8dcc8] bg-white text-espresso/80 hover:border-latte hover:bg-sand/60"
+              }`}
+            >
+              <span aria-hidden>{LIFESTYLE_META[life].emoji}</span> {tr(LIFESTYLE_META[life].label)}
             </button>
           );
         })}

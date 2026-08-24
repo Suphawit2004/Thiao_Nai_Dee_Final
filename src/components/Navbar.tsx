@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
+import { useAuth } from "./AuthProvider";
 
 const LINKS = [
   { href: "/", key: "nav.home" },
@@ -14,6 +15,7 @@ const LINKS = [
 
 export default function Navbar() {
   const { t, toggle } = useLang();
+  const { user, loading } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -55,6 +57,11 @@ export default function Navbar() {
           >
             {t("lang.switchTo")}
           </button>
+          {!loading && (
+            <Link href={user ? "/profile" : "/login"} className={linkClass(user ? "/profile" : "/login")}>
+              {user ? `👤 ${t("nav.profile")}` : `🔑 ${t("nav.login")}`}
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
@@ -92,6 +99,19 @@ export default function Navbar() {
                 {t(l.key)}
               </Link>
             ))}
+            {!loading && (
+              <Link
+                href={user ? "/profile" : "/login"}
+                onClick={() => setOpen(false)}
+                className={`rounded-xl px-4 py-2.5 text-sm font-medium ${
+                  isActive(user ? "/profile" : "/login")
+                    ? "bg-coffee text-cream"
+                    : "text-espresso hover:bg-sand"
+                }`}
+              >
+                {user ? `👤 ${t("nav.profile")}` : `🔑 ${t("nav.login")}`}
+              </Link>
+            )}
           </div>
         </nav>
       )}
