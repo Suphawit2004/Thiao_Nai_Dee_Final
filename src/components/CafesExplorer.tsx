@@ -61,7 +61,7 @@ export default function CafesExplorer({ initialTag = null }: CafesExplorerProps)
       {results.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-[#d9c9ac] bg-white/60 px-6 py-16 text-center">
           <p className="text-lg font-semibold text-espresso/80">{t("cafes.empty")}</p>
-          <p className="mt-1 text-sm text-espresso/50">{t("cafes.emptyHint")}</p>
+          <p className="mt-1 text-sm text-espresso/70">{t("cafes.emptyHint")}</p>
           <button
             type="button"
             onClick={() => setFilters(INITIAL_FILTERS)}

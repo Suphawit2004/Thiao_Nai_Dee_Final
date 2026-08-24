@@ -82,7 +82,7 @@ export default function MapView({ cafes, className }: MapViewProps) {
                 </span>
               </div>
               <p className="text-sm font-bold text-espresso">{tr(cafe.name)}</p>
-              <p className="mt-0.5 text-xs text-espresso/60">{tr(cafe.address)}</p>
+              <p className="mt-0.5 text-xs text-espresso/70">{tr(cafe.address)}</p>
               <div className="mt-2 flex gap-2 text-xs font-semibold">
                 <Link href={`/cafes/${cafe.slug}`} className="text-[#7c5a43] underline-offset-2 hover:underline">
                   {t("nav.cafes")} →

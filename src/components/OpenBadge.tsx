@@ -46,7 +46,7 @@ export default function OpenBadge({ cafe }: { cafe: Cafe }) {
 
   if (ts === 0) {
     return (
-      <span className="inline-flex h-6 items-center rounded-full bg-sand px-2.5 text-xs font-semibold text-espresso/50">
+      <span className="inline-flex h-6 items-center rounded-full bg-sand px-2.5 text-xs font-semibold text-espresso/70">
         {cafe.openTime}–{cafe.closeTime}
       </span>
     );

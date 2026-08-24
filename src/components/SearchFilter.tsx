@@ -85,7 +85,7 @@ export default function SearchFilter({ state, onChange, onReset }: SearchFilterP
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-espresso/50">
+        <span className="text-xs font-semibold uppercase tracking-wide text-espresso/70">
           {t("cafes.tagsLabel")}
         </span>
         {TAG_ORDER.map((tag) => {

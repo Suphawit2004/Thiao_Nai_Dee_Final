@@ -10,7 +10,7 @@ export default function Footer() {
         <p className="flex items-center gap-2 text-sm font-semibold text-espresso">
           <span aria-hidden>☕</span> {t("footer.tagline")}
         </p>
-        <p className="text-xs text-espresso/60">
+        <p className="text-xs text-espresso/70">
           © {new Date().getFullYear()} Thiao Nai Dee · {t("footer.note")}
         </p>
       </div>
