@@ -27,7 +27,7 @@ export async function submitReview(formData: {
     return { ok: false, error: "Name must be 1-60 characters" };
   }
   
-  if (rating < 1 || rating > 5) {
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     return { ok: false, error: "Invalid rating" };
   }
   
