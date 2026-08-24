@@ -117,7 +117,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
       </section>
 
       <div className="mt-8">
-        <ReviewSection slug={cafe.slug} baseRating={cafe.baseRating} />
+        <ReviewSection key={cafe.slug} slug={cafe.slug} baseRating={cafe.baseRating} />
       </div>
     </div>
   );

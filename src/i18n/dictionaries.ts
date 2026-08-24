@@ -55,11 +55,14 @@ const th = {
   "detail.directions": "นำทางด้วย Google Maps",
   "detail.menu": "เมนูแนะนำ",
   "detail.onMap": "ตำแหน่งบนแผนที่",
+  "detail.viewCafe": "ดูรายละเอียดร้าน",
 
   "reviews.title": "รีวิวจากผู้เข้าชม",
   "reviews.count": "{n} รีวิว",
   "reviews.none": "ยังไม่มีรีวิว — เป็นคนแรกที่เล่าเรื่องร้านนี้!",
   "reviews.baseNote": "คะแนนเริ่มต้นจากข้อมูลรีวิวสาธารณะ",
+  "reviews.loadError": "โหลดรีวิวไม่สำเร็จ — ฐานข้อมูลอาจไม่พร้อมใช้งาน",
+  "reviews.retry": "ลองโหลดอีกครั้ง",
   "form.name": "ชื่อของคุณ",
   "form.namePh": "เช่น มินท์",
   "form.rating": "คะแนน",
@@ -99,6 +102,14 @@ const th = {
 
   "footer.tagline": "รวมคาเฟ่ดี ๆ ในเมืองพะเยา — เที่ยวไหนดี ก็มีคำตอบ",
   "footer.note": "เว็บไซต์ตัวอย่างเพื่อการเรียนรู้ · ข้อมูลอาจเปลี่ยนแปลง",
+
+  "nf.title": "ไม่พบหน้านี้",
+  "nf.desc": "หน้าที่คุณกำลังหาอาจถูกย้ายหรือลบไปแล้ว ลองกลับไปเลือกคาเฟ่ดูอีกครั้ง",
+  "nf.back": "กลับหน้าแรก",
+
+  "err.title": "เกิดข้อผิดพลาด",
+  "err.desc": "มีบางอย่างผิดพลาดในการแสดงผลหน้านี้ ลองโหลดใหม่อีกครั้ง",
+  "err.retry": "ลองใหม่",
 } as const;
 
 export type DictKey = keyof typeof th;
@@ -158,11 +169,14 @@ const en: Record<DictKey, string> = {
   "detail.directions": "Directions on Google Maps",
   "detail.menu": "Recommended menu",
   "detail.onMap": "Location on map",
+  "detail.viewCafe": "View details",
 
   "reviews.title": "Visitor reviews",
   "reviews.count": "{n} reviews",
   "reviews.none": "No reviews yet — be the first to share!",
   "reviews.baseNote": "Base rating from public review sources",
+  "reviews.loadError": "Failed to load reviews — the database may be unavailable.",
+  "reviews.retry": "Retry",
   "form.name": "Your name",
   "form.namePh": "e.g. Mint",
   "form.rating": "Rating",
@@ -202,6 +216,14 @@ const en: Record<DictKey, string> = {
 
   "footer.tagline": "Great cafes in central Phayao — Thiao Nai Dee has the answer",
   "footer.note": "Demo website for learning purposes · Information may change",
+
+  "nf.title": "Page not found",
+  "nf.desc": "The page you are looking for may have been moved or removed. Head back and pick a cafe instead.",
+  "nf.back": "Back to home",
+
+  "err.title": "Something went wrong",
+  "err.desc": "An unexpected error occurred while rendering this page. Try again.",
+  "err.retry": "Try again",
 };
 
 export const dictionaries: Record<Lang, Record<DictKey, string>> = { th, en };
