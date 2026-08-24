@@ -42,7 +42,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+        <nav className="hidden items-center gap-1 md:flex" aria-label={t("nav.main")}>
           {LINKS.map((l) => (
             <Link key={l.href} href={l.href} className={linkClass(l.href)}>
               {t(l.key)}
@@ -69,7 +69,7 @@ export default function Navbar() {
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            aria-label="Menu"
+            aria-label={t("nav.menuToggle")}
             className="rounded-lg p-2 text-xl leading-none text-espresso hover:bg-sand"
           >
             {open ? "✕" : "☰"}
@@ -78,7 +78,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <nav className="border-t border-[#eadfcd] bg-cream px-4 py-3 md:hidden" aria-label="Mobile">
+        <nav className="border-t border-[#eadfcd] bg-cream px-4 py-3 md:hidden" aria-label={t("nav.main")}>
           <div className="flex flex-col gap-1">
             {LINKS.map((l) => (
               <Link

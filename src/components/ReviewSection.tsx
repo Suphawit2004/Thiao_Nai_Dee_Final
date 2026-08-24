@@ -7,16 +7,17 @@ import { submitReview } from "@/app/actions/reviews";
 import RatingStars from "./RatingStars";
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const { t } = useLang();
   return (
-    <div className="flex gap-0.5 text-2xl leading-none" role="radiogroup" aria-label="Rating">
+    <div className="flex gap-0.5 text-2xl leading-none" role="group" aria-label={t("form.rating")}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
           type="button"
-          role="radio"
-          aria-checked={value === n}
+          aria-pressed={value === n}
+          aria-label={t("form.rateNStars").replace("{n}", String(n))}
           onClick={() => onChange(n)}
-          className={`transition hover:scale-110 ${n <= value ? "text-latte" : "text-[#d9cdb8]"}`}
+          className={`transition hover:scale-110 ${n <= value ? "text-latte" : "text-[#a08a66]"}`}
         >
           ★
         </button>

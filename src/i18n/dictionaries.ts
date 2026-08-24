@@ -8,6 +8,8 @@ const th = {
   "nav.map": "แผนที่",
   "nav.about": "เกี่ยวกับ",
   "lang.switchTo": "EN",
+  "nav.main": "เมนูหลัก",
+  "nav.menuToggle": "สลับการแสดงเมนู",
 
   "home.badge": "คาเฟ่ตัวเมืองพะเยา",
   "home.heroTitle1": "เช้านี้… เที่ยวไหนดี?",
@@ -59,6 +61,7 @@ const th = {
   "form.name": "ชื่อของคุณ",
   "form.namePh": "เช่น มินท์",
   "form.rating": "คะแนน",
+  "form.rateNStars": "ให้ {n} ดาว",
   "form.comment": "ความคิดเห็น",
   "form.commentPh": "กาแฟรสชาติเป็นอย่างไร บรรยากาศดีไหม...",
   "form.submit": "ส่งรีวิว",
@@ -107,6 +110,8 @@ const en: Record<DictKey, string> = {
   "nav.map": "Map",
   "nav.about": "About",
   "lang.switchTo": "ไทย",
+  "nav.main": "Main navigation",
+  "nav.menuToggle": "Toggle navigation menu",
 
   "home.badge": "Cafes in Phayao old town",
   "home.heroTitle1": "Where should we go today?",
@@ -158,6 +163,7 @@ const en: Record<DictKey, string> = {
   "form.name": "Your name",
   "form.namePh": "e.g. Mint",
   "form.rating": "Rating",
+  "form.rateNStars": "Rate {n} stars",
   "form.comment": "Comment",
   "form.commentPh": "How was the coffee? How about the vibe...",
   "form.submit": "Submit review",

@@ -43,6 +43,7 @@ export default function SearchFilter({ state, onChange, onReset }: SearchFilterP
             value={state.query}
             onChange={(e) => onChange({ query: e.target.value })}
             placeholder={t("cafes.searchPlaceholder")}
+            aria-label={t("cafes.searchPlaceholder")}
             className="w-full rounded-xl border border-[#e8dcc8] bg-sand/40 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-latte focus:bg-white"
           />
         </label>
