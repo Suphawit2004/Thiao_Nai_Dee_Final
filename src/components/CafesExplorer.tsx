@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CAFES, type CafeTag } from "@/data/cafes";
+import { AREA_ORDER, CAFES, type CafeArea, type CafeTag } from "@/data/cafes";
 import { getOpenStatus } from "@/lib/hours";
 import { useLang } from "@/i18n/LangProvider";
 import CafeCard from "./CafeCard";
@@ -11,15 +11,20 @@ import SearchFilter, { INITIAL_FILTERS, type FilterState } from "./SearchFilter"
 
 interface CafesExplorerProps {
   initialTag?: CafeTag | null;
+  initialArea?: CafeArea | null;
 }
 
-export default function CafesExplorer({ initialTag = null }: CafesExplorerProps) {
+export default function CafesExplorer({
+  initialTag = null,
+  initialArea = null,
+}: CafesExplorerProps) {
   const { t, tr, lang } = useLang();
   const nowTick = useNowTick();
 
   const [filters, setFilters] = useState<FilterState>(() => ({
     ...INITIAL_FILTERS,
     tags: initialTag ? [initialTag] : [],
+    area: initialArea,
   }));
 
   const results = useMemo(() => {
@@ -33,6 +38,7 @@ export default function CafesExplorer({ initialTag = null }: CafesExplorerProps)
       if (filters.tags.length > 0 && !filters.tags.some((tg) => cafe.tags.includes(tg))) {
         return false;
       }
+      if (filters.area !== null && cafe.area !== filters.area) return false;
       if (filters.maxPrice !== 0 && cafe.priceRange > filters.maxPrice) return false;
       if (filters.openNow && !getOpenStatus(cafe, nowTick === 0 ? undefined : new Date(nowTick)).isOpenNow) {
         return false;

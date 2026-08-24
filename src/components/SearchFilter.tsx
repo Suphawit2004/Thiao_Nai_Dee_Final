@@ -1,16 +1,23 @@
 "use client";
 
-import { TAG_META, TAG_ORDER, type CafeTag } from "@/data/cafes";
+import { AREA_META, AREA_ORDER, TAG_META, TAG_ORDER, type CafeArea, type CafeTag } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 
 export interface FilterState {
   query: string;
   tags: CafeTag[];
+  area: CafeArea | null;
   maxPrice: 0 | 1 | 2;
   openNow: boolean;
 }
 
-export const INITIAL_FILTERS: FilterState = { query: "", tags: [], maxPrice: 0, openNow: false };
+export const INITIAL_FILTERS: FilterState = {
+  query: "",
+  tags: [],
+  area: null,
+  maxPrice: 0,
+  openNow: false,
+};
 
 interface SearchFilterProps {
   state: FilterState;
@@ -29,7 +36,11 @@ export default function SearchFilter({ state, onChange, onReset }: SearchFilterP
   };
 
   const dirty =
-    state.query !== "" || state.tags.length > 0 || state.maxPrice !== 0 || state.openNow;
+    state.query !== "" ||
+    state.tags.length > 0 ||
+    state.area !== null ||
+    state.maxPrice !== 0 ||
+    state.openNow;
 
   return (
     <div className="rounded-2xl border border-[#eee3d2] bg-white p-4 shadow-sm">
@@ -49,6 +60,19 @@ export default function SearchFilter({ state, onChange, onReset }: SearchFilterP
         </label>
 
         <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={state.area ?? ""}
+            onChange={(e) => onChange({ area: (e.target.value || null) as FilterState["area"] })}
+            aria-label={t("cafes.areaLabel")}
+            className="rounded-xl border border-[#e8dcc8] bg-sand/40 px-3 py-2.5 text-sm font-medium outline-none focus:border-latte focus:bg-white"
+          >
+            <option value="">{t("cafes.areaAll")}</option>
+            {AREA_ORDER.map((a) => (
+              <option key={a} value={a}>
+                {AREA_META[a].emoji} {tr(AREA_META[a].label)}
+              </option>
+            ))}
+          </select>
           <select
             value={state.maxPrice}
             onChange={(e) => onChange({ maxPrice: Number(e.target.value) as FilterState["maxPrice"] })}

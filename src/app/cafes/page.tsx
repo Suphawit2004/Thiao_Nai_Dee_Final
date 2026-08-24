@@ -1,6 +1,5 @@
 import CafesExplorer from "@/components/CafesExplorer";
-import { TAG_ORDER, type CafeTag } from "@/data/cafes";
-
+import { AREA_ORDER, TAG_ORDER, type CafeArea, type CafeTag } from "@/data/cafes";
 
 export const metadata = {
   title: "คาเฟ่ในตัวเมืองพะเยา — Cafes in Phayao",
@@ -10,7 +9,9 @@ export const metadata = {
 
 export default async function CafesPage({ searchParams }: PageProps<"/cafes">) {
   const params = await searchParams;
-  const raw = typeof params.tag === "string" ? params.tag : "";
-  const valid = TAG_ORDER.includes(raw as CafeTag) ? (raw as CafeTag) : null;
-  return <CafesExplorer initialTag={valid} />;
+  const rawTag = typeof params.tag === "string" ? params.tag : "";
+  const tag = TAG_ORDER.includes(rawTag as CafeTag) ? (rawTag as CafeTag) : null;
+  const rawArea = typeof params.area === "string" ? params.area : "";
+  const area = AREA_ORDER.includes(rawArea as CafeArea) ? (rawArea as CafeArea) : null;
+  return <CafesExplorer initialTag={tag} initialArea={area} />;
 }
