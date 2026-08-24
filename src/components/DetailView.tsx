@@ -85,7 +85,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
                   href={`tel:${cafe.phone.replace(/\s/g, "")}`}
                   className="rounded-full border border-latte px-5 py-2.5 text-sm font-semibold text-coffee transition hover:bg-latte/20"
                 >
-                  📞 {cafe.phone}
+                  📞 {t("detail.call")} {cafe.phone}
                 </a>
               )}
             </div>

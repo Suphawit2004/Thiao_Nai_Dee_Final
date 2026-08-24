@@ -15,7 +15,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
           key={n}
           type="button"
           aria-pressed={value === n}
-          aria-label={t("form.rateNStars").replace("{n}", String(n))}
+          aria-label={t("form.rateNStars").replaceAll("{n}", String(n))}
           onClick={() => onChange(n)}
           className={`transition hover:scale-110 ${n <= value ? "text-latte" : "text-[#a08a66]"}`}
         >
@@ -95,7 +95,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
           <RatingStars value={avg} size="md" />
           <strong className="text-sm text-coffee">{avg.toFixed(1)}</strong>
           <span className="text-xs font-medium text-espresso/70">
-            {t("reviews.count").replace("{n}", String(reviews.length))}
+            {t("reviews.count").replaceAll("{n}", String(reviews.length))}
           </span>
         </span>
       </div>

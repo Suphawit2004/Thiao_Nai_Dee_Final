@@ -46,7 +46,7 @@ export default function HomeView() {
           <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-3 text-sm">
             {[
               [String(CAFES.length), t("home.stat1")],
-              ["4", t("home.stat2")],
+              [String(TAG_ORDER.length), t("home.stat2")],
               ["฿0", t("home.stat3")],
             ].map(([num, label]) => (
               <div key={label}>

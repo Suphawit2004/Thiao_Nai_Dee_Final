@@ -11,7 +11,8 @@ export default function Footer() {
           <span aria-hidden>☕</span> {t("footer.tagline")}
         </p>
         <p className="text-xs text-espresso/70">
-          © {new Date().getFullYear()} Thiao Nai Dee · {t("footer.note")}
+          © <span suppressHydrationWarning>{new Date().getFullYear()}</span> Thiao Nai Dee ·{" "}
+          {t("footer.note")}
         </p>
       </div>
     </footer>

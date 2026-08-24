@@ -55,7 +55,7 @@ export default function CafesExplorer({ initialTag = null }: CafesExplorerProps)
       />
 
       <p className="mt-5 text-sm font-semibold text-espresso/70" aria-live="polite">
-        {t("cafes.found").replace("{n}", String(results.length))}
+        {t("cafes.found").replaceAll("{n}", String(results.length))}
       </p>
 
       {results.length === 0 ? (
