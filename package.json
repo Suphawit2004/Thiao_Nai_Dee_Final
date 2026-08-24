@@ -11,6 +11,7 @@
     "cafes:pins": "node scripts/apply-pins.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.3",
     "leaflet": "^1.9.4",
     "next": "16.3.2",
