@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useMemo, useSyncExternalStore, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { Lang, LocalText } from "@/data/cafes";
 import { dictionaries } from "./dictionaries";
@@ -60,6 +60,10 @@ export function LangProvider({ children }: { children: ReactNode }) {
     }),
     [lang, setLang, toggle]
   );
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }
