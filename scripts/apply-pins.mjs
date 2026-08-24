@@ -78,9 +78,8 @@ for (const slug of Object.keys(CAFES)) {
   if (match) {
     overrides[slug] = { ...(overrides[slug] ?? {}), photo: `/images/cafes/${photoFiles.get(match)}` };
   } else if (overrides[slug]?.photo) {
-    const { photo: _removed, ...rest } = overrides[slug];
-    if (Object.keys(rest).length > 0) overrides[slug] = rest;
-    else delete overrides[slug];
+    delete overrides[slug].photo;
+    if (Object.keys(overrides[slug]).length === 0) delete overrides[slug];
   }
 }
 
