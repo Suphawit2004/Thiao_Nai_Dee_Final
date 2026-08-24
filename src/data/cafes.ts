@@ -7,6 +7,15 @@ export interface LocalText {
 
 export type CafeTag = "work" | "chill" | "view" | "dessert";
 
+export type LifeStyleTag =
+  | "quiet"
+  | "wifi"
+  | "pet-friendly"
+  | "parking"
+  | "open-late"
+  | "photo"
+  | "family";
+
 export type CafeArea = "lakeside" | "maeka-uni";
 
 export const AREA_META: Record<CafeArea, { label: LocalText; emoji: string }> = {
@@ -27,6 +36,7 @@ export interface Cafe {
   closedDays: number[];
   priceRange: 1 | 2;
   tags: CafeTag[];
+  lifestyleTags: LifeStyleTag[];
   area: CafeArea;
   lat: number;
   lng: number;
@@ -43,6 +53,26 @@ export const TAG_META: Record<CafeTag, { label: LocalText; emoji: string }> = {
 };
 
 export const TAG_ORDER: CafeTag[] = ["work", "chill", "view", "dessert"];
+
+export const LIFESTYLE_META: Record<LifeStyleTag, { label: LocalText; emoji: string }> = {
+  quiet: { label: { th: "เงียบสงบ", en: "Quiet" }, emoji: "🤫" },
+  wifi: { label: { th: "Wi-Fi แรง", en: "Strong Wi-Fi" }, emoji: "📶" },
+  "pet-friendly": { label: { th: "พาสัตว์เลี้ยงได้", en: "Pet friendly" }, emoji: "🐾" },
+  parking: { label: { th: "มีที่จอดรถ", en: "Parking" }, emoji: "🅿️" },
+  "open-late": { label: { th: "เปิดถึงค่ำ", en: "Open late" }, emoji: "🌙" },
+  photo: { label: { th: "มุมถ่ายรูป", en: "Photogenic" }, emoji: "📸" },
+  family: { label: { th: "เหมาะครอบครัว", en: "Family friendly" }, emoji: "👨‍👩‍👧" },
+};
+
+export const LIFESTYLE_ORDER: LifeStyleTag[] = [
+  "quiet",
+  "wifi",
+  "pet-friendly",
+  "parking",
+  "open-late",
+  "photo",
+  "family",
+];
 
 import enriched from "./cafes.enriched.json";
 import baseRegistry from "./cafes.base.json";
@@ -89,6 +119,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [2],
     priceRange: 2,
     tags: ["chill", "work", "dessert"],
+    lifestyleTags: ["quiet", "wifi", "parking"],
     area: "lakeside",
     menuHighlights: [
       { th: "อเมริกาโน่เย็น เลือกเมล็ดได้", en: "Iced Americano with bean choice" },
@@ -109,6 +140,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
+    lifestyleTags: ["wifi", "quiet", "parking"],
     area: "lakeside",
     menuHighlights: [
       { th: "ลาเต้", en: "Latte" },
@@ -129,6 +161,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
+    lifestyleTags: ["quiet", "wifi"],
     area: "lakeside",
     menuHighlights: [
       { th: "ลาเต้ร้อน", en: "Hot latte" },
@@ -149,6 +182,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["dessert", "chill"],
+    lifestyleTags: ["family", "photo"],
     area: "lakeside",
     menuHighlights: [
       { th: "เค้กโฮมเมด", en: "Homemade cakes" },
@@ -169,6 +203,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "chill"],
+    lifestyleTags: ["family", "photo", "pet-friendly"],
     area: "lakeside",
     menuHighlights: [
       { th: "ไอศครีมโฮมเมด", en: "Homemade ice cream" },
@@ -190,6 +225,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["chill", "dessert"],
+    lifestyleTags: ["photo", "quiet"],
     area: "lakeside",
     menuHighlights: [
       { th: "กาแฟโอเลี้ยง", en: "Oliang (Thai iced coffee)" },
@@ -213,6 +249,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "work", "chill"],
+    lifestyleTags: ["photo", "wifi", "parking"],
     area: "lakeside",
     menuHighlights: [
       { th: "คุกกี้เนยสด", en: "Butter cookies" },
@@ -233,6 +270,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "work"],
+    lifestyleTags: ["photo", "wifi"],
     area: "lakeside",
     menuHighlights: [
       { th: "บราวนี่ซอฟคุกกี้", en: "Brownie soft cookie" },
@@ -253,6 +291,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
+    lifestyleTags: ["photo", "open-late"],
     area: "lakeside",
     menuHighlights: [
       { th: "กาแฟริมน้ำ", en: "Coffee by the water" },
@@ -274,6 +313,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
+    lifestyleTags: ["open-late", "photo", "parking"],
     area: "lakeside",
     menuHighlights: [
       { th: "ค็อกเทล/กาแฟ", en: "Cocktails & coffee" },
@@ -294,6 +334,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["chill", "work"],
+    lifestyleTags: ["photo", "quiet", "parking"],
     area: "lakeside",
     menuHighlights: [
       { th: "กาแฟโบราณ", en: "Traditional Thai coffee" },
@@ -315,6 +356,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [3],
     priceRange: 2,
     tags: ["work", "chill"],
+    lifestyleTags: ["wifi", "parking", "family"],
     area: "maeka-uni",
     menuHighlights: [
       { th: "กาแฟสด", en: "Specialty coffee" },
