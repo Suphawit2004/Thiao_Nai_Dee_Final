@@ -10,14 +10,21 @@ import CafeThumb from "../CafeThumb";
 
 const COLORS = ["#7c5a43", "#5c7457", "#a06a3f", "#3f6c72", "#8a5a44", "#6b4f6e"];
 
-function makeIcon(color: string) {
-  return L.divIcon({
-    className: "coffee-marker",
-    html: `<div class="pin-wrap" style="--pin:${color}"><div class="pin-head"><span>☕</span></div><div class="pin-tail"></div></div>`,
-    iconSize: [32, 44],
-    iconAnchor: [16, 44],
-    popupAnchor: [0, -42],
-  });
+const iconCache = new Map<string, L.DivIcon>();
+
+function makeIcon(color: string): L.DivIcon {
+  let icon = iconCache.get(color);
+  if (!icon) {
+    icon = L.divIcon({
+      className: "coffee-marker",
+      html: `<div class="pin-wrap" style="--pin:${color}"><div class="pin-head"><span>☕</span></div><div class="pin-tail"></div></div>`,
+      iconSize: [32, 44],
+      iconAnchor: [16, 44],
+      popupAnchor: [0, -42],
+    });
+    iconCache.set(color, icon);
+  }
+  return icon;
 }
 
 function FitBounds({ cafes }: { cafes: Cafe[] }) {
