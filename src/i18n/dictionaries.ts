@@ -12,6 +12,15 @@ const th = {
   "nav.menuToggle": "สลับการแสดงเมนู",
   "nav.login": "เข้าสู่ระบบ",
   "nav.profile": "โปรไฟล์",
+  "nav.favorites": "รายการโปรด",
+
+  "fav.title": "รายการโปรดของฉัน",
+  "fav.add": "เพิ่มในรายการโปรด",
+  "fav.remove": "นำออกจากรายการโปรด",
+  "fav.empty": "ยังไม่มีคาเฟ่ในรายการโปรด",
+  "fav.emptyHint": "กดหัวใจ ❤️ บนการ์ดคาเฟ่ เพื่อบันทึกร้านที่คุณชอบไว้ที่นี่",
+  "fav.explore": "สำรวจคาเฟ่",
+  "fav.guestNote": "ตอนนี้บันทึกไว้ในเครื่องนี้เท่านั้น —",
 
   "login.title": "เข้าสู่ระบบ / สมัครสมาชิก",
   "login.desc": "ใส่อีเมลของคุณ เราจะส่งลิงก์เวทมนตร์ (Magic Link) ไปให้กดเข้าสู่ระบบ — ไม่ต้องมีรหัสผ่าน",
@@ -153,6 +162,15 @@ const en: Record<DictKey, string> = {
   "nav.menuToggle": "Toggle navigation menu",
   "nav.login": "Log in",
   "nav.profile": "Profile",
+  "nav.favorites": "Favorites",
+
+  "fav.title": "My favorites",
+  "fav.add": "Add to favorites",
+  "fav.remove": "Remove from favorites",
+  "fav.empty": "No favorite cafes yet",
+  "fav.emptyHint": "Tap the ❤️ on any cafe card to save it here.",
+  "fav.explore": "Explore cafes",
+  "fav.guestNote": "Saved on this device only —",
 
   "login.title": "Log in or sign up",
   "login.desc":

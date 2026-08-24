@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
 import { useAuth } from "./AuthProvider";
+import { useFavorites } from "./FavoritesProvider";
 
 const LINKS = [
   { href: "/", key: "nav.home" },
@@ -16,8 +17,12 @@ const LINKS = [
 export default function Navbar() {
   const { t, toggle } = useLang();
   const { user, loading } = useAuth();
+  const { slugs } = useFavorites();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  const favLabel =
+    slugs.length > 0 ? `❤️ ${t("nav.favorites")} (${slugs.length})` : `🤍 ${t("nav.favorites")}`;
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -57,6 +62,9 @@ export default function Navbar() {
           >
             {t("lang.switchTo")}
           </button>
+          <Link href="/favorites" className={linkClass("/favorites")}>
+            {favLabel}
+          </Link>
           {!loading && (
             <Link href={user ? "/profile" : "/login"} className={linkClass(user ? "/profile" : "/login")}>
               {user ? `👤 ${t("nav.profile")}` : `🔑 ${t("nav.login")}`}
@@ -99,6 +107,15 @@ export default function Navbar() {
                 {t(l.key)}
               </Link>
             ))}
+            <Link
+              href="/favorites"
+              onClick={() => setOpen(false)}
+              className={`rounded-xl px-4 py-2.5 text-sm font-medium ${
+                isActive("/favorites") ? "bg-coffee text-cream" : "text-espresso hover:bg-sand"
+              }`}
+            >
+              {favLabel}
+            </Link>
             {!loading && (
               <Link
                 href={user ? "/profile" : "/login"}
