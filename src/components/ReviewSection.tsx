@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { getSupabase, type ReviewRow } from "@/lib/supabase";
 import { useLang } from "@/i18n/LangProvider";
+import { submitReview } from "@/app/actions/reviews";
 import RatingStars from "./RatingStars";
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -66,35 +67,21 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
     if (!name.trim()) return;
     setSending(true);
     setNotice(null);
-    const sb = getSupabase();
-    if (!sb) {
-      setSending(false);
-      setNotice({ ok: false, text: t("form.error") });
-      return;
-    }
-    const { data, error } = await sb
-      .from("reviews")
-      .insert({
-        cafe_slug: slug,
-        author_name: name.trim(),
-        rating,
-        comment: comment.trim() || null,
-      })
-      .select()
-      .single();
+    const res = await submitReview({ slug, name, rating, comment });
     setSending(false);
-    if (error || !data) {
-      setNotice({ ok: false, text: error?.message ?? t("form.error") });
+    if (!res.ok || !res.data) {
+      setNotice({ ok: false, text: res.error ?? t("form.error") });
       return;
     }
-    setReviews((prev) => [data as ReviewRow, ...prev]);
+    setReviews((prev) => [res.data as ReviewRow, ...prev]);
     setComment("");
     setNotice({ ok: true, text: t("form.success") });
   }
 
+  const BASE_WEIGHT = 10;
   const avg =
     reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      ? (baseRating * BASE_WEIGHT + reviews.reduce((sum, r) => sum + r.rating, 0)) / (BASE_WEIGHT + reviews.length)
       : baseRating;
 
   const locale = lang === "th" ? "th-TH" : "en-GB";
