@@ -1,14 +1,18 @@
 "use server";
 
-import { getSupabase } from "@/lib/supabase";
+import { getSupabase, type ReviewRow } from "@/lib/supabase";
 import { CAFES } from "@/data/cafes";
+
+export type ReviewResult =
+  | { ok: true; data: ReviewRow }
+  | { ok: false; error: string };
 
 export async function submitReview(formData: {
   slug: string;
   name: string;
   rating: number;
   comment: string;
-}) {
+}): Promise<ReviewResult> {
   const sb = getSupabase();
   if (!sb) {
     return { ok: false, error: "Database not configured" };

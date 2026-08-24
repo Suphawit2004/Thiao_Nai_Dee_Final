@@ -16,16 +16,18 @@
 # ดู preview โดยไม่บันทึก:  npm run cafes:pins -- --dry-run
 #
 # ---------- เริ่มกรอกตรงนี้ ----------
+# แก้หมุดลอย 2026-08-24: lakeland/at-home/scene เดิมตกในกว๊าน (OSM polygon),
+# bestpart/norbulingka เดิมผิดฝั่งเมือง — 2 จุดหลังเป็นพิกัดโดยประมาณ ±500m
 
 baan-baann
-lakeland-cafe
+lakeland-cafe 19.16388 99.89949
 sippin-cafe
-at-home-cafe
+at-home-cafe 19.17218 99.89757
 nitan-ban-tonmai
 sweet-cycle
-bestpart-cafe
-scene-cafe
+bestpart-cafe 19.1973 99.8873
+scene-cafe 19.17495 99.89371
 the-lake-cafe
 baan-ing-kwan
-norbulingka-coffee
+norbulingka-coffee 19.1962 99.8889
 mr-handsome-cafe

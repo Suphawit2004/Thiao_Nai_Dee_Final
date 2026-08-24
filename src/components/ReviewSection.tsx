@@ -42,26 +42,40 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
 
   const configured = getSupabase() !== null;
   const [loading, setLoading] = useState(configured);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let active = true;
     (async () => {
       const sb = getSupabase();
       if (!sb) return;
-      const { data } = await sb
+      const { data, error } = await sb
         .from("reviews")
         .select("*")
         .eq("cafe_slug", slug)
         .order("created_at", { ascending: false })
         .limit(50);
       if (!active) return;
-      if (data) setReviews(data);
+      if (error || !data) {
+        console.error("Failed to load reviews:", error);
+        setLoadError(true);
+      } else {
+        setReviews(data);
+      }
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, retryKey]);
+
+  function handleRetry() {
+    setLoading(true);
+    setLoadError(false);
+    setReviews([]);
+    setRetryKey((k) => k + 1);
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -70,11 +84,11 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
     setNotice(null);
     const res = await submitReview({ slug, name, rating, comment });
     setSending(false);
-    if (!res.ok || !res.data) {
-      setNotice({ ok: false, text: res.error ?? t("form.error") });
+    if (!res.ok) {
+      setNotice({ ok: false, text: res.error });
       return;
     }
-    setReviews((prev) => [res.data as ReviewRow, ...prev]);
+    setReviews((prev) => [res.data, ...prev]);
     setComment("");
     setNotice({ ok: true, text: t("form.success") });
   }
@@ -99,7 +113,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
           </span>
         </span>
       </div>
-      {reviews.length === 0 && !loading && (
+      {reviews.length === 0 && !loading && !loadError && (
         <p className="mt-1 text-xs text-espresso/70">{t("reviews.baseNote")}</p>
       )}
 
@@ -107,6 +121,22 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
         <p className="mt-4 rounded-xl bg-sand px-4 py-3 text-sm text-espresso/70">
           ⚙️ {t("db.notConfigured")}
         </p>
+      )}
+
+      {loadError && (
+        <div
+          className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700"
+          role="alert"
+        >
+          <span>⚠️ {t("reviews.loadError")}</span>
+          <button
+            type="button"
+            onClick={handleRetry}
+            className="rounded-full border border-rose-300 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+          >
+            ↻ {t("reviews.retry")}
+          </button>
+        </div>
       )}
 
       <form onSubmit={handleSubmit} className="mt-5 rounded-xl bg-cream p-4">
@@ -165,7 +195,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
 
       <ul className="mt-5 space-y-3">
         {loading && <li className="text-sm text-espresso/70">…</li>}
-        {!loading && reviews.length === 0 && (
+        {!loading && !loadError && reviews.length === 0 && (
           <li className="rounded-xl border border-dashed border-[#e0d3ba] px-4 py-6 text-center text-sm text-espresso/70">
             {t("reviews.none")}
           </li>

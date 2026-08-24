@@ -19,6 +19,15 @@ export const metadata: Metadata = {
   },
   description:
     "รวมคาเฟ่น่านั่งในเมืองพะเยา ทั้งริมกว๊านถึงโซนมหาวิทยาลัย พร้อมพิกัด เวลาเปิด-ปิด เมนูแนะนำ และรีวิว A curated guide to cafes in Phayao from the lakefront to the university area, with map, reviews and filters.",
+  openGraph: {
+    type: "website",
+    siteName: "Thiao Nai Dee",
+    locale: "th_TH",
+    alternateLocale: ["en_US"],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
