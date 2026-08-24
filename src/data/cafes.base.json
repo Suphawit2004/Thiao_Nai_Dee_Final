@@ -1,0 +1,14 @@
+{
+  "baan-baann": { "label": "บ้านบานน์", "lat": 19.16355, "lng": 99.90065 },
+  "lakeland-cafe": { "label": "LakeLand Cafe", "lat": 19.171, "lng": 99.8885 },
+  "sippin-cafe": { "label": "Sippin Cafe", "lat": 19.168294, "lng": 99.89889 },
+  "at-home-cafe": { "label": "At Home Cafe", "lat": 19.1655, "lng": 99.895 },
+  "nitan-ban-tonmai": { "label": "นิทานบ้านต้นไม้", "lat": 19.168, "lng": 99.896 },
+  "sweet-cycle": { "label": "Sweet Cycle", "lat": 19.1686, "lng": 99.8992 },
+  "bestpart-cafe": { "label": "BestPart Cafe", "lat": 19.1579, "lng": 99.9008 },
+  "scene-cafe": { "label": "Scene Cafe", "lat": 19.1649, "lng": 99.894 },
+  "the-lake-cafe": { "label": "The Lake Cafe", "lat": 19.1697566, "lng": 99.895029 },
+  "baan-ing-kwan": { "label": "บ้านอิงกว๊าน", "lat": 19.1609654, "lng": 99.9136072 },
+  "norbulingka-coffee": { "label": "Norbulingka Coffee", "lat": 19.1665, "lng": 99.917 },
+  "mr-handsome-cafe": { "label": "Mr. Handsome Cafe", "lat": 19.0463675, "lng": 99.9267633 }
+}
