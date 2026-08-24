@@ -85,7 +85,10 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
     const res = await submitReview({ slug, name, rating, comment });
     setSending(false);
     if (!res.ok) {
-      setNotice({ ok: false, text: res.error });
+      setNotice({
+        ok: false,
+        text: res.error === "rate_limited" ? t("reviews.rateLimited") : res.error,
+      });
       return;
     }
     setReviews((prev) => [res.data, ...prev]);

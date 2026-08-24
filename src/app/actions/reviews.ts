@@ -1,7 +1,10 @@
 "use server";
 
+import { createHash } from "node:crypto";
+import { headers } from "next/headers";
 import { getSupabase, type ReviewRow } from "@/lib/supabase";
 import { CAFES } from "@/data/cafes";
+import { checkReviewRateLimit } from "@/lib/rate-limit";
 
 export type ReviewResult =
   | { ok: true; data: ReviewRow }
@@ -16,6 +19,17 @@ export async function submitReview(formData: {
   const sb = getSupabase();
   if (!sb) {
     return { ok: false, error: "Database not configured" };
+  }
+
+  // Rate limit by client IP (single-instance in-memory limiter)
+  const hdrs = await headers();
+  const ip =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    hdrs.get("x-real-ip")?.trim() ||
+    "unknown";
+  const ipHash = createHash("sha256").update(ip).digest("hex");
+  if (!checkReviewRateLimit(ipHash).allowed) {
+    return { ok: false, error: "rate_limited" };
   }
 
   const { slug, name, rating, comment } = formData;
