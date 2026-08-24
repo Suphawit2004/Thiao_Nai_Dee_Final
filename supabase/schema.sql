@@ -22,6 +22,8 @@ drop policy if exists "reviews_insert_public" on public.reviews;
 create policy "reviews_insert_public"
   on public.reviews for insert
   with check (
-    char_length(author_name) between 1 and 60
+    char_length(cafe_slug) <= 100
+    and char_length(author_name) between 1 and 60
     and rating between 1 and 5
+    and (comment is null or char_length(comment) <= 500)
   );
