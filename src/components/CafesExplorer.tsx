@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { AREA_ORDER, CAFES, type CafeArea, type CafeTag } from "@/data/cafes";
+import { CAFES, type CafeArea, type CafeTag } from "@/data/cafes";
 import { getOpenStatus } from "@/lib/hours";
 import { useLang } from "@/i18n/LangProvider";
 import CafeCard from "./CafeCard";
