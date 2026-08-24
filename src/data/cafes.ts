@@ -7,6 +7,15 @@ export interface LocalText {
 
 export type CafeTag = "work" | "chill" | "view" | "dessert";
 
+export type CafeArea = "lakeside" | "maeka-uni";
+
+export const AREA_META: Record<CafeArea, { label: LocalText; emoji: string }> = {
+  lakeside: { label: { th: "ริมกว๊าน–ในเมือง", en: "Lakeside & Old Town" }, emoji: "🌊" },
+  "maeka-uni": { label: { th: "แม่กา–ม.พะเยา", en: "Mae Ka & University of Phayao" }, emoji: "🎓" },
+};
+
+export const AREA_ORDER: CafeArea[] = ["lakeside", "maeka-uni"];
+
 export interface Cafe {
   slug: string;
   name: LocalText;
@@ -18,6 +27,7 @@ export interface Cafe {
   closedDays: number[];
   priceRange: 1 | 2;
   tags: CafeTag[];
+  area: CafeArea;
   lat: number;
   lng: number;
   photo?: string;
@@ -79,6 +89,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [2],
     priceRange: 2,
     tags: ["chill", "work", "dessert"],
+    area: "lakeside",
     menuHighlights: [
       { th: "อเมริกาโน่เย็น เลือกเมล็ดได้", en: "Iced Americano with bean choice" },
       { th: "เบเกอรี่โฮมเมด", en: "Homemade bakery" },
@@ -98,6 +109,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
+    area: "lakeside",
     menuHighlights: [
       { th: "ลาเต้", en: "Latte" },
       { th: "ชีสเค้ก", en: "Cheesecake" },
@@ -117,6 +129,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
+    area: "lakeside",
     menuHighlights: [
       { th: "ลาเต้ร้อน", en: "Hot latte" },
       { th: "โฮมเมดโกโก้", en: "Homemade cocoa" },
@@ -136,6 +149,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["dessert", "chill"],
+    area: "lakeside",
     menuHighlights: [
       { th: "เค้กโฮมเมด", en: "Homemade cakes" },
       { th: "กาแฟดำโฮลซีล", en: "Black coffee" },
@@ -155,6 +169,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "chill"],
+    area: "lakeside",
     menuHighlights: [
       { th: "ไอศครีมโฮมเมด", en: "Homemade ice cream" },
       { th: "บราวนี่ + ไอศครีม", en: "Brownie with ice cream" },
@@ -175,6 +190,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["chill", "dessert"],
+    area: "lakeside",
     menuHighlights: [
       { th: "กาแฟโอเลี้ยง", en: "Oliang (Thai iced coffee)" },
       { th: "โรตี", en: "Roti" },
@@ -197,6 +213,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "work", "chill"],
+    area: "lakeside",
     menuHighlights: [
       { th: "คุกกี้เนยสด", en: "Butter cookies" },
       { th: "ลาเต้เย็น", en: "Iced latte" },
@@ -216,6 +233,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "work"],
+    area: "lakeside",
     menuHighlights: [
       { th: "บราวนี่ซอฟคุกกี้", en: "Brownie soft cookie" },
       { th: "ชานมไข่มุก", en: "Bubble milk tea" },
@@ -235,6 +253,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
+    area: "lakeside",
     menuHighlights: [
       { th: "กาแฟริมน้ำ", en: "Coffee by the water" },
       { th: "อาหารจานเดียว", en: "Single-dish meals" },
@@ -255,6 +274,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
+    area: "lakeside",
     menuHighlights: [
       { th: "ค็อกเทล/กาแฟ", en: "Cocktails & coffee" },
       { th: "อาหารเหนือ", en: "Northern Thai dishes" },
@@ -274,6 +294,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["chill", "work"],
+    area: "lakeside",
     menuHighlights: [
       { th: "กาแฟโบราณ", en: "Traditional Thai coffee" },
       { th: "ชานม", en: "Milk tea" },
@@ -294,6 +315,7 @@ const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
     closedDays: [3],
     priceRange: 2,
     tags: ["work", "chill"],
+    area: "maeka-uni",
     menuHighlights: [
       { th: "กาแฟสด", en: "Specialty coffee" },
       { th: "อาหารจานเดียว", en: "Single-dish meals" },
