@@ -14,10 +14,10 @@ const COLORS = ["#7c5a43", "#5c7457", "#a06a3f", "#3f6c72", "#8a5a44", "#6b4f6e"
 function makeIcon(color: string) {
   return L.divIcon({
     className: "coffee-marker",
-    html: `<div class="marker-pin" style="--pin:${color}"><span>☕</span></div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 32],
-    popupAnchor: [0, -30],
+    html: `<div class="pin-wrap" style="--pin:${color}"><div class="pin-head"><span>☕</span></div><div class="pin-tail"></div></div>`,
+    iconSize: [32, 44],
+    iconAnchor: [16, 44],
+    popupAnchor: [0, -42],
   });
 }
 
@@ -29,7 +29,7 @@ function FitBounds({ cafes }: { cafes: Cafe[] }) {
     } else if (cafes.length > 1) {
       map.fitBounds(
         L.latLngBounds(cafes.map((c) => [c.lat, c.lng] as [number, number])),
-        { padding: [40, 40] }
+        { paddingTopLeft: [40, 96], paddingBottomRight: [24, 24] }
       );
     }
   }, [map, cafes]);
