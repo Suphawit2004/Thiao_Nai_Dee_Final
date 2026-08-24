@@ -2,9 +2,9 @@ import CafesExplorer from "@/components/CafesExplorer";
 import { AREA_ORDER, TAG_ORDER, type CafeArea, type CafeTag } from "@/data/cafes";
 
 export const metadata = {
-  title: "คาเฟ่ในตัวเมืองพะเยา — Cafes in Phayao",
+  title: "คาเฟ่ในเมืองพะเยา — Cafes in Phayao",
   description:
-    "รวมคาเฟ่ทั้งหมดในตัวเมืองพะเยา กรองตามแท็ก ราคา และสถานะเปิด-ปิด พร้อมพิกัดและเวลาเปิด Browse all cafes in Phayao city centre with filters for mood, price and opening hours.",
+    "รวมคาเฟ่ทั้งหมดในเมืองพะเยา กรองตามพื้นที่ แท็ก ราคา และสถานะเปิด-ปิด พร้อมพิกัดและเวลาเปิด Browse all cafes in Phayao with filters for area, mood, price and opening hours.",
 };
 
 export default async function CafesPage({ searchParams }: PageProps<"/cafes">) {

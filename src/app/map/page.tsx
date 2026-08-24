@@ -1,9 +1,9 @@
 import MapViewPage from "@/components/MapViewPage";
 
 export const metadata = {
-  title: "แผนที่คาเฟ่ตัวเมืองพะเยา — Cafe Map",
+  title: "แผนที่คาเฟ่เมืองพะเยา — Cafe Map",
   description:
-    "แผนที่หมุดคาเฟ่ริมกว๊านพะเยา ย่านเมืองเก่าเดินถึงกันได้ Map of every featured cafe around Kwan Phayao old town, all within walking distance.",
+    "แผนที่หมุดคาเฟ่เมืองพะเยา ทั้งโซนริมกว๊าน–ในเมือง และโซนแม่กา ม.พะเยา Map of every featured cafe in Phayao, from the Kwan lakefront to the university area.",
 };
 
 export default function MapPage() {
