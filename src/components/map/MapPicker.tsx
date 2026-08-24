@@ -1,8 +1,9 @@
 "use client";
 
 import L from "leaflet";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { useLang } from "@/i18n/LangProvider";
 
 const DEFAULT_CENTER: [number, number] = [19.1668, 99.8928];
 
@@ -37,34 +38,83 @@ interface MapPickerProps {
 }
 
 export default function MapPicker({ value, onChange, className }: MapPickerProps) {
+  const { t } = useLang();
+  const [locating, setLocating] = useState(false);
+  const [geoError, setGeoError] = useState(false);
+
   const round = (n: number) => Number(n.toFixed(6));
 
+  const locateMe = () => {
+    if (!navigator.geolocation) {
+      setGeoError(true);
+      return;
+    }
+    setLocating(true);
+    setGeoError(false);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        onChange(round(pos.coords.latitude), round(pos.coords.longitude));
+      },
+      () => {
+        setLocating(false);
+        setGeoError(true);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
   return (
-    <MapContainer
-      center={value ?? DEFAULT_CENTER}
-      zoom={14}
-      scrollWheelZoom
-      className={`z-0 ${className ?? ""}`}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <ClickCapture onPick={(lat, lng) => onChange(round(lat), round(lng))} />
-      <Recenter value={value} />
-      {value && (
-        <Marker
-          position={value}
-          icon={pinIcon}
-          draggable
-          eventHandlers={{
-            dragend: (e) => {
-              const ll = e.target.getLatLng();
-              onChange(round(ll.lat), round(ll.lng));
-            },
-          }}
+    <div className={`relative ${className ?? ""}`}>
+      <MapContainer
+        center={value ?? DEFAULT_CENTER}
+        zoom={14}
+        scrollWheelZoom
+        className="absolute inset-0 z-0"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <ClickCapture onPick={(lat, lng) => onChange(round(lat), round(lng))} />
+        <Recenter value={value} />
+        {value && (
+          <Marker
+            position={value}
+            icon={pinIcon}
+            draggable
+            eventHandlers={{
+              dragend: (e) => {
+                const ll = e.target.getLatLng();
+                onChange(round(ll.lat), round(ll.lng));
+              },
+            }}
+          />
+        )}
+      </MapContainer>
+
+      <button
+        type="button"
+        onClick={locateMe}
+        disabled={locating}
+        aria-label={t("suggest.locate")}
+        title={t("suggest.locate")}
+        className="absolute right-2 top-2 z-[900] flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-2 text-xs font-bold text-espresso shadow-md transition hover:bg-white disabled:opacity-60"
+      >
+        {locating ? (
+          <>⏳ {t("suggest.locating")}</>
+        ) : (
+          <>
+            <span aria-hidden>🎯</span> {t("suggest.locate")}
+          </>
+        )}
+      </button>
+
+      {geoError && (
+        <p className="absolute inset-x-2 bottom-2 z-[900] rounded-lg bg-rose-50/95 px-3 py-2 text-xs font-medium text-rose-700 shadow">
+          ⚠️ {t("suggest.locationError")}
+        </p>
       )}
-    </MapContainer>
+    </div>
   );
 }

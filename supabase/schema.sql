@@ -122,10 +122,15 @@ create table if not exists public.cafe_suggestions (
   close_time text,
   price_range int check (price_range between 1 and 2),
   note text check (char_length(note) <= 500),
+  photo_url text,
   contact text check (char_length(contact) <= 120),
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz not null default now()
 );
+
+alter table public.cafe_suggestions drop constraint if exists suggestions_photo_url_check;
+alter table public.cafe_suggestions add constraint suggestions_photo_url_check
+  check (photo_url is null or char_length(photo_url) <= 500);
 
 alter table public.cafe_suggestions enable row level security;
 
@@ -139,6 +144,7 @@ create policy "suggestions_insert_public"
     and lng between -180 and 180
     and (price_range is null or price_range between 1 and 2)
     and (note is null or char_length(note) <= 500)
+    and (photo_url is null or char_length(photo_url) <= 500)
     and (contact is null or char_length(contact) <= 120)
   );
 
@@ -169,3 +175,15 @@ create policy "data_reports_insert_public"
     and (suggested_value is null or char_length(suggested_value) <= 300)
     and (contact is null or char_length(contact) <= 120)
   );
+
+-- ============================================================
+-- storage — cafe suggestion photos (public bucket, insert-only)
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values ('cafe-suggestions', 'cafe-suggestions', true)
+on conflict (id) do nothing;
+
+drop policy if exists "suggestion_photos_insert" on storage.objects;
+create policy "suggestion_photos_insert"
+  on storage.objects for insert
+  with check (bucket_id = 'cafe-suggestions');

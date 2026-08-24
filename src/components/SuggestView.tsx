@@ -34,16 +34,60 @@ const INITIAL_FORM: FormState = {
   contact: "",
 };
 
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+function extFor(file: File): string {
+  if (file.type === "image/jpeg") return "jpg";
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+  return "gif";
+}
+
 export default function SuggestView() {
   const { t } = useLang();
   const supabaseReady = getSupabaseBrowser() !== null;
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [coords, setCoords] = useState<[number, number] | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<"tooBig" | "wrongType" | "upload" | null>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [showCoordError, setShowCoordError] = useState(false);
 
   const patch = (p: Partial<FormState>) => setForm((prev) => ({ ...prev, ...p }));
+
+  const clearPhoto = () => {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
+
+  const pickPhoto = (file: File | undefined) => {
+    setPhotoError(null);
+    if (!file) return;
+    if (!PHOTO_TYPES.includes(file.type)) {
+      setPhotoError("wrongType");
+      return;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      setPhotoError("tooBig");
+      return;
+    }
+    clearPhoto();
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const resetAll = () => {
+    clearPhoto();
+    setForm(INITIAL_FORM);
+    setCoords(null);
+    setStatus("idle");
+    setShowCoordError(false);
+    setPhotoError(null);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +99,25 @@ export default function SuggestView() {
     if (!supabase) return;
 
     setStatus("sending");
+    setPhotoError(null);
+
+    let photoUrl: string | null = null;
+
+    if (photoFile) {
+      const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extFor(photoFile)}`;
+      const { error: upErr } = await supabase.storage
+        .from("cafe-suggestions")
+        .upload(path, photoFile, { contentType: photoFile.type });
+      if (upErr) {
+        console.error("photo upload failed:", upErr);
+        setStatus("error");
+        setPhotoError("upload");
+        return;
+      }
+      const { data } = supabase.storage.from("cafe-suggestions").getPublicUrl(path);
+      photoUrl = data.publicUrl;
+    }
+
     const { error } = await supabase.from("cafe_suggestions").insert({
       name: form.name.trim(),
       address: form.address.trim() || null,
@@ -64,6 +127,7 @@ export default function SuggestView() {
       close_time: form.closeTime || null,
       price_range: form.priceRange === "" ? null : Number(form.priceRange),
       note: form.note.trim() || null,
+      photo_url: photoUrl,
       contact: form.contact.trim() || null,
     });
     setStatus(error ? "error" : "sent");
@@ -76,12 +140,7 @@ export default function SuggestView() {
           <p className="text-lg font-bold text-emerald-900">{t("suggest.success")}</p>
           <button
             type="button"
-            onClick={() => {
-              setForm(INITIAL_FORM);
-              setCoords(null);
-              setStatus("idle");
-              setShowCoordError(false);
-            }}
+            onClick={resetAll}
             className="mt-6 rounded-full bg-emerald-700 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
           >
             ➕ {t("suggest.successAgain")}
@@ -90,6 +149,9 @@ export default function SuggestView() {
       </div>
     );
   }
+
+  const inputClass =
+    "mt-1.5 w-full rounded-xl border border-[#e8dcc8] bg-sand/40 px-4 py-3 text-sm outline-none transition focus:border-latte focus:bg-white";
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -118,7 +180,7 @@ export default function SuggestView() {
             value={form.name}
             onChange={(e) => patch({ name: e.target.value })}
             placeholder={t("suggest.namePh")}
-            className="mt-1.5 w-full rounded-xl border border-[#e8dcc8] bg-sand/40 px-4 py-3 text-sm outline-none transition focus:border-latte focus:bg-white"
+            className={inputClass}
           />
         </div>
 
@@ -133,7 +195,7 @@ export default function SuggestView() {
             value={form.address}
             onChange={(e) => patch({ address: e.target.value })}
             placeholder={t("suggest.addressPh")}
-            className="mt-1.5 w-full rounded-xl border border-[#e8dcc8] bg-sand/40 px-4 py-3 text-sm outline-none transition focus:border-latte focus:bg-white"
+            className={inputClass}
           />
         </div>
 
@@ -159,6 +221,56 @@ export default function SuggestView() {
           </div>
           {showCoordError && !coords && (
             <p className="mt-1.5 text-xs font-semibold text-rose-700">⚠️ {t("suggest.pickFirst")}</p>
+          )}
+        </div>
+
+        <div>
+          <span className="block text-sm font-semibold text-espresso">{t("suggest.photo")}</span>
+          <p className="mt-0.5 text-xs text-espresso/60">{t("suggest.photoHint")}</p>
+
+          {photoPreview ? (
+            <div className="relative mt-2 overflow-hidden rounded-xl border border-[#e8dcc8]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photoPreview} alt="" className="max-h-56 w-full object-cover" />
+              <button
+                type="button"
+                onClick={clearPhoto}
+                aria-label={t("suggest.photoRemove")}
+                className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white/90 text-sm shadow transition hover:bg-white"
+              >
+                ✕
+              </button>
+              <label className="absolute bottom-2 right-2 cursor-pointer rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-coffee shadow transition hover:bg-white">
+                🔄 {t("suggest.photoChange")}
+                <input
+                  type="file"
+                  accept={PHOTO_TYPES.join(",")}
+                  className="hidden"
+                  onChange={(e) => pickPhoto(e.target.files?.[0])}
+                />
+              </label>
+            </div>
+          ) : (
+            <label className="mt-2 flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 border-dashed border-[#d9c9ac] bg-sand/30 px-4 py-8 text-center transition hover:border-latte hover:bg-sand/50">
+              <span className="text-3xl" aria-hidden>📷</span>
+              <span className="text-sm font-semibold text-coffee">{t("suggest.choosePhoto")}</span>
+              <input
+                type="file"
+                accept={PHOTO_TYPES.join(",")}
+                className="hidden"
+                onChange={(e) => pickPhoto(e.target.files?.[0])}
+              />
+            </label>
+          )}
+
+          {photoError === "tooBig" && (
+            <p className="mt-1.5 text-xs font-semibold text-rose-700">⚠️ {t("suggest.photoTooBig")}</p>
+          )}
+          {photoError === "wrongType" && (
+            <p className="mt-1.5 text-xs font-semibold text-rose-700">⚠️ {t("suggest.photoTypeError")}</p>
+          )}
+          {photoError === "upload" && (
+            <p className="mt-1.5 text-xs font-semibold text-rose-700">⚠️ {t("suggest.photoUploadError")}</p>
           )}
         </div>
 
@@ -210,7 +322,7 @@ export default function SuggestView() {
             value={form.note}
             onChange={(e) => patch({ note: e.target.value })}
             placeholder={t("suggest.notePh")}
-            className="mt-1.5 w-full resize-y rounded-xl border border-[#e8dcc8] bg-sand/40 px-4 py-3 text-sm outline-none transition focus:border-latte focus:bg-white"
+            className={`${inputClass} resize-y`}
           />
         </div>
 
@@ -225,11 +337,11 @@ export default function SuggestView() {
             value={form.contact}
             onChange={(e) => patch({ contact: e.target.value })}
             placeholder={t("suggest.contactPh")}
-            className="mt-1.5 w-full rounded-xl border border-[#e8dcc8] bg-sand/40 px-4 py-3 text-sm outline-none transition focus:border-latte focus:bg-white"
+            className={inputClass}
           />
         </div>
 
-        {status === "error" && (
+        {status === "error" && !photoError && (
           <p className="rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700">⚠️ {t("suggest.error")}</p>
         )}
 
