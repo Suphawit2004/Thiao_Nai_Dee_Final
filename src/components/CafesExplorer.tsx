@@ -2,26 +2,34 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CAFES, type CafeTag } from "@/data/cafes";
+import { CAFES, type CafeArea, type CafeTag } from "@/data/cafes";
 import { getOpenStatus } from "@/lib/hours";
 import { useLang } from "@/i18n/LangProvider";
 import CafeCard from "./CafeCard";
+import { useNowTick } from "./OpenBadge";
 import SearchFilter, { INITIAL_FILTERS, type FilterState } from "./SearchFilter";
 
 interface CafesExplorerProps {
   initialTag?: CafeTag | null;
+  initialArea?: CafeArea | null;
 }
 
-export default function CafesExplorer({ initialTag = null }: CafesExplorerProps) {
-  const { t, tr } = useLang();
+export default function CafesExplorer({
+  initialTag = null,
+  initialArea = null,
+}: CafesExplorerProps) {
+  const { t, tr, lang } = useLang();
+  const nowTick = useNowTick();
 
   const [filters, setFilters] = useState<FilterState>(() => ({
     ...INITIAL_FILTERS,
     tags: initialTag ? [initialTag] : [],
+    area: initialArea,
   }));
 
   const results = useMemo(() => {
     const q = filters.query.trim().toLowerCase();
+    const locale = lang === "th" ? "th" : "en";
     return CAFES.filter((cafe) => {
       if (q) {
         const haystack = `${cafe.name.th} ${cafe.name.en} ${cafe.address.th} ${cafe.address.en}`.toLowerCase();
@@ -30,11 +38,14 @@ export default function CafesExplorer({ initialTag = null }: CafesExplorerProps)
       if (filters.tags.length > 0 && !filters.tags.some((tg) => cafe.tags.includes(tg))) {
         return false;
       }
+      if (filters.area !== null && cafe.area !== filters.area) return false;
       if (filters.maxPrice !== 0 && cafe.priceRange > filters.maxPrice) return false;
-      if (filters.openNow && !getOpenStatus(cafe).isOpenNow) return false;
+      if (filters.openNow && !getOpenStatus(cafe, nowTick === 0 ? undefined : new Date(nowTick)).isOpenNow) {
+        return false;
+      }
       return true;
-    }).sort((a, b) => b.baseRating - a.baseRating || tr(a.name).localeCompare(tr(b.name)));
-  }, [filters, tr]);
+    }).sort((a, b) => b.baseRating - a.baseRating || tr(a.name).localeCompare(tr(b.name), locale));
+  }, [filters, tr, lang, nowTick]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -50,13 +61,13 @@ export default function CafesExplorer({ initialTag = null }: CafesExplorerProps)
       />
 
       <p className="mt-5 text-sm font-semibold text-espresso/70" aria-live="polite">
-        {t("cafes.found").replace("{n}", String(results.length))}
+        {t("cafes.found").replaceAll("{n}", String(results.length))}
       </p>
 
       {results.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-[#d9c9ac] bg-white/60 px-6 py-16 text-center">
           <p className="text-lg font-semibold text-espresso/80">{t("cafes.empty")}</p>
-          <p className="mt-1 text-sm text-espresso/50">{t("cafes.emptyHint")}</p>
+          <p className="mt-1 text-sm text-espresso/70">{t("cafes.emptyHint")}</p>
           <button
             type="button"
             onClick={() => setFilters(INITIAL_FILTERS)}

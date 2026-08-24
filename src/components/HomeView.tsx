@@ -26,7 +26,7 @@ export default function HomeView() {
           <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight md:text-5xl">
             {t("home.heroTitle1")}
             <br />
-            <span className="text-latte">{t("home.heroTitle2")}</span>
+            <span className="text-[#dcc09a]">{t("home.heroTitle2")}</span>
           </h1>
           <p className="mt-4 max-w-xl leading-relaxed text-cream/80">{t("home.heroDesc")}</p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -46,11 +46,11 @@ export default function HomeView() {
           <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-3 text-sm">
             {[
               [String(CAFES.length), t("home.stat1")],
-              ["4", t("home.stat2")],
+              [String(TAG_ORDER.length), t("home.stat2")],
               ["฿0", t("home.stat3")],
             ].map(([num, label]) => (
               <div key={label}>
-                <dt className="text-2xl font-bold text-latte">{num}</dt>
+                <dt className="text-2xl font-bold text-[#dcc09a]">{num}</dt>
                 <dd className="text-cream/70">{label}</dd>
               </div>
             ))}
@@ -62,7 +62,7 @@ export default function HomeView() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="text-2xl font-bold text-espresso">✨ {t("home.featured")}</h2>
-            <p className="mt-1 text-sm text-espresso/60">{t("home.featuredDesc")}</p>
+            <p className="mt-1 text-sm text-espresso/70">{t("home.featuredDesc")}</p>
           </div>
           <Link href="/cafes" className="text-sm font-bold text-coffee underline-offset-4 hover:underline">
             {t("home.viewAll")} →
@@ -90,7 +90,7 @@ export default function HomeView() {
                   {TAG_META[tag].emoji}
                 </span>
                 <span className="mt-2 block font-semibold text-espresso">{tr(TAG_META[tag].label)}</span>
-                <span className="mt-0.5 block text-xs text-espresso/50">
+                <span className="mt-0.5 block text-xs text-espresso/70">
                   {CAFES.filter((c) => c.tags.includes(tag)).length} {t("home.cafesInTag")}
                 </span>
               </Link>
@@ -103,7 +103,7 @@ export default function HomeView() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="text-2xl font-bold text-espresso">🗺️ {t("home.mapPreview")}</h2>
-            <p className="mt-1 text-sm text-espresso/60">{t("home.mapPreviewDesc")}</p>
+            <p className="mt-1 text-sm text-espresso/70">{t("home.mapPreviewDesc")}</p>
           </div>
           <Link href="/map" className="rounded-full bg-coffee px-5 py-2.5 text-sm font-semibold text-cream transition hover:bg-[#684a37]">
             {t("home.openMap")}

@@ -4,25 +4,18 @@ import { join } from "node:path";
 const ROOT = process.cwd();
 const PINS_FILE = join(ROOT, "pins.txt");
 const OUT_FILE = join(ROOT, "src", "data", "cafes.enriched.json");
+const BASE_FILE = join(ROOT, "src", "data", "cafes.base.json");
 const PHOTOS_DIR = join(ROOT, "public", "images", "cafes");
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const FORCE = process.argv.includes("--force");
 
-const CAFES = {
-  "baan-baann": { label: "บ้านบานน์", lat: 19.16355, lng: 99.90065 },
-  "lakeland-cafe": { label: "LakeLand Cafe", lat: 19.171, lng: 99.8885 },
-  "sippin-cafe": { label: "Sippin Cafe", lat: 19.168294, lng: 99.89889 },
-  "at-home-cafe": { label: "At Home Cafe", lat: 19.1655, lng: 99.895 },
-  "nitan-ban-tonmai": { label: "นิทานบ้านต้นไม้", lat: 19.168, lng: 99.896 },
-  "sweet-cycle": { label: "Sweet Cycle", lat: 19.1686, lng: 99.8992 },
-  "bestpart-cafe": { label: "BestPart Cafe", lat: 19.1579, lng: 99.9008 },
-  "scene-cafe": { label: "Scene Cafe", lat: 19.1649, lng: 99.894 },
-  "the-lake-cafe": { label: "The Lake Cafe", lat: 19.1697566, lng: 99.895029 },
-  "baan-ing-kwan": { label: "บ้านอิงกว๊าน", lat: 19.1609654, lng: 99.9136072 },
-  "norbulingka-coffee": { label: "Norbulingka Coffee", lat: 19.1665, lng: 99.917 },
-  "mr-handsome-cafe": { label: "Mr. Handsome Cafe", lat: 19.0463675, lng: 99.9267633 },
-};
+let CAFES;
+try {
+  CAFES = JSON.parse(readFileSync(BASE_FILE, "utf8"));
+} catch (err) {
+  fail(`อ่าน src/data/cafes.base.json ไม่สำเร็จ: ${err instanceof Error ? err.message : err}`);
+}
 
 const BBOX = { latMin: 19.0, latMax: 19.4, lngMin: 99.7, lngMax: 100.1 };
 const PHOTO_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
@@ -47,8 +40,11 @@ let previous = {};
 if (existsSync(OUT_FILE)) {
   try {
     previous = JSON.parse(readFileSync(OUT_FILE, "utf8"));
-  } catch {
-    previous = {};
+  } catch (err) {
+    fail(
+      `src/data/cafes.enriched.json parse ไม่ได้ (${err instanceof Error ? err.message : err}) ` +
+        `— แก้หรือลบไฟล์ทิ้งก่อนรันซ้ำ เพื่อกันข้อมูลพิกัดเดิมถูกเขียนทับ`
+    );
   }
 }
 
@@ -58,17 +54,30 @@ if (!existsSync(PHOTOS_DIR)) {
   mkdirSync(PHOTOS_DIR, { recursive: true });
 }
 
-const photoFiles = new Set(
-  readdirSync(PHOTOS_DIR)
-    .filter((f) => PHOTO_EXTS.has(f.toLowerCase().slice(f.lastIndexOf("."))))
-    .map((f) => f.toLowerCase())
-);
+const photoFiles = new Map();
+for (const f of readdirSync(PHOTOS_DIR)) {
+  const dot = f.lastIndexOf(".");
+  if (dot === -1) continue;
+  if (!PHOTO_EXTS.has(f.slice(dot).toLowerCase())) continue;
+  const lower = f.toLowerCase();
+  if (photoFiles.has(lower)) {
+    fail(`พบไฟล์รูปชื่อซ้ำกัน (ต่างกันที่ case): "${f}" กับ "${photoFiles.get(lower)}"`);
+  }
+  photoFiles.set(lower, f);
+}
 
 for (const slug of Object.keys(CAFES)) {
-  const match = [...photoFiles].find((f) => f.startsWith(`${slug}.`));
+  const match = [...photoFiles.keys()].find((f) => f.startsWith(`${slug}.`));
   if (match) {
-    overrides[slug] = { ...(overrides[slug] ?? {}), photo: `/images/cafes/${match}` };
+    overrides[slug] = { ...(overrides[slug] ?? {}), photo: `/images/cafes/${photoFiles.get(match)}` };
+  } else if (overrides[slug]?.photo) {
+    delete overrides[slug].photo;
+    if (Object.keys(overrides[slug]).length === 0) delete overrides[slug];
   }
+}
+
+for (const slug of Object.keys(overrides)) {
+  if (!(slug in CAFES)) delete overrides[slug];
 }
 
 let pinCount = 0;
@@ -156,5 +165,9 @@ if (DRY_RUN) {
   process.exit(0);
 }
 
-writeFileSync(OUT_FILE, JSON.stringify(overrides, null, 2) + "\n", "utf8");
+try {
+  writeFileSync(OUT_FILE, JSON.stringify(overrides, null, 2) + "\n", "utf8");
+} catch (err) {
+  fail(`เขียน src/data/cafes.enriched.json ไม่สำเร็จ: ${err instanceof Error ? err.message : err}`);
+}
 console.log(`\n✅ บันทึกแล้ว: src/data/cafes.enriched.json`);

@@ -12,12 +12,13 @@ const plexThai = IBM_Plex_Sans_Thai({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "เที่ยวไหนดี | Thiao Nai Dee — คาเฟ่ตัวเมืองพะเยา",
+    default: "เที่ยวไหนดี | Thiao Nai Dee — คาเฟ่เมืองพะเยา",
     template: "%s | Thiao Nai Dee",
   },
   description:
-    "รวมคาเฟ่น่านั่งในตัวเมืองพะเยา พร้อมพิกัด เวลาเปิด-ปิด เมนูแนะนำ และรีวิว A curated guide to cafes in Phayao old town with map, reviews and filters.",
+    "รวมคาเฟ่น่านั่งในเมืองพะเยา ทั้งริมกว๊านถึงโซนมหาวิทยาลัย พร้อมพิกัด เวลาเปิด-ปิด เมนูแนะนำ และรีวิว A curated guide to cafes in Phayao from the lakefront to the university area, with map, reviews and filters.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import CafeThumb from "./CafeThumb";
+import AreaChip from "./AreaChip";
 import RatingStars from "./RatingStars";
 import OpenBadge from "./OpenBadge";
 import TagChip from "./TagChip";
@@ -39,7 +40,10 @@ export default function CafeCard({ cafe }: { cafe: Cafe }) {
           </span>
         </div>
 
-        <OpenBadge cafe={cafe} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <OpenBadge cafe={cafe} />
+          <AreaChip area={cafe.area} />
+        </div>
 
         <p className="line-clamp-2 text-sm leading-relaxed text-espresso/70">{tr(cafe.description)}</p>
 

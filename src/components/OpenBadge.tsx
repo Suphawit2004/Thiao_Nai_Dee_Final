@@ -6,14 +6,26 @@ import { getOpenStatus } from "@/lib/hours";
 import { useLang } from "@/i18n/LangProvider";
 
 let currentTs = 0;
+const subscribers = new Set<() => void>();
+let intervalId: number | undefined;
 
 function subscribeTick(onChange: () => void): () => void {
-  currentTs = Date.now();
-  const id = window.setInterval(() => {
+  subscribers.add(onChange);
+  if (subscribers.size === 1) {
     currentTs = Date.now();
-    onChange();
-  }, 30_000);
-  return () => window.clearInterval(id);
+    intervalId = window.setInterval(() => {
+      currentTs = Date.now();
+      subscribers.forEach((cb) => cb());
+    }, 30_000);
+  }
+  return () => {
+    subscribers.delete(onChange);
+    if (subscribers.size === 0) {
+      window.clearInterval(intervalId);
+      intervalId = undefined;
+      currentTs = 0;
+    }
+  };
 }
 
 function getSnapshot(): number {
@@ -24,13 +36,17 @@ function getServerSnapshot(): number {
   return 0;
 }
 
+export function useNowTick(): number {
+  return useSyncExternalStore(subscribeTick, getSnapshot, getServerSnapshot);
+}
+
 export default function OpenBadge({ cafe }: { cafe: Cafe }) {
   const { t } = useLang();
-  const ts = useSyncExternalStore(subscribeTick, getSnapshot, getServerSnapshot);
+  const ts = useNowTick();
 
   if (ts === 0) {
     return (
-      <span className="inline-flex h-6 items-center rounded-full bg-sand px-2.5 text-xs font-semibold text-espresso/50">
+      <span className="inline-flex h-6 items-center rounded-full bg-sand px-2.5 text-xs font-semibold text-espresso/70">
         {cafe.openTime}–{cafe.closeTime}
       </span>
     );

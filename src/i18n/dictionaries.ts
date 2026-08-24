@@ -8,12 +8,14 @@ const th = {
   "nav.map": "แผนที่",
   "nav.about": "เกี่ยวกับ",
   "lang.switchTo": "EN",
+  "nav.main": "เมนูหลัก",
+  "nav.menuToggle": "สลับการแสดงเมนู",
 
-  "home.badge": "คาเฟ่ตัวเมืองพะเยา",
+  "home.badge": "คาเฟ่เมืองพะเยา",
   "home.heroTitle1": "เช้านี้… เที่ยวไหนดี?",
   "home.heroTitle2": "ไปจิบกาแฟริมกว๊านกัน",
   "home.heroDesc":
-    "รวมคาเฟ่น่านั่งในตัวเมืองพะเยา พร้อมพิกัด เวลาเปิด-ปิด เมนูแนะนำ และรีวิวจากผู้ใช้ ช่วยให้คุณเลือกร้านได้ตรงใจในไม่กี่คลิก",
+    "รวมคาเฟ่น่านั่งในเมืองพะเยา พร้อมพิกัด เวลาเปิด-ปิด เมนูแนะนำ และรีวิวจากผู้ใช้ ช่วยให้คุณเลือกร้านได้ตรงใจในไม่กี่คลิก",
   "home.ctaExplore": "สำรวจคาเฟ่",
   "home.ctaMap": "ดูแผนที่",
   "home.stat1": "คาเฟ่คัดแล้ว",
@@ -29,10 +31,12 @@ const th = {
   "home.mapPreviewDesc": "ซูม ลาก หรือแตะหมุดเพื่อดูรายละเอียดของแต่ละร้าน",
   "home.openMap": "เปิดแผนที่เต็มจอ",
 
-  "cafes.title": "คาเฟ่ในตัวเมืองพะเยา",
+  "cafes.title": "คาเฟ่ในเมืองพะเยา",
   "cafes.subtitle": "ค้นหาและกรองร้านที่ตรงกับอารมณ์วันนี้ของคุณ",
   "cafes.searchPlaceholder": "ค้นหาชื่อคาเฟ่ หรือถนน...",
   "cafes.tagsLabel": "หมวด",
+  "cafes.areaLabel": "พื้นที่",
+  "cafes.areaAll": "ทุกพื้นที่",
   "cafes.priceLabel": "ราคา",
   "cafes.priceAll": "ทุกช่วง",
   "cafes.priceBudget": "฿ ประหยัด",
@@ -59,6 +63,7 @@ const th = {
   "form.name": "ชื่อของคุณ",
   "form.namePh": "เช่น มินท์",
   "form.rating": "คะแนน",
+  "form.rateNStars": "ให้ {n} ดาว",
   "form.comment": "ความคิดเห็น",
   "form.commentPh": "กาแฟรสชาติเป็นอย่างไร บรรยากาศดีไหม...",
   "form.submit": "ส่งรีวิว",
@@ -71,7 +76,6 @@ const th = {
   "status.open": "เปิดอยู่",
   "status.closedNow": "ปิดแล้ว",
   "status.closedToday": "ปิดวันนี้",
-  "status.opensAt": "เปิด {t}",
   "day.0": "อาทิตย์",
   "day.1": "จันทร์",
   "day.2": "อังคาร",
@@ -80,20 +84,20 @@ const th = {
   "day.5": "ศุกร์",
   "day.6": "เสาร์",
 
-  "map.title": "แผนที่คาเฟ่ตัวเมืองพะเยา",
-  "map.subtitle": "หมุดทั้งหมดอยู่ในรัศมีเดินถึงกันได้ในย่านเมืองเก่าริมกว๊าน",
+  "map.title": "แผนที่คาเฟ่เมืองพะเยา",
+  "map.subtitle": "หมุดคาเฟ่ทั้งโซนริมกว๊าน–ในเมือง และโซนแม่กา ม.พะเยา · เลื่อนซูมเพื่อสำรวจ",
   "map.hint": "แตะหมุดเพื่อดูร้าน · ลากเพื่อเลื่อน · เลื่อนสเกลเพื่อซูม",
 
   "about.title": "เกี่ยวกับโครงการ",
   "about.p1":
-    "“เที่ยวไหนดี” (Thiao Nai Dee) เกิดจากคำถามง่าย ๆ ที่คนพะเยาและนักท่องเที่ยวถามกันทุกวัน เราจึงรวบรวมคาเฟ่ที่น่าสนใจในตัวเมืองพะเยามาไว้ที่เดียว พร้อมข้อมูลจริงทั้งเวลาเปิด-ปิด ช่วงราคา และจุดเด่นของแต่ละร้าน",
+    "“เที่ยวไหนดี” (Thiao Nai Dee) เกิดจากคำถามง่าย ๆ ที่คนพะเยาและนักท่องเที่ยวถามกันทุกวัน เราจึงรวบรวมคาเฟ่ที่น่าสนใจในเมืองพะเยามาไว้ที่เดียว พร้อมข้อมูลจริงทั้งเวลาเปิด-ปิด ช่วงราคา และจุดเด่นของแต่ละร้าน",
   "about.p2":
     "ข้อมูลคาเฟ่ทั้งหมดคัดมาจากแหล่งสาธารณะ เช่น Google Maps, Wongnai และรีวิวจากผู้ใช้ ณ เดือนสิงหาคม 2569 โปรดตรวจสอบเวลาเปิด-ปิดกับร้านโดยตรงอีกครั้งก่อนเดินทาง",
   "about.p3":
     "รูปภาพในเว็บไซต์เป็นภาพ placeholder ชั่วคราว รอเปลี่ยนเป็นภาพจริงจากร้านในภายหลัง หากคุณเป็นเจ้าของร้านและต้องการปรับข้อมูล ติดต่อทีมงานได้เลย",
   "about.stackTitle": "เทคโนโลยีที่ใช้",
 
-  "footer.tagline": "รวมคาเฟ่ดี ๆ ในตัวเมืองพะเยา — เที่ยวไหนดี ก็มีคำตอบ",
+  "footer.tagline": "รวมคาเฟ่ดี ๆ ในเมืองพะเยา — เที่ยวไหนดี ก็มีคำตอบ",
   "footer.note": "เว็บไซต์ตัวอย่างเพื่อการเรียนรู้ · ข้อมูลอาจเปลี่ยนแปลง",
 } as const;
 
@@ -107,12 +111,14 @@ const en: Record<DictKey, string> = {
   "nav.map": "Map",
   "nav.about": "About",
   "lang.switchTo": "ไทย",
+  "nav.main": "Main navigation",
+  "nav.menuToggle": "Toggle navigation menu",
 
   "home.badge": "Cafes in Phayao old town",
   "home.heroTitle1": "Where should we go today?",
   "home.heroTitle2": "Coffee by Kwan Phayao lake",
   "home.heroDesc":
-    "A curated guide to the best cafes in central Phayao — with locations, opening hours, recommended menus and visitor reviews to help you pick the right spot in a few clicks.",
+    "A curated guide to the best cafes across Phayao — with locations, opening hours, recommended menus and visitor reviews to help you pick the right spot in a few clicks.",
   "home.ctaExplore": "Explore cafes",
   "home.ctaMap": "View map",
   "home.stat1": "Curated cafes",
@@ -128,10 +134,12 @@ const en: Record<DictKey, string> = {
   "home.mapPreviewDesc": "Zoom, drag or tap a pin to see each cafe's details",
   "home.openMap": "Open full map",
 
-  "cafes.title": "Cafes in Phayao city centre",
+  "cafes.title": "Cafes in Phayao",
   "cafes.subtitle": "Search and filter for the cafe that fits your mood today",
   "cafes.searchPlaceholder": "Search by cafe name or street...",
   "cafes.tagsLabel": "Tags",
+  "cafes.areaLabel": "Area",
+  "cafes.areaAll": "All areas",
   "cafes.priceLabel": "Price",
   "cafes.priceAll": "Any",
   "cafes.priceBudget": "฿ Budget",
@@ -158,6 +166,7 @@ const en: Record<DictKey, string> = {
   "form.name": "Your name",
   "form.namePh": "e.g. Mint",
   "form.rating": "Rating",
+  "form.rateNStars": "Rate {n} stars",
   "form.comment": "Comment",
   "form.commentPh": "How was the coffee? How about the vibe...",
   "form.submit": "Submit review",
@@ -170,7 +179,6 @@ const en: Record<DictKey, string> = {
   "status.open": "Open now",
   "status.closedNow": "Closed now",
   "status.closedToday": "Closed today",
-  "status.opensAt": "Opens {t}",
   "day.0": "Sunday",
   "day.1": "Monday",
   "day.2": "Tuesday",
@@ -180,12 +188,12 @@ const en: Record<DictKey, string> = {
   "day.6": "Saturday",
 
   "map.title": "Phayao city cafe map",
-  "map.subtitle": "Every pin sits within walking distance around the old town and lakefront",
+  "map.subtitle": "Pins cover both the lakeside old town and the Mae Ka university area · zoom to explore",
   "map.hint": "Tap a pin for details · Drag to pan · Scroll to zoom",
 
   "about.title": "About this project",
   "about.p1":
-    "“Thiao Nai Dee” started from a simple question Phayao locals and travellers ask every day: where should we go? We gathered interesting cafes across Phayao's city centre into one place with real information — opening hours, price range and what makes each shop special.",
+    "“Thiao Nai Dee” started from a simple question Phayao locals and travellers ask every day: where should we go? We gathered interesting cafes across Phayao into one place with real information — opening hours, price range and what makes each shop special.",
   "about.p2":
     "All cafe data was compiled in August 2026 from public sources such as Google Maps, Wongnai and user reviews. Please double-check opening hours with the shop before travelling.",
   "about.p3":

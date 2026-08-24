@@ -16,7 +16,7 @@ export default function AboutView() {
       </div>
 
       <section className="mt-8">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-espresso/60">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-espresso/70">
           🛠️ {t("about.stackTitle")}
         </h2>
         <ul className="mt-3 flex flex-wrap gap-2">

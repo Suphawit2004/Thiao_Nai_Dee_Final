@@ -7,6 +7,15 @@ export interface LocalText {
 
 export type CafeTag = "work" | "chill" | "view" | "dessert";
 
+export type CafeArea = "lakeside" | "maeka-uni";
+
+export const AREA_META: Record<CafeArea, { label: LocalText; emoji: string }> = {
+  lakeside: { label: { th: "ริมกว๊าน–ในเมือง", en: "Lakeside & Old Town" }, emoji: "🌊" },
+  "maeka-uni": { label: { th: "แม่กา–ม.พะเยา", en: "Mae Ka & University of Phayao" }, emoji: "🎓" },
+};
+
+export const AREA_ORDER: CafeArea[] = ["lakeside", "maeka-uni"];
+
 export interface Cafe {
   slug: string;
   name: LocalText;
@@ -18,6 +27,7 @@ export interface Cafe {
   closedDays: number[];
   priceRange: 1 | 2;
   tags: CafeTag[];
+  area: CafeArea;
   lat: number;
   lng: number;
   photo?: string;
@@ -35,12 +45,15 @@ export const TAG_META: Record<CafeTag, { label: LocalText; emoji: string }> = {
 export const TAG_ORDER: CafeTag[] = ["work", "chill", "view", "dessert"];
 
 import enriched from "./cafes.enriched.json";
+import baseRegistry from "./cafes.base.json";
 
 interface EnrichedEntry {
   lat?: number;
   lng?: number;
   photo?: string;
 }
+
+const BASE = baseRegistry as Record<string, { lat: number; lng: number }>;
 
 const OVERRIDES = enriched as Record<string, EnrichedEntry>;
 
@@ -59,7 +72,7 @@ export function mapsUrl(cafe: Cafe): string {
   return `https://www.google.com/maps/search/?api=1&query=${cafe.lat},${cafe.lng}`;
 }
 
-const RAW_CAFES: Cafe[] = [
+const RAW_CAFES: Omit<Cafe, "lat" | "lng">[] = [
   {
     slug: "baan-baann",
     name: { th: "บ้านบานน์", en: "Baan Baann" },
@@ -76,8 +89,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [2],
     priceRange: 2,
     tags: ["chill", "work", "dessert"],
-    lat: 19.16355,
-    lng: 99.90065,
+    area: "lakeside",
     menuHighlights: [
       { th: "อเมริกาโน่เย็น เลือกเมล็ดได้", en: "Iced Americano with bean choice" },
       { th: "เบเกอรี่โฮมเมด", en: "Homemade bakery" },
@@ -97,8 +109,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
-    lat: 19.1710,
-    lng: 99.8885,
+    area: "lakeside",
     menuHighlights: [
       { th: "ลาเต้", en: "Latte" },
       { th: "ชีสเค้ก", en: "Cheesecake" },
@@ -118,8 +129,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
-    lat: 19.168294,
-    lng: 99.89889,
+    area: "lakeside",
     menuHighlights: [
       { th: "ลาเต้ร้อน", en: "Hot latte" },
       { th: "โฮมเมดโกโก้", en: "Homemade cocoa" },
@@ -139,8 +149,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["dessert", "chill"],
-    lat: 19.1655,
-    lng: 99.8950,
+    area: "lakeside",
     menuHighlights: [
       { th: "เค้กโฮมเมด", en: "Homemade cakes" },
       { th: "กาแฟดำโฮลซีล", en: "Black coffee" },
@@ -160,8 +169,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "chill"],
-    lat: 19.1680,
-    lng: 99.8960,
+    area: "lakeside",
     menuHighlights: [
       { th: "ไอศครีมโฮมเมด", en: "Homemade ice cream" },
       { th: "บราวนี่ + ไอศครีม", en: "Brownie with ice cream" },
@@ -182,8 +190,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["chill", "dessert"],
-    lat: 19.16860,
-    lng: 99.89920,
+    area: "lakeside",
     menuHighlights: [
       { th: "กาแฟโอเลี้ยง", en: "Oliang (Thai iced coffee)" },
       { th: "โรตี", en: "Roti" },
@@ -206,8 +213,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "work", "chill"],
-    lat: 19.1579,
-    lng: 99.9008,
+    area: "lakeside",
     menuHighlights: [
       { th: "คุกกี้เนยสด", en: "Butter cookies" },
       { th: "ลาเต้เย็น", en: "Iced latte" },
@@ -227,8 +233,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "work"],
-    lat: 19.1649,
-    lng: 99.8940,
+    area: "lakeside",
     menuHighlights: [
       { th: "บราวนี่ซอฟคุกกี้", en: "Brownie soft cookie" },
       { th: "ชานมไข่มุก", en: "Bubble milk tea" },
@@ -248,8 +253,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
-    lat: 19.1697566,
-    lng: 99.895029,
+    area: "lakeside",
     menuHighlights: [
       { th: "กาแฟริมน้ำ", en: "Coffee by the water" },
       { th: "อาหารจานเดียว", en: "Single-dish meals" },
@@ -270,8 +274,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
-    lat: 19.1609654,
-    lng: 99.9136072,
+    area: "lakeside",
     menuHighlights: [
       { th: "ค็อกเทล/กาแฟ", en: "Cocktails & coffee" },
       { th: "อาหารเหนือ", en: "Northern Thai dishes" },
@@ -291,8 +294,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["chill", "work"],
-    lat: 19.1665,
-    lng: 99.9170,
+    area: "lakeside",
     menuHighlights: [
       { th: "กาแฟโบราณ", en: "Traditional Thai coffee" },
       { th: "ชานม", en: "Milk tea" },
@@ -313,8 +315,7 @@ const RAW_CAFES: Cafe[] = [
     closedDays: [3],
     priceRange: 2,
     tags: ["work", "chill"],
-    lat: 19.0463675,
-    lng: 99.9267633,
+    area: "maeka-uni",
     menuHighlights: [
       { th: "กาแฟสด", en: "Specialty coffee" },
       { th: "อาหารจานเดียว", en: "Single-dish meals" },
@@ -323,4 +324,12 @@ const RAW_CAFES: Cafe[] = [
   },
 ];
 
-export const CAFES: Cafe[] = RAW_CAFES.map(applyOverrides);
+function withBaseCoords(cafe: Omit<Cafe, "lat" | "lng">): Cafe {
+  const base = BASE[cafe.slug];
+  if (!base) {
+    throw new Error(`cafes.base.json is missing an entry for slug "${cafe.slug}"`);
+  }
+  return { ...cafe, lat: base.lat, lng: base.lng };
+}
+
+export const CAFES: Cafe[] = RAW_CAFES.map(withBaseCoords).map(applyOverrides);

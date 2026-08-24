@@ -6,6 +6,7 @@ import { mapsUrl } from "@/data/cafes";
 import { DAY_KEYS } from "@/i18n/dictionaries";
 import { useLang } from "@/i18n/LangProvider";
 import CafeThumb from "./CafeThumb";
+import AreaChip from "./AreaChip";
 import OpenBadge from "./OpenBadge";
 import RatingStars from "./RatingStars";
 import TagChip from "./TagChip";
@@ -45,6 +46,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
             </div>
             <p className="mt-3 leading-relaxed text-espresso/75">{tr(cafe.description)}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
+              <AreaChip area={cafe.area} />
               {cafe.tags.map((tag) => (
                 <TagChip key={tag} tag={tag} />
               ))}
@@ -85,14 +87,14 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
                   href={`tel:${cafe.phone.replace(/\s/g, "")}`}
                   className="rounded-full border border-latte px-5 py-2.5 text-sm font-semibold text-coffee transition hover:bg-latte/20"
                 >
-                  📞 {cafe.phone}
+                  📞 {t("detail.call")} {cafe.phone}
                 </a>
               )}
             </div>
           </dl>
 
           <div className="rounded-2xl border border-[#eee3d2] bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-espresso/60">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-espresso/70">
               ⭐ {t("detail.menu")}
             </h2>
             <ul className="mt-3 flex flex-wrap gap-2">

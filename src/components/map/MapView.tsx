@@ -1,6 +1,5 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -11,14 +10,21 @@ import CafeThumb from "../CafeThumb";
 
 const COLORS = ["#7c5a43", "#5c7457", "#a06a3f", "#3f6c72", "#8a5a44", "#6b4f6e"];
 
-function makeIcon(color: string) {
-  return L.divIcon({
-    className: "coffee-marker",
-    html: `<div class="pin-wrap" style="--pin:${color}"><div class="pin-head"><span>☕</span></div><div class="pin-tail"></div></div>`,
-    iconSize: [32, 44],
-    iconAnchor: [16, 44],
-    popupAnchor: [0, -42],
-  });
+const iconCache = new Map<string, L.DivIcon>();
+
+function makeIcon(color: string): L.DivIcon {
+  let icon = iconCache.get(color);
+  if (!icon) {
+    icon = L.divIcon({
+      className: "coffee-marker",
+      html: `<div class="pin-wrap" style="--pin:${color}"><div class="pin-head"><span>☕</span></div><div class="pin-tail"></div></div>`,
+      iconSize: [32, 44],
+      iconAnchor: [16, 44],
+      popupAnchor: [0, -42],
+    });
+    iconCache.set(color, icon);
+  }
+  return icon;
 }
 
 function FitBounds({ cafes }: { cafes: Cafe[] }) {
@@ -76,7 +82,7 @@ export default function MapView({ cafes, className }: MapViewProps) {
                 </span>
               </div>
               <p className="text-sm font-bold text-espresso">{tr(cafe.name)}</p>
-              <p className="mt-0.5 text-xs text-espresso/60">{tr(cafe.address)}</p>
+              <p className="mt-0.5 text-xs text-espresso/70">{tr(cafe.address)}</p>
               <div className="mt-2 flex gap-2 text-xs font-semibold">
                 <Link href={`/cafes/${cafe.slug}`} className="text-[#7c5a43] underline-offset-2 hover:underline">
                   {t("nav.cafes")} →

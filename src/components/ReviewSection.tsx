@@ -3,19 +3,21 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { getSupabase, type ReviewRow } from "@/lib/supabase";
 import { useLang } from "@/i18n/LangProvider";
+import { submitReview } from "@/app/actions/reviews";
 import RatingStars from "./RatingStars";
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const { t } = useLang();
   return (
-    <div className="flex gap-0.5 text-2xl leading-none" role="radiogroup" aria-label="Rating">
+    <div className="flex gap-0.5 text-2xl leading-none" role="group" aria-label={t("form.rating")}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
           type="button"
-          role="radio"
-          aria-checked={value === n}
+          aria-pressed={value === n}
+          aria-label={t("form.rateNStars").replaceAll("{n}", String(n))}
           onClick={() => onChange(n)}
-          className={`transition hover:scale-110 ${n <= value ? "text-latte" : "text-[#d9cdb8]"}`}
+          className={`transition hover:scale-110 ${n <= value ? "text-latte" : "text-[#a08a66]"}`}
         >
           ★
         </button>
@@ -66,35 +68,21 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
     if (!name.trim()) return;
     setSending(true);
     setNotice(null);
-    const sb = getSupabase();
-    if (!sb) {
-      setSending(false);
-      setNotice({ ok: false, text: t("form.error") });
-      return;
-    }
-    const { data, error } = await sb
-      .from("reviews")
-      .insert({
-        cafe_slug: slug,
-        author_name: name.trim(),
-        rating,
-        comment: comment.trim() || null,
-      })
-      .select()
-      .single();
+    const res = await submitReview({ slug, name, rating, comment });
     setSending(false);
-    if (error || !data) {
-      setNotice({ ok: false, text: error?.message ?? t("form.error") });
+    if (!res.ok || !res.data) {
+      setNotice({ ok: false, text: res.error ?? t("form.error") });
       return;
     }
-    setReviews((prev) => [data as ReviewRow, ...prev]);
+    setReviews((prev) => [res.data as ReviewRow, ...prev]);
     setComment("");
     setNotice({ ok: true, text: t("form.success") });
   }
 
+  const BASE_WEIGHT = 10;
   const avg =
     reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      ? (baseRating * BASE_WEIGHT + reviews.reduce((sum, r) => sum + r.rating, 0)) / (BASE_WEIGHT + reviews.length)
       : baseRating;
 
   const locale = lang === "th" ? "th-TH" : "en-GB";
@@ -106,13 +94,13 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
         <span className="flex items-center gap-2">
           <RatingStars value={avg} size="md" />
           <strong className="text-sm text-coffee">{avg.toFixed(1)}</strong>
-          <span className="text-xs font-medium text-espresso/50">
-            {t("reviews.count").replace("{n}", String(reviews.length))}
+          <span className="text-xs font-medium text-espresso/70">
+            {t("reviews.count").replaceAll("{n}", String(reviews.length))}
           </span>
         </span>
       </div>
       {reviews.length === 0 && !loading && (
-        <p className="mt-1 text-xs text-espresso/40">{t("reviews.baseNote")}</p>
+        <p className="mt-1 text-xs text-espresso/70">{t("reviews.baseNote")}</p>
       )}
 
       {!configured && (
@@ -124,7 +112,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
       <form onSubmit={handleSubmit} className="mt-5 rounded-xl bg-cream p-4">
         <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-espresso/60">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-espresso/70">
               {t("form.name")}
             </span>
             <input
@@ -137,7 +125,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-espresso/60">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-espresso/70">
               {t("form.rating")}
             </span>
             <StarPicker value={rating} onChange={setRating} />
@@ -176,9 +164,9 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
       </form>
 
       <ul className="mt-5 space-y-3">
-        {loading && <li className="text-sm text-espresso/40">…</li>}
+        {loading && <li className="text-sm text-espresso/70">…</li>}
         {!loading && reviews.length === 0 && (
-          <li className="rounded-xl border border-dashed border-[#e0d3ba] px-4 py-6 text-center text-sm text-espresso/50">
+          <li className="rounded-xl border border-dashed border-[#e0d3ba] px-4 py-6 text-center text-sm text-espresso/70">
             {t("reviews.none")}
           </li>
         )}
@@ -188,7 +176,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
               <span className="text-sm font-bold text-espresso">{r.author_name}</span>
               <span className="flex items-center gap-2">
                 <RatingStars value={r.rating} />
-                <time className="text-xs text-espresso/40">
+                <time className="text-xs text-espresso/70">
                   {new Date(r.created_at).toLocaleDateString(locale, {
                     year: "numeric",
                     month: "short",

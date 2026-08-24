@@ -6,7 +6,7 @@ import type { Cafe } from "@/data/cafes";
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
   loading: () => (
-    <div className="grid h-full w-full place-items-center rounded-xl bg-sand text-sm font-medium text-espresso/50">
+    <div className="grid h-full w-full place-items-center rounded-xl bg-sand text-sm font-medium text-espresso/70">
       ⏳ Loading map…
     </div>
   ),
