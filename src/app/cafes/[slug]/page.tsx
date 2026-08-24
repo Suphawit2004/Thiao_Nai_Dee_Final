@@ -10,6 +10,8 @@ export function generateStaticParams() {
   return CAFES.map((cafe) => ({ slug: cafe.slug }));
 }
 
+export const dynamicParams = false;
+
 const SCHEMA_DAYS = [
   "Sunday",
   "Monday",
