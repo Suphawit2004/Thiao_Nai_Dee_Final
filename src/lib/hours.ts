@@ -28,22 +28,31 @@ export function getOpenStatus(cafe: Cafe, dateObj: Date = new Date()): OpenStatu
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const dayIndex = days.indexOf(dayStr);
-
-  if (cafe.closedDays.includes(dayIndex)) {
-    return { isOpenToday: false, isOpenNow: false };
-  }
+  const prevDayIndex = (dayIndex + 6) % 7;
 
   const cur = h * 60 + m;
   const start = minutesOf(cafe.openTime);
   const end = minutesOf(cafe.closeTime);
 
-  let isOpenNow = false;
-  if (end > start) {
-    isOpenNow = cur >= start && cur < end;
-  } else {
-    // Crosses midnight (e.g. 20:00 to 02:00)
-    isOpenNow = cur >= start || cur < end;
+  const closedToday = cafe.closedDays.includes(dayIndex);
+  const closedYesterday = cafe.closedDays.includes(prevDayIndex);
+
+  // Equal open/close times are treated as open around the clock
+  if (!closedToday && start === end) {
+    return { isOpenToday: true, isOpenNow: true };
   }
 
-  return { isOpenToday: true, isOpenNow };
+  const crossesMidnight = end < start;
+
+  let isOpenNow = false;
+  // Overnight session spilling over from yesterday (e.g. yesterday 20:00 -> today 02:00)
+  if (crossesMidnight && !closedYesterday && cur < end) {
+    isOpenNow = true;
+  }
+  // Today's own session
+  if (!closedToday && (crossesMidnight ? cur >= start : cur >= start && cur < end)) {
+    isOpenNow = true;
+  }
+
+  return { isOpenToday: !closedToday, isOpenNow };
 }
