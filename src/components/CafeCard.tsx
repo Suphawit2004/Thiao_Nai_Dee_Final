@@ -3,44 +3,26 @@
 import Link from "next/link";
 import type { Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
+import CafeThumb from "./CafeThumb";
 import RatingStars from "./RatingStars";
 import OpenBadge from "./OpenBadge";
 import TagChip from "./TagChip";
 
-const THUMBS: Array<[string, string]> = [
-  ["#7c5a43", "#b98a5e"],
-  ["#5c7457", "#93a97b"],
-  ["#a06a3f", "#d9b382"],
-  ["#6b4f6e", "#b48ead"],
-  ["#3f6c72", "#83b0b5"],
-  ["#8a5a44", "#c98d63"],
-];
-
-function thumbFor(slug: string): [string, string] {
-  let hash = 0;
-  for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) % 997;
-  return THUMBS[hash % THUMBS.length];
-}
-
 export default function CafeCard({ cafe }: { cafe: Cafe }) {
   const { tr } = useLang();
-  const [from, to] = thumbFor(cafe.slug);
 
   return (
     <Link
       href={`/cafes/${cafe.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-[#eee3d2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div
-        className="relative flex h-40 items-center justify-center"
-        style={{
-          background: `radial-gradient(circle at 22% 28%, rgb(255 255 255 / 0.18), transparent 42%), linear-gradient(135deg, ${from}, ${to})`,
-        }}
-      >
-        <span className="text-5xl drop-shadow-lg transition group-hover:scale-110" aria-hidden>
-          ☕
-        </span>
-        <span className="absolute bottom-2 left-3 text-sm font-bold text-white/90 drop-shadow">
+      <div className="relative flex h-40 items-center justify-center overflow-hidden">
+        <CafeThumb
+          cafe={cafe}
+          emojiClassName="text-5xl drop-shadow-lg transition group-hover:scale-110"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+        <span className="pointer-events-none absolute bottom-2 left-3 text-sm font-bold text-white/90 drop-shadow">
           {tr(cafe.name)}
         </span>
         <span className="absolute right-3 top-3 rounded-full bg-white/85 px-2 py-0.5 text-xs font-bold text-espresso">

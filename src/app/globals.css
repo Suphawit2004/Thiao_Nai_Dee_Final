@@ -22,23 +22,40 @@ body {
   border: none;
 }
 
-.marker-pin {
-  width: 34px;
-  height: 34px;
+.pin-wrap {
+  position: relative;
+  width: 32px;
+  height: 44px;
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.35));
+}
+
+.pin-head {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
   background: var(--pin, #7c5a43);
   border: 2px solid #fff;
-  box-shadow: 0 3px 8px rgb(0 0 0 / 0.35);
+  border-radius: 9999px;
 }
 
-.marker-pin span {
-  transform: rotate(45deg);
-  font-size: 14px;
+.pin-head span {
+  font-size: 15px;
   line-height: 1;
+}
+
+.pin-tail {
+  position: absolute;
+  left: 50%;
+  top: 29px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 15px solid var(--pin, #7c5a43);
 }
 
 .leaflet-container {

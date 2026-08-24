@@ -20,6 +20,7 @@ export interface Cafe {
   tags: CafeTag[];
   lat: number;
   lng: number;
+  photo?: string;
   menuHighlights: LocalText[];
   baseRating: number;
 }
@@ -33,11 +34,32 @@ export const TAG_META: Record<CafeTag, { label: LocalText; emoji: string }> = {
 
 export const TAG_ORDER: CafeTag[] = ["work", "chill", "view", "dessert"];
 
+import enriched from "./cafes.enriched.json";
+
+interface EnrichedEntry {
+  lat?: number;
+  lng?: number;
+  photo?: string;
+}
+
+const OVERRIDES = enriched as Record<string, EnrichedEntry>;
+
+function applyOverrides(cafe: Cafe): Cafe {
+  const o = OVERRIDES[cafe.slug];
+  if (!o) return cafe;
+  return {
+    ...cafe,
+    ...(o.lat !== undefined && { lat: o.lat }),
+    ...(o.lng !== undefined && { lng: o.lng }),
+    ...(o.photo !== undefined && { photo: o.photo }),
+  };
+}
+
 export function mapsUrl(cafe: Cafe): string {
   return `https://www.google.com/maps/search/?api=1&query=${cafe.lat},${cafe.lng}`;
 }
 
-export const CAFES: Cafe[] = [
+const RAW_CAFES: Cafe[] = [
   {
     slug: "baan-baann",
     name: { th: "บ้านบานน์", en: "Baan Baann" },
@@ -54,8 +76,8 @@ export const CAFES: Cafe[] = [
     closedDays: [2],
     priceRange: 2,
     tags: ["chill", "work", "dessert"],
-    lat: 19.1712,
-    lng: 99.8898,
+    lat: 19.16355,
+    lng: 99.90065,
     menuHighlights: [
       { th: "อเมริกาโน่เย็น เลือกเมล็ดได้", en: "Iced Americano with bean choice" },
       { th: "เบเกอรี่โฮมเมด", en: "Homemade bakery" },
@@ -75,8 +97,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
-    lat: 19.1708,
-    lng: 99.8883,
+    lat: 19.1710,
+    lng: 99.8885,
     menuHighlights: [
       { th: "ลาเต้", en: "Latte" },
       { th: "ชีสเค้ก", en: "Cheesecake" },
@@ -96,8 +118,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["work", "chill"],
-    lat: 19.1668,
-    lng: 99.8928,
+    lat: 19.168294,
+    lng: 99.89889,
     menuHighlights: [
       { th: "ลาเต้ร้อน", en: "Hot latte" },
       { th: "โฮมเมดโกโก้", en: "Homemade cocoa" },
@@ -117,8 +139,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["dessert", "chill"],
-    lat: 19.1663,
-    lng: 99.8922,
+    lat: 19.1655,
+    lng: 99.8950,
     menuHighlights: [
       { th: "เค้กโฮมเมด", en: "Homemade cakes" },
       { th: "กาแฟดำโฮลซีล", en: "Black coffee" },
@@ -138,8 +160,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "chill"],
-    lat: 19.1688,
-    lng: 99.8912,
+    lat: 19.1680,
+    lng: 99.8960,
     menuHighlights: [
       { th: "ไอศครีมโฮมเมด", en: "Homemade ice cream" },
       { th: "บราวนี่ + ไอศครีม", en: "Brownie with ice cream" },
@@ -160,8 +182,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["chill", "dessert"],
-    lat: 19.1652,
-    lng: 99.8941,
+    lat: 19.16860,
+    lng: 99.89920,
     menuHighlights: [
       { th: "กาแฟโอเลี้ยง", en: "Oliang (Thai iced coffee)" },
       { th: "โรตี", en: "Roti" },
@@ -205,8 +227,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["dessert", "work"],
-    lat: 19.1647,
-    lng: 99.8937,
+    lat: 19.1649,
+    lng: 99.8940,
     menuHighlights: [
       { th: "บราวนี่ซอฟคุกกี้", en: "Brownie soft cookie" },
       { th: "ชานมไข่มุก", en: "Bubble milk tea" },
@@ -226,8 +248,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
-    lat: 19.1727,
-    lng: 99.8868,
+    lat: 19.1697566,
+    lng: 99.895029,
     menuHighlights: [
       { th: "กาแฟริมน้ำ", en: "Coffee by the water" },
       { th: "อาหารจานเดียว", en: "Single-dish meals" },
@@ -248,8 +270,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 2,
     tags: ["view", "chill"],
-    lat: 19.1738,
-    lng: 99.8888,
+    lat: 19.1609654,
+    lng: 99.9136072,
     menuHighlights: [
       { th: "ค็อกเทล/กาแฟ", en: "Cocktails & coffee" },
       { th: "อาหารเหนือ", en: "Northern Thai dishes" },
@@ -269,8 +291,8 @@ export const CAFES: Cafe[] = [
     closedDays: [],
     priceRange: 1,
     tags: ["chill", "work"],
-    lat: 19.1691,
-    lng: 99.8956,
+    lat: 19.1665,
+    lng: 99.9170,
     menuHighlights: [
       { th: "กาแฟโบราณ", en: "Traditional Thai coffee" },
       { th: "ชานม", en: "Milk tea" },
@@ -291,8 +313,8 @@ export const CAFES: Cafe[] = [
     closedDays: [3],
     priceRange: 2,
     tags: ["work", "chill"],
-    lat: 19.252,
-    lng: 99.872,
+    lat: 19.0463675,
+    lng: 99.9267633,
     menuHighlights: [
       { th: "กาแฟสด", en: "Specialty coffee" },
       { th: "อาหารจานเดียว", en: "Single-dish meals" },
@@ -300,3 +322,5 @@ export const CAFES: Cafe[] = [
     baseRating: 4.6,
   },
 ];
+
+export const CAFES: Cafe[] = RAW_CAFES.map(applyOverrides);

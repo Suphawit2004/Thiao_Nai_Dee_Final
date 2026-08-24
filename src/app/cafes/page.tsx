@@ -1,12 +1,12 @@
-import { Suspense } from "react";
 import CafesExplorer from "@/components/CafesExplorer";
+import { TAG_ORDER, type CafeTag } from "@/data/cafes";
+
 
 export const metadata = { title: "คาเฟ่ทั้งหมด" };
 
-export default function CafesPage() {
-  return (
-    <Suspense fallback={<div className="mx-auto max-w-6xl px-4 py-10 text-espresso/50">…</div>}>
-      <CafesExplorer />
-    </Suspense>
-  );
+export default async function CafesPage({ searchParams }: PageProps<"/cafes">) {
+  const params = await searchParams;
+  const raw = typeof params.tag === "string" ? params.tag : "";
+  const valid = TAG_ORDER.includes(raw as CafeTag) ? (raw as CafeTag) : null;
+  return <CafesExplorer initialTag={valid} />;
 }
