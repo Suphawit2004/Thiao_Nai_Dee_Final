@@ -1,1 +1,22 @@
-{}
+{
+  "lakeland-cafe": {
+    "lat": 19.16388,
+    "lng": 99.89949
+  },
+  "at-home-cafe": {
+    "lat": 19.17218,
+    "lng": 99.89757
+  },
+  "bestpart-cafe": {
+    "lat": 19.1973,
+    "lng": 99.8873
+  },
+  "scene-cafe": {
+    "lat": 19.17495,
+    "lng": 99.89371
+  },
+  "norbulingka-coffee": {
+    "lat": 19.1962,
+    "lng": 99.8889
+  }
+}
