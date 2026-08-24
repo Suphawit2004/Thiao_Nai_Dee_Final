@@ -2,74 +2,51 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CAFES, type CafeArea, type CafeTag, type LifeStyleTag } from "@/data/cafes";
+import { CAFES } from "@/data/cafes";
 import { getOpenStatus } from "@/lib/hours";
+import { fuzzyMatch } from "@/lib/fuzzy";
 import { useLang } from "@/i18n/LangProvider";
+import { useSearch } from "./SearchProvider";
 import { filterByMaxDistance, getCafesBetweenAreas, MAX_DISTANCE_KM } from "@/lib/cafes-between";
 import CafeCard from "./CafeCard";
+import FilterBar from "./FilterBar";
 import { useNowTick } from "./OpenBadge";
-import SearchFilter, { INITIAL_FILTERS, type FilterState } from "./SearchFilter";
 
-export interface InitialFilters {
-  query?: string;
-  tags?: CafeTag[];
-  life?: LifeStyleTag[];
-  area?: CafeArea | null;
-  maxPrice?: 0 | 1 | 2;
-  openNow?: boolean;
-  transitionZone?: boolean;
-}
-
-const PATHNAME = "/cafes";
-
-function filtersToQuery(f: FilterState): string {
-  const params = new URLSearchParams();
-  const q = f.query.trim();
-  if (q) params.set("q", q);
-  if (f.tags.length > 0) params.set("tag", f.tags.join(","));
-  if (f.life.length > 0) params.set("life", f.life.join(","));
-  if (f.area) params.set("area", f.area);
-  if (f.maxPrice !== 0) params.set("price", String(f.maxPrice));
-  if (f.openNow) params.set("open", "1");
-  if (f.transitionZone) params.set("zone", "1");
-  return params.toString();
-}
-
-export default function CafesExplorer({ initialFilters = {} }: { initialFilters?: InitialFilters }) {
+export default function CafesExplorer() {
   const { t, tr, lang } = useLang();
+  const { filters, reset } = useSearch();
   const nowTick = useNowTick();
-
-  const [filters, setFilters] = useState<FilterState>(() => ({
-    ...INITIAL_FILTERS,
-    query: initialFilters.query ?? "",
-    tags: initialFilters.tags ?? [],
-    life: initialFilters.life ?? [],
-    area: initialFilters.area ?? null,
-    maxPrice: initialFilters.maxPrice ?? 0,
-    openNow: initialFilters.openNow ?? false,
-    transitionZone: initialFilters.transitionZone ?? false,
-  }));
 
   // Debounce the search text so typing doesn't re-filter on every keystroke
   const debouncedQuery = useDebouncedValue(filters.query, 300);
 
-  // Keep the URL in sync so filtered views can be shared (no navigation)
-  useEffect(() => {
-    const qs = filtersToQuery(filters);
-    const url = qs ? `${PATHNAME}?${qs}` : PATHNAME;
-    window.history.replaceState(null, "", url);
-  }, [filters]);
-
   const results = useMemo(() => {
-    const q = debouncedQuery.trim().toLowerCase();
+    const q = debouncedQuery.trim();
+    const ql = q.toLowerCase();
     const locale = lang === "th" ? "th" : "en";
-    let filtered = CAFES.filter((cafe) => {
-      if (q) {
-        const haystack =
-          `${cafe.name.th} ${cafe.name.en} ${cafe.address.th} ${cafe.address.en} ` +
-          `${cafe.tags.join(" ")} ${cafe.lifestyleTags.join(" ")}`.toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
+
+    // Score every cafe against the query: name matches (fuzzy) weigh most,
+    // address / tag hits act as weaker secondary signals. No query = show all.
+    let scored = CAFES.map((cafe) => {
+      if (!q) return { cafe, score: 1 };
+
+      const nameScore = Math.max(
+        fuzzyMatch(cafe.name.th, q) ?? -1,
+        fuzzyMatch(cafe.name.en, q) ?? -1
+      );
+      const addressScore = `${cafe.address.th} ${cafe.address.en}`
+        .toLowerCase()
+        .includes(ql)
+        ? 40
+        : -1;
+      const tagScore = [...cafe.tags, ...cafe.lifestyleTags].join(" ").toLowerCase().includes(ql)
+        ? 40
+        : -1;
+
+      return { cafe, score: Math.max(nameScore, addressScore, tagScore) };
+    }).filter((x) => x.score > 0);
+
+    scored = scored.filter(({ cafe }) => {
       if (filters.tags.length > 0 && !filters.tags.some((tg) => cafe.tags.includes(tg))) {
         return false;
       }
@@ -91,15 +68,34 @@ export default function CafesExplorer({ initialFilters = {} }: { initialFilters?
     });
 
     if (filters.transitionZone) {
-      const distances = getCafesBetweenAreas(filtered);
-      filtered = filterByMaxDistance(distances, MAX_DISTANCE_KM).map((d) => d.cafe);
+      const distances = getCafesBetweenAreas(scored.map((x) => x.cafe));
+      const keep = new Set(
+        filterByMaxDistance(distances, MAX_DISTANCE_KM).map((d) => d.cafe.slug)
+      );
+      scored = scored.filter((x) => keep.has(x.cafe.slug));
     }
 
-    return filtered.sort(
-      (a, b) => b.baseRating - a.baseRating || tr(a.name).localeCompare(tr(b.name), locale)
-    );
-  }, [debouncedQuery, filters, tr, lang, nowTick]);
-
+    // Most relevant match first, then rating, then name
+    return scored
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          b.cafe.baseRating - a.cafe.baseRating ||
+          tr(a.cafe.name).localeCompare(tr(b.cafe.name), locale)
+      )
+      .map((x) => x.cafe);
+  }, [
+    debouncedQuery,
+    filters.tags,
+    filters.life,
+    filters.area,
+    filters.maxPrice,
+    filters.openNow,
+    filters.transitionZone,
+    nowTick,
+    tr,
+    lang,
+  ]);
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <header className="mb-6">
@@ -107,13 +103,9 @@ export default function CafesExplorer({ initialFilters = {} }: { initialFilters?
         <p className="mt-1 text-espresso/60">{t("cafes.subtitle")}</p>
       </header>
 
-      <SearchFilter
-        state={filters}
-        onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
-        onReset={() => setFilters(INITIAL_FILTERS)}
-      />
+      <FilterBar className="mb-3" />
 
-      <p className="mt-5 text-sm font-semibold text-espresso/70" aria-live="polite">
+      <p className="text-sm font-semibold text-espresso/70" aria-live="polite">
         {t("cafes.found").replaceAll("{n}", String(results.length))}
       </p>
 
@@ -123,7 +115,7 @@ export default function CafesExplorer({ initialFilters = {} }: { initialFilters?
           <p className="mt-1 text-sm text-espresso/70">{t("cafes.emptyHint")}</p>
           <button
             type="button"
-            onClick={() => setFilters(INITIAL_FILTERS)}
+            onClick={reset}
             className="mt-5 rounded-full bg-coffee px-6 py-2.5 text-sm font-semibold text-cream transition hover:bg-[#684a37]"
           >
             {t("cafes.reset")}

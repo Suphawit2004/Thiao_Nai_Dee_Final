@@ -44,11 +44,16 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       // One-time merge of guest favourites into the database after login.
       const local = readLocalFavs();
       if (local.length > 0) {
-        await supabase.from("favorites").upsert(
+        const { error } = await supabase.from("favorites").upsert(
           local.map((cafe_slug) => ({ user_id: nextUser.id, cafe_slug })),
           { onConflict: "user_id,cafe_slug", ignoreDuplicates: true }
         );
-        writeLocalFavs([]);
+        if (error) {
+          // Keep the guest list intact — it will be retried on next login.
+          console.error("favorites merge failed:", error);
+        } else {
+          writeLocalFavs([]);
+        }
       }
 
       const { data } = await supabase

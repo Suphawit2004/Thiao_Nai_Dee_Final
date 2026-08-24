@@ -4,6 +4,7 @@ import "./globals.css";
 import { LangProvider } from "@/i18n/LangProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
+import { SearchProvider } from "@/components/SearchProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -39,9 +40,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <LangProvider>
           <AuthProvider>
             <FavoritesProvider>
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
+              <SearchProvider>
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </SearchProvider>
             </FavoritesProvider>
           </AuthProvider>
         </LangProvider>

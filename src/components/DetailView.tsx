@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import type { Cafe } from "@/data/cafes";
 import { mapsUrl } from "@/data/cafes";
@@ -13,9 +14,11 @@ import TagChip from "./TagChip";
 import ReviewSection from "./ReviewSection";
 import MapBlock from "./map/MapBlock";
 import FavoriteButton from "./FavoriteButton";
+import ReportDialog from "./ReportDialog";
 
 export default function DetailView({ cafe }: { cafe: Cafe }) {
   const { t, tr } = useLang();
+  const [reportOpen, setReportOpen] = useState(false);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -95,6 +98,14 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
             </div>
           </dl>
 
+          <button
+            type="button"
+            onClick={() => setReportOpen(true)}
+            className="self-start text-xs font-semibold text-espresso/50 underline underline-offset-2 transition hover:text-coffee"
+          >
+            ⚠️ {t("report.open")}
+          </button>
+
           <div className="rounded-2xl border border-[#eee3d2] bg-white p-5 shadow-sm">
             <h2 className="text-sm font-bold uppercase tracking-wide text-espresso/70">
               ⭐ {t("detail.menu")}
@@ -121,6 +132,8 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
       <div className="mt-8">
         <ReviewSection key={cafe.slug} slug={cafe.slug} baseRating={cafe.baseRating} />
       </div>
+
+      <ReportDialog slug={cafe.slug} open={reportOpen} onClose={() => setReportOpen(false)} />
     </div>
   );
 }
