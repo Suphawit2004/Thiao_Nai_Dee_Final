@@ -20,6 +20,7 @@ export interface Cafe {
   tags: CafeTag[];
   lat: number;
   lng: number;
+  photo?: string;
   menuHighlights: LocalText[];
   baseRating: number;
 }
@@ -33,11 +34,32 @@ export const TAG_META: Record<CafeTag, { label: LocalText; emoji: string }> = {
 
 export const TAG_ORDER: CafeTag[] = ["work", "chill", "view", "dessert"];
 
+import enriched from "./cafes.enriched.json";
+
+interface EnrichedEntry {
+  lat?: number;
+  lng?: number;
+  photo?: string;
+}
+
+const OVERRIDES = enriched as Record<string, EnrichedEntry>;
+
+function applyOverrides(cafe: Cafe): Cafe {
+  const o = OVERRIDES[cafe.slug];
+  if (!o) return cafe;
+  return {
+    ...cafe,
+    ...(o.lat !== undefined && { lat: o.lat }),
+    ...(o.lng !== undefined && { lng: o.lng }),
+    ...(o.photo !== undefined && { photo: o.photo }),
+  };
+}
+
 export function mapsUrl(cafe: Cafe): string {
   return `https://www.google.com/maps/search/?api=1&query=${cafe.lat},${cafe.lng}`;
 }
 
-export const CAFES: Cafe[] = [
+const RAW_CAFES: Cafe[] = [
   {
     slug: "baan-baann",
     name: { th: "บ้านบานน์", en: "Baan Baann" },
@@ -300,3 +322,5 @@ export const CAFES: Cafe[] = [
     baseRating: 4.6,
   },
 ];
+
+export const CAFES: Cafe[] = RAW_CAFES.map(applyOverrides);

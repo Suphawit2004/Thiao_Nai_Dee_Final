@@ -1,23 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CAFES, TAG_ORDER, type CafeTag } from "@/data/cafes";
+import { CAFES, type CafeTag } from "@/data/cafes";
 import { getOpenStatus } from "@/lib/hours";
 import { useLang } from "@/i18n/LangProvider";
 import CafeCard from "./CafeCard";
 import SearchFilter, { INITIAL_FILTERS, type FilterState } from "./SearchFilter";
 
-export default function CafesExplorer() {
-  const { t, tr } = useLang();
-  const searchParams = useSearchParams();
+interface CafesExplorerProps {
+  initialTag?: CafeTag | null;
+}
 
-  const [filters, setFilters] = useState<FilterState>(() => {
-    const tagParam = searchParams.get("tag");
-    const valid = TAG_ORDER.includes(tagParam as CafeTag) ? (tagParam as CafeTag) : null;
-    return { ...INITIAL_FILTERS, tags: valid ? [valid] : [] };
-  });
+export default function CafesExplorer({ initialTag = null }: CafesExplorerProps) {
+  const { t, tr } = useLang();
+
+  const [filters, setFilters] = useState<FilterState>(() => ({
+    ...INITIAL_FILTERS,
+    tags: initialTag ? [initialTag] : [],
+  }));
 
   const results = useMemo(() => {
     const q = filters.query.trim().toLowerCase();

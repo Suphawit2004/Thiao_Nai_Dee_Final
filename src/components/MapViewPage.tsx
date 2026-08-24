@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { CAFES } from "@/data/cafes";
-import { gradientFor } from "@/lib/thumbs";
 import { useLang } from "@/i18n/LangProvider";
+import CafeThumb from "./CafeThumb";
 import RatingStars from "./RatingStars";
 import MapBlock from "./map/MapBlock";
 
@@ -29,11 +29,10 @@ export default function MapViewPage() {
               className="min-w-56 shrink-0 overflow-hidden rounded-xl border border-[#eee3d2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div
-                className="flex h-20 items-center justify-center text-3xl"
-                style={{ background: gradientFor(cafe.slug) }}
+                className="relative flex h-20 items-center justify-center overflow-hidden"
                 aria-hidden
               >
-                ☕
+                <CafeThumb cafe={cafe} emojiClassName="text-3xl" sizes="224px" />
               </div>
               <div className="p-4">
                 <p className="font-semibold text-espresso">{tr(cafe.name)}</p>

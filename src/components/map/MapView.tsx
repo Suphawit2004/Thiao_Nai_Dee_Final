@@ -6,8 +6,8 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { mapsUrl, type Cafe } from "@/data/cafes";
-import { gradientFor } from "@/lib/thumbs";
 import { useLang } from "@/i18n/LangProvider";
+import CafeThumb from "../CafeThumb";
 
 const COLORS = ["#7c5a43", "#5c7457", "#a06a3f", "#3f6c72", "#8a5a44", "#6b4f6e"];
 
@@ -66,13 +66,8 @@ export default function MapView({ cafes, className }: MapViewProps) {
         >
           <Popup>
             <div className="w-52">
-              <div
-                className="relative mb-2 flex h-24 items-center justify-center rounded-lg"
-                style={{ background: gradientFor(cafe.slug) }}
-              >
-                <span className="text-3xl drop-shadow" aria-hidden>
-                  ☕
-                </span>
+              <div className="relative mb-2 h-24 overflow-hidden rounded-lg">
+                <CafeThumb cafe={cafe} emojiClassName="text-3xl drop-shadow" sizes="208px" />
                 <span className="absolute right-1.5 top-1.5 rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] font-bold text-espresso">
                   {"฿".repeat(cafe.priceRange)}
                 </span>

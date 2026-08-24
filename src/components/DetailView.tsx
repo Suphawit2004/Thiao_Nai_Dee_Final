@@ -3,9 +3,9 @@
 import Link from "next/link";
 import type { Cafe } from "@/data/cafes";
 import { mapsUrl } from "@/data/cafes";
-import { gradientFor } from "@/lib/thumbs";
 import { DAY_KEYS } from "@/i18n/dictionaries";
 import { useLang } from "@/i18n/LangProvider";
+import CafeThumb from "./CafeThumb";
 import OpenBadge from "./OpenBadge";
 import RatingStars from "./RatingStars";
 import TagChip from "./TagChip";
@@ -22,13 +22,12 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
       </Link>
 
       <div className="mt-4 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div
-          className="relative flex min-h-64 items-center justify-center overflow-hidden rounded-2xl lg:min-h-full"
-          style={{ background: gradientFor(cafe.slug) }}
-        >
-          <span className="select-none text-[7rem] drop-shadow-xl" aria-hidden>
-            ☕
-          </span>
+        <div className="relative flex min-h-64 items-center justify-center overflow-hidden rounded-2xl lg:min-h-full">
+          <CafeThumb
+            cafe={cafe}
+            emojiClassName="select-none text-[7rem] drop-shadow-xl"
+            sizes="(max-width: 1024px) 100vw, 55vw"
+          />
         </div>
 
         <div className="flex flex-col gap-5">
