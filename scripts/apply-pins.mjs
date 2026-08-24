@@ -47,8 +47,11 @@ let previous = {};
 if (existsSync(OUT_FILE)) {
   try {
     previous = JSON.parse(readFileSync(OUT_FILE, "utf8"));
-  } catch {
-    previous = {};
+  } catch (err) {
+    fail(
+      `src/data/cafes.enriched.json parse ไม่ได้ (${err instanceof Error ? err.message : err}) ` +
+        `— แก้หรือลบไฟล์ทิ้งก่อนรันซ้ำ เพื่อกันข้อมูลพิกัดเดิมถูกเขียนทับ`
+    );
   }
 }
 
@@ -58,17 +61,31 @@ if (!existsSync(PHOTOS_DIR)) {
   mkdirSync(PHOTOS_DIR, { recursive: true });
 }
 
-const photoFiles = new Set(
-  readdirSync(PHOTOS_DIR)
-    .filter((f) => PHOTO_EXTS.has(f.toLowerCase().slice(f.lastIndexOf("."))))
-    .map((f) => f.toLowerCase())
-);
+const photoFiles = new Map();
+for (const f of readdirSync(PHOTOS_DIR)) {
+  const dot = f.lastIndexOf(".");
+  if (dot === -1) continue;
+  if (!PHOTO_EXTS.has(f.slice(dot).toLowerCase())) continue;
+  const lower = f.toLowerCase();
+  if (photoFiles.has(lower)) {
+    fail(`พบไฟล์รูปชื่อซ้ำกัน (ต่างกันที่ case): "${f}" กับ "${photoFiles.get(lower)}"`);
+  }
+  photoFiles.set(lower, f);
+}
 
 for (const slug of Object.keys(CAFES)) {
-  const match = [...photoFiles].find((f) => f.startsWith(`${slug}.`));
+  const match = [...photoFiles.keys()].find((f) => f.startsWith(`${slug}.`));
   if (match) {
-    overrides[slug] = { ...(overrides[slug] ?? {}), photo: `/images/cafes/${match}` };
+    overrides[slug] = { ...(overrides[slug] ?? {}), photo: `/images/cafes/${photoFiles.get(match)}` };
+  } else if (overrides[slug]?.photo) {
+    const { photo: _removed, ...rest } = overrides[slug];
+    if (Object.keys(rest).length > 0) overrides[slug] = rest;
+    else delete overrides[slug];
   }
+}
+
+for (const slug of Object.keys(overrides)) {
+  if (!(slug in CAFES)) delete overrides[slug];
 }
 
 let pinCount = 0;
@@ -156,5 +173,9 @@ if (DRY_RUN) {
   process.exit(0);
 }
 
-writeFileSync(OUT_FILE, JSON.stringify(overrides, null, 2) + "\n", "utf8");
+try {
+  writeFileSync(OUT_FILE, JSON.stringify(overrides, null, 2) + "\n", "utf8");
+} catch (err) {
+  fail(`เขียน src/data/cafes.enriched.json ไม่สำเร็จ: ${err instanceof Error ? err.message : err}`);
+}
 console.log(`\n✅ บันทึกแล้ว: src/data/cafes.enriched.json`);
