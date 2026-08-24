@@ -36,9 +36,13 @@ function getServerSnapshot(): number {
   return 0;
 }
 
+export function useNowTick(): number {
+  return useSyncExternalStore(subscribeTick, getSnapshot, getServerSnapshot);
+}
+
 export default function OpenBadge({ cafe }: { cafe: Cafe }) {
   const { t } = useLang();
-  const ts = useSyncExternalStore(subscribeTick, getSnapshot, getServerSnapshot);
+  const ts = useNowTick();
 
   if (ts === 0) {
     return (

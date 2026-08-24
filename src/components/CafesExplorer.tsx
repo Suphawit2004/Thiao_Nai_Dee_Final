@@ -6,6 +6,7 @@ import { CAFES, type CafeTag } from "@/data/cafes";
 import { getOpenStatus } from "@/lib/hours";
 import { useLang } from "@/i18n/LangProvider";
 import CafeCard from "./CafeCard";
+import { useNowTick } from "./OpenBadge";
 import SearchFilter, { INITIAL_FILTERS, type FilterState } from "./SearchFilter";
 
 interface CafesExplorerProps {
@@ -13,7 +14,8 @@ interface CafesExplorerProps {
 }
 
 export default function CafesExplorer({ initialTag = null }: CafesExplorerProps) {
-  const { t, tr } = useLang();
+  const { t, tr, lang } = useLang();
+  const nowTick = useNowTick();
 
   const [filters, setFilters] = useState<FilterState>(() => ({
     ...INITIAL_FILTERS,
@@ -22,6 +24,7 @@ export default function CafesExplorer({ initialTag = null }: CafesExplorerProps)
 
   const results = useMemo(() => {
     const q = filters.query.trim().toLowerCase();
+    const locale = lang === "th" ? "th" : "en";
     return CAFES.filter((cafe) => {
       if (q) {
         const haystack = `${cafe.name.th} ${cafe.name.en} ${cafe.address.th} ${cafe.address.en}`.toLowerCase();
@@ -31,10 +34,12 @@ export default function CafesExplorer({ initialTag = null }: CafesExplorerProps)
         return false;
       }
       if (filters.maxPrice !== 0 && cafe.priceRange > filters.maxPrice) return false;
-      if (filters.openNow && !getOpenStatus(cafe).isOpenNow) return false;
+      if (filters.openNow && !getOpenStatus(cafe, nowTick === 0 ? undefined : new Date(nowTick)).isOpenNow) {
+        return false;
+      }
       return true;
-    }).sort((a, b) => b.baseRating - a.baseRating || tr(a.name).localeCompare(tr(b.name)));
-  }, [filters, tr]);
+    }).sort((a, b) => b.baseRating - a.baseRating || tr(a.name).localeCompare(tr(b.name), locale));
+  }, [filters, tr, lang, nowTick]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
