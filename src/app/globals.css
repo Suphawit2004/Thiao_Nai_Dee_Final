@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-cream: #faf6ef;
+  --color-sand: #f0e7da;
+  --color-coffee: #7c5a43;
+  --color-espresso: #33261a;
+  --color-latte: #c9a97e;
+  --color-leaf: #5c7457;
+  --font-sans: var(--font-plex-thai), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-espresso);
+  font-family: var(--font-sans);
+}
+
+.coffee-marker {
+  background: transparent;
+  border: none;
+}
+
+.marker-pin {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--pin, #7c5a43);
+  border: 2px solid #fff;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.35);
+}
+
+.marker-pin span {
+  transform: rotate(45deg);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+}
+
+.leaflet-popup-content {
+  margin: 10px 14px;
+}
