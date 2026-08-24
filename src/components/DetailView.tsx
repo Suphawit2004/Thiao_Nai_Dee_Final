@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Cafe } from "@/data/cafes";
 import { mapsUrl } from "@/data/cafes";
+import { gradientFor } from "@/lib/thumbs";
 import { DAY_KEYS } from "@/i18n/dictionaries";
 import { useLang } from "@/i18n/LangProvider";
 import OpenBadge from "./OpenBadge";
@@ -11,21 +12,8 @@ import TagChip from "./TagChip";
 import ReviewSection from "./ReviewSection";
 import MapBlock from "./map/MapBlock";
 
-const THUMB_COLORS: Array<[string, string]> = [
-  ["#7c5a43", "#b98a5e"],
-  ["#5c7457", "#93a97b"],
-  ["#a06a3f", "#d9b382"],
-];
-
-function thumbFor(slug: string): [string, string] {
-  let hash = 0;
-  for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) % 997;
-  return THUMB_COLORS[hash % THUMB_COLORS.length];
-}
-
 export default function DetailView({ cafe }: { cafe: Cafe }) {
   const { t, tr } = useLang();
-  const [from, to] = thumbFor(cafe.slug);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -36,9 +24,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
       <div className="mt-4 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <div
           className="relative flex min-h-64 items-center justify-center overflow-hidden rounded-2xl lg:min-h-full"
-          style={{
-            background: `radial-gradient(circle at 25% 25%, rgb(255 255 255 / 0.16), transparent 45%), linear-gradient(135deg, ${from}, ${to})`,
-          }}
+          style={{ background: gradientFor(cafe.slug) }}
         >
           <span className="select-none text-[7rem] drop-shadow-xl" aria-hidden>
             ☕
