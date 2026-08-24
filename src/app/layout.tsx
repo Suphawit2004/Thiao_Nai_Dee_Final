@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { LangProvider } from "@/i18n/LangProvider";
 import { AuthProvider } from "@/components/AuthProvider";
+import { FavoritesProvider } from "@/components/FavoritesProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -37,9 +38,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <LangProvider>
           <AuthProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <FavoritesProvider>
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </FavoritesProvider>
           </AuthProvider>
         </LangProvider>
       </body>

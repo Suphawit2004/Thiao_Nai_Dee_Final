@@ -12,6 +12,7 @@ import RatingStars from "./RatingStars";
 import TagChip from "./TagChip";
 import ReviewSection from "./ReviewSection";
 import MapBlock from "./map/MapBlock";
+import FavoriteButton from "./FavoriteButton";
 
 export default function DetailView({ cafe }: { cafe: Cafe }) {
   const { t, tr } = useLang();
@@ -43,6 +44,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
               <span className="rounded-full bg-sand px-2.5 py-1 text-xs font-bold text-espresso">
                 {"฿".repeat(cafe.priceRange)}
               </span>
+              <FavoriteButton slug={cafe.slug} variant="inline" />
             </div>
             <p className="mt-3 leading-relaxed text-espresso/75">{tr(cafe.description)}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">

@@ -8,6 +8,7 @@ import AreaChip from "./AreaChip";
 import RatingStars from "./RatingStars";
 import OpenBadge from "./OpenBadge";
 import TagChip from "./TagChip";
+import FavoriteButton from "./FavoriteButton";
 
 export default function CafeCard({ cafe }: { cafe: Cafe }) {
   const { tr } = useLang();
@@ -18,6 +19,7 @@ export default function CafeCard({ cafe }: { cafe: Cafe }) {
       className="group flex flex-col overflow-hidden rounded-2xl border border-[#eee3d2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="relative flex h-40 items-center justify-center overflow-hidden">
+        <FavoriteButton slug={cafe.slug} variant="overlay" />
         <CafeThumb
           cafe={cafe}
           emojiClassName="text-5xl drop-shadow-lg transition group-hover:scale-110"

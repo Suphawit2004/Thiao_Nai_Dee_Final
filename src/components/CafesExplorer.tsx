@@ -137,12 +137,18 @@ export default function CafesExplorer({ initialFilters = {} }: { initialFilters?
         </div>
       )}
 
-      <div className="mt-10 text-center">
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-center">
         <Link
           href="/map"
           className="inline-block rounded-full bg-coffee px-6 py-2.5 text-sm font-semibold text-cream transition hover:bg-[#684a37]"
         >
           📍 {t("home.openMap")}
+        </Link>
+        <Link
+          href="/suggest"
+          className="inline-block rounded-full border border-coffee/40 bg-white px-6 py-2.5 text-sm font-semibold text-coffee transition hover:bg-sand"
+        >
+          ➕ {t("cafes.suggest")}
         </Link>
       </div>
     </div>
