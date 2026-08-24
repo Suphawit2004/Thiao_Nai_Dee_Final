@@ -12,6 +12,7 @@ const plexThai = IBM_Plex_Sans_Thai({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "เที่ยวไหนดี | Thiao Nai Dee — คาเฟ่ตัวเมืองพะเยา",
     template: "%s | Thiao Nai Dee",
