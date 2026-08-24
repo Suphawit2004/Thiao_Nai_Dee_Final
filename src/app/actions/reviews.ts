@@ -47,7 +47,8 @@ export async function submitReview(formData: {
     .single();
 
   if (error || !data) {
-    return { ok: false, error: error?.message || "Failed to submit" };
+    console.error("submitReview failed:", error);
+    return { ok: false, error: "Failed to submit review" };
   }
 
   return { ok: true, data };
