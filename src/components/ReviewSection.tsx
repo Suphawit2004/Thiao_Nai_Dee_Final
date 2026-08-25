@@ -93,7 +93,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
             ? t("reviews.rateLimited")
             : res.error === "already_reviewed"
               ? t("reviews.alreadyReviewed")
-              : res.error,
+              : t("form.error"),
       });
       return;
     }

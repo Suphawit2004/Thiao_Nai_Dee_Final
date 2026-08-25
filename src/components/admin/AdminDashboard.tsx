@@ -113,10 +113,12 @@ export default function AdminDashboard({
     return cafe ? tr(cafe.name) : slug;
   };
 
+  // Pin the timezone so SSR and client hydration render identical strings.
   const fmt = (iso: string) =>
     new Date(iso).toLocaleString(lang === "th" ? "th-TH" : "en-US", {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: "Asia/Bangkok",
     });
 
   const pendingSuggestions = suggestions.filter((s) => s.status === "pending").length;

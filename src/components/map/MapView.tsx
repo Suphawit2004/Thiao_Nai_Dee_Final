@@ -2,7 +2,7 @@
 
 import L from "leaflet";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { mapsUrl, type Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
@@ -29,6 +29,13 @@ function makeIcon(color: string): L.DivIcon {
 
 function FitBounds({ cafes }: { cafes: Cafe[] }) {
   const map = useMap();
+  // Key the effect on a primitive signature: callers may pass a fresh array
+  // literal every render (e.g. DetailView), and re-fitting on each of those
+  // would reset pan/zoom the user has applied.
+  const fitKey = useMemo(
+    () => cafes.map((c) => `${c.slug}:${c.lat},${c.lng}`).join("|"),
+    [cafes]
+  );
   useEffect(() => {
     if (cafes.length === 1) {
       map.setView([cafes[0].lat, cafes[0].lng], 16);
@@ -38,7 +45,8 @@ function FitBounds({ cafes }: { cafes: Cafe[] }) {
         { paddingTopLeft: [40, 96], paddingBottomRight: [24, 24] }
       );
     }
-  }, [map, cafes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refit only when the set of cafes actually changes
+  }, [map, fitKey]);
   return null;
 }
 

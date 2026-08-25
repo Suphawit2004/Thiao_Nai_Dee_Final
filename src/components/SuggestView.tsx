@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useLang } from "@/i18n/LangProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -53,8 +53,16 @@ export default function SuggestView() {
 
   const patch = (p: Partial<FormState>) => setForm((prev) => ({ ...prev, ...p }));
 
+  // Single owner of the blob-URL lifecycle: revoke whenever the preview is
+  // replaced or cleared, and on unmount.
+  useEffect(() => {
+    if (!photoPreview) return;
+    return () => {
+      URL.revokeObjectURL(photoPreview);
+    };
+  }, [photoPreview]);
+
   const clearPhoto = () => {
-    if (photoPreview) URL.revokeObjectURL(photoPreview);
     setPhotoFile(null);
     setPhotoPreview(null);
   };

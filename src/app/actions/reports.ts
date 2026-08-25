@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { checkReportRateLimit } from "@/lib/rate-limit";
 import { resolveClientIp } from "@/lib/client-ip";
+import { CAFES } from "@/data/cafes";
 
 export type ReportResult =
   | { ok: true }
@@ -38,7 +39,7 @@ export async function submitReport(input: {
 
   const slug = input.slug?.trim() ?? "";
   const message = input.message?.trim() ?? "";
-  if (!slug || slug.length > 100 || !FIELDS.has(input.field)) {
+  if (!slug || !CAFES.some((c) => c.slug === slug) || !FIELDS.has(input.field)) {
     return { ok: false, error: "invalid" };
   }
   if (!message || message.length > 500) return { ok: false, error: "invalid" };

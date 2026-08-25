@@ -50,7 +50,7 @@ export function parseFilters(search: string): FilterState {
   const params = new URLSearchParams(search);
   const areaRaw = params.get("area");
   return {
-    query: params.get("q") ?? "",
+    query: (params.get("q") ?? "").trim(),
     tags: csvParam(params, "tag", TAG_ORDER),
     life: csvParam(params, "life", LIFESTYLE_ORDER),
     area:

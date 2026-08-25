@@ -12,6 +12,7 @@ function LoginFormInner() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const authError = searchParams.get("error") === "auth";
+  const supabaseReady = getSupabaseBrowser() !== null;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +55,7 @@ function LoginFormInner() {
         />
       </div>
 
-      {!getSupabaseBrowser() && (
+      {!supabaseReady && (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-800">
           {t("login.notConfigured")}
         </p>
@@ -70,7 +71,7 @@ function LoginFormInner() {
 
       <button
         type="submit"
-        disabled={status === "sending"}
+        disabled={status === "sending" || !supabaseReady}
         className="rounded-full bg-coffee px-6 py-3 text-sm font-bold text-cream transition hover:bg-[#684a37] disabled:opacity-60"
       >
         {status === "sending" ? `⏳ ${t("login.sending")}` : `✉️ ${t("login.submit")}`}

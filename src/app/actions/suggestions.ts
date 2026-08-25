@@ -60,7 +60,7 @@ export async function submitSuggestion(input: {
   if (
     input.priceRange !== null &&
     input.priceRange !== undefined &&
-    !Number.isInteger(input.priceRange)
+    (!Number.isInteger(input.priceRange) || input.priceRange < 1 || input.priceRange > 2)
   ) {
     return { ok: false, error: "invalid" };
   }

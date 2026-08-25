@@ -40,13 +40,20 @@ function retryAfterSec(oldestHit: number, now: number, cfg: RateLimitConfig): nu
   return Math.max(1, Math.ceil((oldestHit + cfg.windowMs - now) / 1000));
 }
 
-function prune(map: Map<string, number[]>, now: number, windowMs: number) {
-  if (map.size <= 10_000) return;
-  for (const [key, hits] of map) {
-    const fresh = hits.filter((t) => now - t < windowMs);
-    if (fresh.length === 0) map.delete(key);
-    else map.set(key, fresh);
-  }
+function createPruner(map: Map<string, number[]>, windowMs: number) {
+  let lastPrune = 0;
+  return (now: number) => {
+    if (map.size <= 10_000) return;
+    // Once above the threshold, prune at most every windowMs so a flood of
+    // unique keys can't force an O(n) scan on every single request.
+    if (now - lastPrune < windowMs) return;
+    lastPrune = now;
+    for (const [key, hits] of map) {
+      const fresh = hits.filter((t) => now - t < windowMs);
+      if (fresh.length === 0) map.delete(key);
+      else map.set(key, fresh);
+    }
+  };
 }
 
 /** Independent per-key + global limiter instance (one per protected action). */
@@ -55,6 +62,7 @@ export function createRateLimiter(
   globalCfg: RateLimitConfig
 ): (key: string, now?: number) => RateLimitResult {
   const perKeyHits = new Map<string, number[]>();
+  const prune = createPruner(perKeyHits, ipCfg.windowMs);
   let globalHits: number[] = [];
 
   return function check(key: string, now: number = Date.now()): RateLimitResult {
@@ -72,7 +80,7 @@ export function createRateLimiter(
 
     globalHits = g.next;
     perKeyHits.set(key, p.next);
-    prune(perKeyHits, now, ipCfg.windowMs);
+    prune(now);
     return { allowed: true };
   };
 }

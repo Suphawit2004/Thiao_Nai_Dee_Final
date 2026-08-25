@@ -33,6 +33,25 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [rateLimited, setRateLimited] = useState(false);
 
+  // Reset all dialog state whenever the dialog opens (or opens for a
+  // different cafe) so a draft — or the success screen — from a previous
+  // session never leaks into this one. Render-phase adjustment: React
+  // discards the in-progress render and re-renders with fresh state before
+  // committing anything.
+  const [prevKey, setPrevKey] = useState<string | null>(null);
+  const sessionKey = open ? slug : null;
+  if (sessionKey !== prevKey) {
+    setPrevKey(sessionKey);
+    if (open) {
+      setField("hours");
+      setMessage("");
+      setSuggested("");
+      setContact("");
+      setStatus("idle");
+      setRateLimited(false);
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -118,7 +137,7 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
               onClick={resetAndClose}
               className="mt-4 rounded-full bg-emerald-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"
             >
-              {t("err.retry")}
+              {t("common.close")}
             </button>
           </div>
         ) : (
