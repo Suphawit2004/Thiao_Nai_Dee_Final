@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { submitReport } from "@/app/actions/reports";
 
 const FIELDS = [
   { id: "hours", key: "report.field.hours", emoji: "🕒" },
@@ -30,6 +31,7 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
   const [suggested, setSuggested] = useState("");
   const [contact, setContact] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [rateLimited, setRateLimited] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -48,6 +50,7 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
     setSuggested("");
     setContact("");
     setStatus("idle");
+    setRateLimited(false);
     onClose();
   };
 
@@ -56,14 +59,20 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
     const supabase = getSupabaseBrowser();
     if (!supabase) return;
     setStatus("sending");
-    const { error } = await supabase.from("data_reports").insert({
-      cafe_slug: slug,
+    setRateLimited(false);
+    const res = await submitReport({
+      slug,
       field,
       message: message.trim(),
-      suggested_value: suggested.trim() || null,
+      suggestedValue: suggested.trim() || null,
       contact: contact.trim() || null,
     });
-    setStatus(error ? "error" : "sent");
+    if (!res.ok && res.error === "rate_limited") {
+      setRateLimited(true);
+      setStatus("error");
+      return;
+    }
+    setStatus(res.ok ? "sent" : "error");
   };
 
   const inputClass =
@@ -88,7 +97,7 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
           <button
             type="button"
             onClick={onClose}
-            aria-label={t("nav.menuToggle")}
+            aria-label={t("common.close")}
             className="rounded-lg p-1.5 text-lg leading-none text-espresso/60 transition hover:bg-sand hover:text-espresso"
           >
             ✕
@@ -185,7 +194,13 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
               />
             </div>
 
-            {status === "error" && (
+            {rateLimited && (
+              <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                ⏳ {t("report.rateLimited")}
+              </p>
+            )}
+
+            {status === "error" && !rateLimited && (
               <p className="rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700">
                 ⚠️ {t("report.error")}
               </p>

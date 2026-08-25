@@ -102,14 +102,20 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           .eq("user_id", user.id)
           .eq("cafe_slug", slug)
           .then(({ error }) => {
-            if (error) console.error("unfavorite failed:", error);
+            if (error) {
+              console.error("unfavorite failed:", error);
+              setSlugs(slugs); // roll back the optimistic update
+            }
           });
       } else {
         supabase
           .from("favorites")
           .upsert({ user_id: user.id, cafe_slug: slug })
           .then(({ error }) => {
-            if (error) console.error("favorite failed:", error);
+            if (error) {
+              console.error("favorite failed:", error);
+              setSlugs(slugs); // roll back the optimistic update
+            }
           });
       }
     },

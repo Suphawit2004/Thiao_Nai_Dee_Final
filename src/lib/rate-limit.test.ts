@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  REPORT_IP_LIMIT,
   REVIEW_GLOBAL_LIMIT,
   REVIEW_IP_LIMIT,
+  SUGGESTION_IP_LIMIT,
+  checkReportRateLimit,
   checkReviewRateLimit,
+  checkSuggestionRateLimit,
+  createRateLimiter,
   slidingWindowAllow,
 } from "@/lib/rate-limit";
 
@@ -73,5 +78,29 @@ describe("checkReviewRateLimit", () => {
       now += 10;
     }
     expect(accepted).toBe(REVIEW_GLOBAL_LIMIT.limit);
+  });
+});
+
+describe("createRateLimiter / per-action limiters", () => {
+  it("keeps limiter instances independent", () => {
+    const a = createRateLimiter({ limit: 1, windowMs: 1000 }, { limit: 10, windowMs: 1000 });
+    const b = createRateLimiter({ limit: 1, windowMs: 1000 }, { limit: 10, windowMs: 1000 });
+    expect(a("k", T0).allowed).toBe(true);
+    expect(a("k", T0 + 1).allowed).toBe(false);
+    expect(b("k", T0 + 2).allowed).toBe(true);
+  });
+
+  it("applies each action's own per-IP limits", () => {
+    const now = T0 + 200 * REVIEW_GLOBAL_LIMIT.windowMs;
+
+    for (let i = 0; i < SUGGESTION_IP_LIMIT.limit; i += 1) {
+      expect(checkSuggestionRateLimit("sg-ip", now + i).allowed).toBe(true);
+    }
+    expect(checkSuggestionRateLimit("sg-ip", now + 100).allowed).toBe(false);
+
+    for (let i = 0; i < REPORT_IP_LIMIT.limit; i += 1) {
+      expect(checkReportRateLimit("rp-ip", now + i).allowed).toBe(true);
+    }
+    expect(checkReportRateLimit("rp-ip", now + 100).allowed).toBe(false);
   });
 });

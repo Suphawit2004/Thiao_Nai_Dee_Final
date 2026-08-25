@@ -122,6 +122,7 @@ const th = {
   "suggest.success": "ขอบคุณมาก! ☕ เราได้รับคำแนะนำของคุณแล้ว และจะตรวจสอบเร็ว ๆ นี้",
   "suggest.successAgain": "แนะนำร้านอื่นต่อ",
   "suggest.error": "ส่งไม่สำเร็จ กรุณาลองอีกครั้ง",
+  "suggest.rateLimited": "คุณส่งคำแนะนำบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่ 🙏",
 
   "report.open": "รายงานข้อมูลไม่ถูกต้อง",
   "report.title": "รายงานข้อมูล / ขออัปเดต",
@@ -143,6 +144,7 @@ const th = {
   "report.sending": "กำลังส่ง...",
   "report.success": "ขอบคุณสำหรับการแจ้ง! 🙏 เราจะตรวจสอบและอัปเดตข้อมูลให้เร็วที่สุด",
   "report.error": "ส่งรายงานไม่สำเร็จ กรุณาลองอีกครั้ง",
+  "report.rateLimited": "คุณส่งรายงานบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่ 🙏",
 
   "admin.title": "จัดการข้อมูล",
   "admin.desc": "ตรวจร้านที่แนะนำเข้ามา รายงานข้อมูล และรีวิวจากผู้ใช้",
@@ -189,6 +191,8 @@ const th = {
   "reviews.baseNote": "คะแนนเริ่มต้นจากข้อมูลรีวิวสาธารณะ",
   "reviews.loadError": "โหลดรีวิวไม่สำเร็จ — ฐานข้อมูลอาจไม่พร้อมใช้งาน",
   "reviews.rateLimited": "คุณส่งรีวิวบ่อยเกินไป กรุณารอสักครู่แล้วลองอีกครั้ง 🙏",
+  "reviews.alreadyReviewed": "คุณรีวิวร้านนี้ไปแล้ว",
+  "common.close": "ปิด",
   "reviews.retry": "ลองโหลดอีกครั้ง",
   "form.name": "ชื่อของคุณ",
   "form.namePh": "เช่น มินท์",
@@ -366,6 +370,7 @@ const en: Record<DictKey, string> = {
   "suggest.success": "Thank you! ☕ We received your suggestion and will review it soon.",
   "suggest.successAgain": "Suggest another cafe",
   "suggest.error": "Failed to send. Please try again.",
+  "suggest.rateLimited": "You're sending suggestions too quickly. Please wait a moment and try again 🙏",
 
   "report.open": "Report incorrect info",
   "report.title": "Report / update request",
@@ -387,6 +392,7 @@ const en: Record<DictKey, string> = {
   "report.sending": "Sending...",
   "report.success": "Thanks for reporting! 🙏 We'll verify and update the info soon.",
   "report.error": "Failed to send the report. Please try again.",
+  "report.rateLimited": "You're sending reports too quickly. Please wait a moment and try again 🙏",
 
   "admin.title": "Moderation",
   "admin.desc": "Review submitted cafe suggestions, data reports and user reviews",
@@ -433,6 +439,8 @@ const en: Record<DictKey, string> = {
   "reviews.baseNote": "Base rating from public review sources",
   "reviews.loadError": "Failed to load reviews — the database may be unavailable.",
   "reviews.rateLimited": "You're submitting reviews too quickly. Please wait a moment and try again 🙏",
+  "reviews.alreadyReviewed": "You've already reviewed this cafe",
+  "common.close": "Close",
   "reviews.retry": "Retry",
   "form.name": "Your name",
   "form.namePh": "e.g. Mint",

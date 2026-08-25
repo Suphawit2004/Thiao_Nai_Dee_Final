@@ -6,9 +6,9 @@ import { useEffect } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { mapsUrl, type Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
+import { PIN_COLORS } from "@/lib/thumbs";
+import { DEFAULT_CENTER } from "@/lib/map";
 import CafeThumb from "../CafeThumb";
-
-const COLORS = ["#7c5a43", "#5c7457", "#a06a3f", "#3f6c72", "#8a5a44", "#6b4f6e"];
 
 const iconCache = new Map<string, L.DivIcon>();
 
@@ -50,7 +50,7 @@ interface MapViewProps {
 export default function MapView({ cafes, className }: MapViewProps) {
   const { t, tr } = useLang();
   const center: [number, number] =
-    cafes.length > 0 ? [cafes[0].lat, cafes[0].lng] : [19.1668, 99.8928];
+    cafes.length > 0 ? [cafes[0].lat, cafes[0].lng] : DEFAULT_CENTER;
 
   return (
     <MapContainer
@@ -68,7 +68,7 @@ export default function MapView({ cafes, className }: MapViewProps) {
         <Marker
           key={cafe.slug}
           position={[cafe.lat, cafe.lng]}
-          icon={makeIcon(COLORS[i % COLORS.length])}
+          icon={makeIcon(PIN_COLORS[i % PIN_COLORS.length])}
         >
           <Popup>
             <div className="w-52">

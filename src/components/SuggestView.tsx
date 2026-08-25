@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useLang } from "@/i18n/LangProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { submitSuggestion } from "@/app/actions/suggestions";
 
 const MapPicker = dynamic(() => import("./map/MapPicker"), {
   ssr: false,
@@ -37,13 +38,6 @@ const INITIAL_FORM: FormState = {
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-function extFor(file: File): string {
-  if (file.type === "image/jpeg") return "jpg";
-  if (file.type === "image/png") return "png";
-  if (file.type === "image/webp") return "webp";
-  return "gif";
-}
-
 export default function SuggestView() {
   const { t } = useLang();
   const supabaseReady = getSupabaseBrowser() !== null;
@@ -54,6 +48,7 @@ export default function SuggestView() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<"tooBig" | "wrongType" | "upload" | null>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [rateLimited, setRateLimited] = useState(false);
   const [showCoordError, setShowCoordError] = useState(false);
 
   const patch = (p: Partial<FormState>) => setForm((prev) => ({ ...prev, ...p }));
@@ -87,6 +82,7 @@ export default function SuggestView() {
     setStatus("idle");
     setShowCoordError(false);
     setPhotoError(null);
+    setRateLimited(false);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -100,37 +96,37 @@ export default function SuggestView() {
 
     setStatus("sending");
     setPhotoError(null);
+    setRateLimited(false);
 
-    let photoUrl: string | null = null;
-
-    if (photoFile) {
-      const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extFor(photoFile)}`;
-      const { error: upErr } = await supabase.storage
-        .from("cafe-suggestions")
-        .upload(path, photoFile, { contentType: photoFile.type });
-      if (upErr) {
-        console.error("photo upload failed:", upErr);
-        setStatus("error");
-        setPhotoError("upload");
-        return;
-      }
-      const { data } = supabase.storage.from("cafe-suggestions").getPublicUrl(path);
-      photoUrl = data.publicUrl;
-    }
-
-    const { error } = await supabase.from("cafe_suggestions").insert({
+    const res = await submitSuggestion({
       name: form.name.trim(),
       address: form.address.trim() || null,
+      openTime: form.openTime || null,
+      closeTime: form.closeTime || null,
+      priceRange: form.priceRange === "" ? null : Number(form.priceRange),
+      note: form.note.trim() || null,
+      contact: form.contact.trim() || null,
       lat: coords[0],
       lng: coords[1],
-      open_time: form.openTime || null,
-      close_time: form.closeTime || null,
-      price_range: form.priceRange === "" ? null : Number(form.priceRange),
-      note: form.note.trim() || null,
-      photo_url: photoUrl,
-      contact: form.contact.trim() || null,
+      photo: photoFile,
     });
-    setStatus(error ? "error" : "sent");
+
+    if (res.ok) {
+      setStatus("sent");
+      return;
+    }
+
+    if (res.error === "rate_limited") {
+      setStatus("error");
+      setRateLimited(true);
+      return;
+    }
+    if (res.error === "photo_too_big" || res.error === "photo_wrong_type" || res.error === "upload_failed") {
+      setStatus("error");
+      setPhotoError(res.error === "photo_too_big" ? "tooBig" : res.error === "photo_wrong_type" ? "wrongType" : "upload");
+      return;
+    }
+    setStatus("error");
   };
 
   if (status === "sent") {
@@ -341,7 +337,13 @@ export default function SuggestView() {
           />
         </div>
 
-        {status === "error" && !photoError && (
+        {rateLimited && (
+          <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-800">
+            ⏳ {t("suggest.rateLimited")}
+          </p>
+        )}
+
+        {status === "error" && !photoError && !rateLimited && (
           <p className="rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700">⚠️ {t("suggest.error")}</p>
         )}
 

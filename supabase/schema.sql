@@ -6,8 +6,16 @@ create table if not exists public.reviews (
   author_name text not null check (char_length(author_name) between 1 and 60),
   rating int not null check (rating between 1 and 5),
   comment text check (char_length(comment) <= 500),
+  user_id uuid references auth.users (id) on delete set null,
   created_at timestamptz not null default now()
 );
+
+alter table public.reviews add column if not exists user_id uuid references auth.users (id) on delete set null;
+
+-- One review per account per cafe (guest reviews have no user_id)
+create unique index if not exists reviews_user_cafe_uniq
+  on public.reviews (user_id, cafe_slug)
+  where user_id is not null;
 
 create index if not exists reviews_cafe_slug_idx on public.reviews (cafe_slug);
 
@@ -26,6 +34,7 @@ create policy "reviews_insert_public"
     and char_length(author_name) between 1 and 60
     and rating between 1 and 5
     and (comment is null or char_length(comment) <= 500)
+    and (user_id is null or user_id = auth.uid())
   );
 
 -- ============================================================
@@ -186,13 +195,18 @@ on conflict (id) do nothing;
 drop policy if exists "suggestion_photos_insert" on storage.objects;
 create policy "suggestion_photos_insert"
   on storage.objects for insert
-  with check (bucket_id = 'cafe-suggestions');
+  with check (
+    bucket_id = 'cafe-suggestions'
+    and (storage.objects.metadata ->> 'mimetype') in ('image/jpeg', 'image/png', 'image/webp', 'image/gif')
+    and coalesce((storage.objects.metadata ->> 'size')::numeric, 0) <= 5242880
+  );
 
 -- ============================================================
 -- admins - email allowlist for the moderation UI (/admin)
 -- Seed with: insert into public.admins (email)
 --            values ('you@example.com') on conflict do nothing;
--- No RLS policies: only the service role / dashboard touches this table.
+-- RLS enabled with zero policies: clients can only reach it through the
+-- is_admin() SECURITY DEFINER function; direct reads/writes are denied.
 -- ============================================================
 create table if not exists public.admins (
   email text primary key

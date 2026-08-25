@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { getSupabase, type ReviewRow } from "@/lib/supabase";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import type { ReviewRow } from "@/lib/types";
 import { useLang } from "@/i18n/LangProvider";
 import { submitReview } from "@/app/actions/reviews";
 import RatingStars from "./RatingStars";
@@ -40,7 +41,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const configured = getSupabase() !== null;
+  const configured = getSupabaseBrowser() !== null;
   const [loading, setLoading] = useState(configured);
   const [loadError, setLoadError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
@@ -48,7 +49,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
   useEffect(() => {
     let active = true;
     (async () => {
-      const sb = getSupabase();
+      const sb = getSupabaseBrowser();
       if (!sb) return;
       const { data, error } = await sb
         .from("reviews")
@@ -87,7 +88,12 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
     if (!res.ok) {
       setNotice({
         ok: false,
-        text: res.error === "rate_limited" ? t("reviews.rateLimited") : res.error,
+        text:
+          res.error === "rate_limited"
+            ? t("reviews.rateLimited")
+            : res.error === "already_reviewed"
+              ? t("reviews.alreadyReviewed")
+              : res.error,
       });
       return;
     }
