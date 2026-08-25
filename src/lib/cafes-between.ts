@@ -3,17 +3,13 @@ import {
   LAKESIDE_CENTER,
   UNIVERSITY_CENTER,
   MAX_DISTANCE_KM,
+  pointToSegmentKm,
   calculateDistancesFromRoad,
-  haversineKm,
   DistanceFromRoad,
 } from "./distance";
 
 export function isInTransitionZone(cafe: Cafe): boolean {
-  const d1 = haversineKm(LAKESIDE_CENTER[0], LAKESIDE_CENTER[1], cafe.lat, cafe.lng);
-  const d2 = haversineKm(UNIVERSITY_CENTER[0], UNIVERSITY_CENTER[1], cafe.lat, cafe.lng);
-  const total = d1 + d2;
-  const roadDistance = Math.abs(d1 - d2);
-  return total <= MAX_DISTANCE_KM * 2 && roadDistance <= MAX_DISTANCE_KM;
+  return pointToSegmentKm(cafe.lat, cafe.lng, LAKESIDE_CENTER, UNIVERSITY_CENTER) <= MAX_DISTANCE_KM;
 }
 
 export function getCafesBetweenAreas(cafes: Cafe[]): DistanceFromRoad[] {

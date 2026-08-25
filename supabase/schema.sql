@@ -187,3 +187,58 @@ drop policy if exists "suggestion_photos_insert" on storage.objects;
 create policy "suggestion_photos_insert"
   on storage.objects for insert
   with check (bucket_id = 'cafe-suggestions');
+
+-- ============================================================
+-- admins - email allowlist for the moderation UI (/admin)
+-- Seed with: insert into public.admins (email)
+--            values ('you@example.com') on conflict do nothing;
+-- No RLS policies: only the service role / dashboard touches this table.
+-- ============================================================
+create table if not exists public.admins (
+  email text primary key
+);
+
+alter table public.admins enable row level security;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.admins
+    where lower(email) = lower(coalesce(auth.email(), ''))
+  );
+$$;
+
+-- ============================================================
+-- Admin moderation policies
+-- ============================================================
+
+drop policy if exists "suggestions_select_admin" on public.cafe_suggestions;
+create policy "suggestions_select_admin"
+  on public.cafe_suggestions for select
+  using (public.is_admin());
+
+drop policy if exists "suggestions_update_admin" on public.cafe_suggestions;
+create policy "suggestions_update_admin"
+  on public.cafe_suggestions for update
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "data_reports_select_admin" on public.data_reports;
+create policy "data_reports_select_admin"
+  on public.data_reports for select
+  using (public.is_admin());
+
+drop policy if exists "data_reports_update_admin" on public.data_reports;
+create policy "data_reports_update_admin"
+  on public.data_reports for update
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "reviews_delete_admin" on public.reviews;
+create policy "reviews_delete_admin"
+  on public.reviews for delete
+  using (public.is_admin());
