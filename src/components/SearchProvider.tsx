@@ -9,7 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   INITIAL_FILTERS,
   filtersToQuery,
@@ -55,6 +55,7 @@ function commit(next: FilterState): void {
 export function SearchProvider({ children }: { children: ReactNode }) {
   const filters = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const patch = useCallback((p: Partial<FilterState>) => {
     commit({ ...state, ...p });
@@ -66,14 +67,16 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   // (e.g. the home category chips "?tag=view") replaces the current filters,
   // so stale selections never leak into a fresh shared link. A param-less
   // visit keeps the current selection for continuity.
+  // Keyed on both pathname and searchParams so query-only navigations also apply.
   useEffect(() => {
     if (!pathname.startsWith("/cafes")) return;
-    if (!window.location.search) return;
-    const incoming = parseFilters(window.location.search);
+    const search = searchParams.toString();
+    if (!search) return;
+    const incoming = parseFilters(`?${search}`);
     if (filtersToQuery(incoming) !== filtersToQuery(state)) {
       commit(incoming);
     }
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   // Keep /cafes shareable: reflect the live filter state in the address bar
   // (no navigation) whenever we are on — or arrive at — the cafes page.

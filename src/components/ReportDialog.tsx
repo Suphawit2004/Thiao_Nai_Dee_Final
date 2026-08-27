@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { submitReport } from "@/app/actions/reports";
@@ -25,6 +25,8 @@ interface ReportDialogProps {
 export default function ReportDialog({ slug, open, onClose }: ReportDialogProps) {
   const { t } = useLang();
   const supabaseReady = getSupabaseBrowser() !== null;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const [field, setField] = useState<FieldId>("hours");
   const [message, setMessage] = useState("");
@@ -32,6 +34,56 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
   const [contact, setContact] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [rateLimited, setRateLimited] = useState(false);
+
+  // Store previously focused element when dialog opens
+  useEffect(() => {
+    if (open) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      // Focus the dialog after a brief delay to ensure it's rendered
+      setTimeout(() => {
+        dialogRef.current?.focus();
+      }, 0);
+    } else if (previousFocusRef.current) {
+      // Restore focus to the element that opened the dialog
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
+  }, [open]);
+
+  // Focus trap: keep focus within the dialog
+  useEffect(() => {
+    if (!open) return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key === "Tab") {
+        const focusableElements = dialog.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+
+    dialog.addEventListener("keydown", handleKeyDown);
+    return () => {
+      dialog.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
 
   // Reset all dialog state whenever the dialog opens (or opens for a
   // different cafe) so a draft — or the success screen — from a previous
@@ -107,7 +159,11 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#eee3d2] bg-white p-6 shadow-xl">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#eee3d2] bg-white p-6 shadow-xl outline-none"
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold text-espresso">📝 {t("report.title")}</h2>

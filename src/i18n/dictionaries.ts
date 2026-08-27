@@ -95,6 +95,8 @@ const th = {
   "cafes.statusLabel": "สถานะ",
   "filter.open": "ตัวกรอง",
   "filter.remove": "ลบตัวกรองนี้",
+  "filter.copyLink": "คัดลอกลิงก์",
+  "filter.copied": "คัดลอกแล้ว",
 
   "suggest.title": "แนะนำคาเฟ่ใหม่",
   "suggest.desc":
@@ -353,6 +355,8 @@ const en: Record<DictKey, string> = {
   "cafes.statusLabel": "Status",
   "filter.open": "Filters",
   "filter.remove": "Remove this filter",
+  "filter.copyLink": "Copy link",
+  "filter.copied": "Copied",
 
   "suggest.title": "Suggest a new cafe",
   "suggest.desc":

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
 import { useSearch } from "./SearchProvider";
+import { filtersToQuery } from "@/lib/filters-url";
 import SearchPopover from "./SearchPopover";
 import ActiveFilterChips from "./ActiveFilterChips";
 
@@ -10,6 +11,7 @@ export default function FilterBar({ className = "" }: { className?: string }) {
   const { t } = useLang();
   const { filters } = useSearch();
   const [open, setOpen] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
   const rootRef = useRef<HTMLDivElement>(null);
 
   const activeCount =
@@ -38,6 +40,14 @@ export default function FilterBar({ className = "" }: { className?: string }) {
     };
   }, [open]);
 
+  const handleCopyLink = async () => {
+    const qs = filtersToQuery(filters);
+    const url = qs ? `${window.location.origin}/cafes?${qs}` : `${window.location.origin}/cafes`;
+    await navigator.clipboard.writeText(url);
+    setCopyStatus("copied");
+    setTimeout(() => setCopyStatus("idle"), 2000);
+  };
+
   return (
     <div ref={rootRef} className={`relative flex flex-wrap items-center gap-2 ${className}`}>
       <button
@@ -61,6 +71,21 @@ export default function FilterBar({ className = "" }: { className?: string }) {
 
       <SearchPopover open={open} />
       <ActiveFilterChips />
+
+      {activeCount > 0 && (
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          aria-label={copyStatus === "copied" ? t("filter.copied") : t("filter.copyLink")}
+          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition ${
+            copyStatus === "copied"
+              ? "bg-emerald-100 text-emerald-800"
+              : "border border-[#e8dcc8] bg-white text-espresso hover:bg-sand"
+          }`}
+        >
+          {copyStatus === "copied" ? "✓" : "🔗"} {t("filter.copyLink")}
+        </button>
+      )}
     </div>
   );
 }
