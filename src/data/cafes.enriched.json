@@ -1,22 +1,62 @@
 {
+  "baan-baann": {
+    "lat": 19.16355,
+    "lng": 99.90065,
+    "photo": "/images/cafes/baan-baann/main.jpg"
+  },
   "lakeland-cafe": {
     "lat": 19.16388,
-    "lng": 99.89949
+    "lng": 99.89949,
+    "photo": "/images/cafes/lakeland-cafe/main.jpg"
+  },
+  "sippin-cafe": {
+    "lat": 19.168294,
+    "lng": 99.89889,
+    "photo": "/images/cafes/sippin-cafe/main.jpg"
   },
   "at-home-cafe": {
     "lat": 19.17218,
-    "lng": 99.89757
+    "lng": 99.89757,
+    "photo": "/images/cafes/at-home-cafe/main.jpg"
+  },
+  "nitan-ban-tonmai": {
+    "lat": 19.168,
+    "lng": 99.896,
+    "photo": "/images/cafes/nitan-ban-tonmai/main.jpg"
+  },
+  "sweet-cycle": {
+    "lat": 19.1686,
+    "lng": 99.8992,
+    "photo": "/images/cafes/sweet-cycle/main.jpg"
   },
   "bestpart-cafe": {
     "lat": 19.1973,
-    "lng": 99.8873
+    "lng": 99.8873,
+    "photo": "/images/cafes/bestpart-cafe/main.jpg"
   },
   "scene-cafe": {
     "lat": 19.17495,
-    "lng": 99.89371
+    "lng": 99.89371,
+    "photo": "/images/cafes/scene-cafe/main.jpg"
+  },
+  "the-lake-cafe": {
+    "lat": 19.1697566,
+    "lng": 99.895029,
+    "photo": "/images/cafes/the-lake-cafe/main.jpg"
+  },
+  "baan-ing-kwan": {
+    "lat": 19.1609654,
+    "lng": 99.9136072,
+    "photo": "/images/cafes/baan-ing-kwan/main.jpg"
   },
   "norbulingka-coffee": {
     "lat": 19.1962,
-    "lng": 99.8889
+    "lng": 99.8889,
+    "photo": "/images/cafes/norbulingka-coffee/main.jpg"
+  },
+  "mr-handsome-cafe": {
+    "lat": 19.0463675,
+    "lng": 99.9267633,
+    "photo": "/images/cafes/mr-handsome-cafe/main.jpg"
   }
 }

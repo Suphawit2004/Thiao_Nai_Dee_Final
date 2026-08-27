@@ -3,7 +3,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { getSupabaseServer } from "@/lib/supabase-server";
-import { checkSuggestionRateLimit } from "@/lib/rate-limit";
+import { checkSuggestionRateLimit } from "@/lib/rate-limit-supabase";
 import { resolveClientIp } from "@/lib/client-ip";
 
 export type SuggestionResult =
@@ -40,12 +40,13 @@ export async function submitSuggestion(input: {
   const sb = await getSupabaseServer();
   if (!sb) return { ok: false, error: "not_configured" };
 
-  // Rate limit by client IP (single-instance in-memory limiter)
+  // Rate limit by client IP (Supabase-backed durable limiter)
   const hdrs = await headers();
   const ipHash = createHash("sha256")
     .update(resolveClientIp((name) => hdrs.get(name)))
     .digest("hex");
-  if (!checkSuggestionRateLimit(ipHash).allowed) {
+  const rl = await checkSuggestionRateLimit(ipHash);
+  if (!rl.allowed) {
     return { ok: false, error: "rate_limited" };
   }
 

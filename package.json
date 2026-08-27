@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "cafes:pins": "node scripts/apply-pins.mjs"
+    "cafes:pins": "node scripts/apply-pins.mjs",
+    "sync-suggestions": "node scripts/sync-suggestions.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

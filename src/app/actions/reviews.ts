@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { CAFES } from "@/data/cafes";
-import { checkReviewRateLimit } from "@/lib/rate-limit";
+import { checkReviewRateLimit } from "@/lib/rate-limit-supabase";
 import { resolveClientIp } from "@/lib/client-ip";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import type { ReviewRow } from "@/lib/types";
@@ -23,12 +23,13 @@ export async function submitReview(formData: {
     return { ok: false, error: "Database not configured" };
   }
 
-  // Rate limit by client IP (single-instance in-memory limiter)
+  // Rate limit by client IP (Supabase-backed durable limiter)
   const hdrs = await headers();
   const ipHash = createHash("sha256")
     .update(resolveClientIp((name) => hdrs.get(name)))
     .digest("hex");
-  if (!checkReviewRateLimit(ipHash).allowed) {
+  const rl = await checkReviewRateLimit(ipHash);
+  if (!rl.allowed) {
     return { ok: false, error: "rate_limited" };
   }
 
