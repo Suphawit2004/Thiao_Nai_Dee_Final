@@ -6,8 +6,16 @@ create table if not exists public.reviews (
   author_name text not null check (char_length(author_name) between 1 and 60),
   rating int not null check (rating between 1 and 5),
   comment text check (char_length(comment) <= 500),
+  user_id uuid references auth.users (id) on delete set null,
   created_at timestamptz not null default now()
 );
+
+alter table public.reviews add column if not exists user_id uuid references auth.users (id) on delete set null;
+
+-- One review per account per cafe (guest reviews have no user_id)
+create unique index if not exists reviews_user_cafe_uniq
+  on public.reviews (user_id, cafe_slug)
+  where user_id is not null;
 
 create index if not exists reviews_cafe_slug_idx on public.reviews (cafe_slug);
 
@@ -26,6 +34,7 @@ create policy "reviews_insert_public"
     and char_length(author_name) between 1 and 60
     and rating between 1 and 5
     and (comment is null or char_length(comment) <= 500)
+    and (user_id is null or user_id = auth.uid())
   );
 
 -- ============================================================
@@ -186,13 +195,18 @@ on conflict (id) do nothing;
 drop policy if exists "suggestion_photos_insert" on storage.objects;
 create policy "suggestion_photos_insert"
   on storage.objects for insert
-  with check (bucket_id = 'cafe-suggestions');
+  with check (
+    bucket_id = 'cafe-suggestions'
+    and (storage.objects.metadata ->> 'mimetype') in ('image/jpeg', 'image/png', 'image/webp', 'image/gif')
+    and coalesce((storage.objects.metadata ->> 'size')::numeric, 0) <= 5242880
+  );
 
 -- ============================================================
 -- admins - email allowlist for the moderation UI (/admin)
 -- Seed with: insert into public.admins (email)
 --            values ('you@example.com') on conflict do nothing;
--- No RLS policies: only the service role / dashboard touches this table.
+-- RLS enabled with zero policies: clients can only reach it through the
+-- is_admin() SECURITY DEFINER function; direct reads/writes are denied.
 -- ============================================================
 create table if not exists public.admins (
   email text primary key
@@ -242,3 +256,56 @@ drop policy if exists "reviews_delete_admin" on public.reviews;
 create policy "reviews_delete_admin"
   on public.reviews for delete
   using (public.is_admin());
+
+-- ============================================================
+-- rate_limits — fixed-window counters for durable rate limiting
+-- ============================================================
+create table if not exists public.rate_limits (
+  key text not null,
+  window_start timestamptz not null,
+  count int not null default 1,
+  primary key (key, window_start)
+);
+
+create index if not exists rate_limits_window_start_idx on public.rate_limits (window_start);
+
+alter table public.rate_limits enable row level security;
+
+-- No policies: only server-side (service role or trusted function) should access.
+-- We use a SECURITY DEFINER function for atomic increment + check.
+
+create or replace function public.check_rate_limit(
+  p_key text,
+  p_limit int,
+  p_window_seconds int
+)
+returns boolean
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_window_start timestamptz;
+  v_count int;
+begin
+  v_window_start := date_trunc('second', now()) - (date_trunc('second', now()) - '1970-01-01'::timestamptz) % (p_window_seconds || ' seconds')::interval;
+  
+  insert into public.rate_limits (key, window_start, count)
+  values (p_key, v_window_start, 1)
+  on conflict (key, window_start) do update set count = public.rate_limits.count + 1
+  returning count into v_count;
+  
+  return v_count <= p_limit;
+end;
+$$;
+
+-- Cleanup old rate limit entries (run periodically via pg_cron or manually)
+create or replace function public.cleanup_rate_limits(p_older_than interval default '2 hours')
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  delete from public.rate_limits
+  where window_start < now() - p_older_than;
+end;
+$$;

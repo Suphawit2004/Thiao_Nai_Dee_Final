@@ -24,12 +24,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let mounted = true;
 
-    supabase.auth.getUser().then(({ data }) => {
-      if (mounted) {
-        setUser(data.user ?? null);
-        setLoading(false);
-      }
-    });
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (mounted) {
+          setUser(data.user ?? null);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        // Never strand the app in loading=true on a network failure.
+        if (mounted) setLoading(false);
+      });
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);

@@ -7,9 +7,10 @@ import {
   useEffect,
   useMemo,
   useSyncExternalStore,
+  Suspense,
 } from "react";
 import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   INITIAL_FILTERS,
   filtersToQuery,
@@ -52,6 +53,25 @@ function commit(next: FilterState): void {
   for (const notify of listeners) notify();
 }
 
+// Small component that reads searchParams; wrapped in Suspense so static
+// pages can prerender while this piece defers to client.
+function SearchSync() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!pathname.startsWith("/cafes")) return;
+    const search = searchParams.toString();
+    if (!search) return;
+    const incoming = parseFilters(`?${search}`);
+    if (filtersToQuery(incoming) !== filtersToQuery(state)) {
+      commit(incoming);
+    }
+  }, [pathname, searchParams]);
+
+  return null;
+}
+
 export function SearchProvider({ children }: { children: ReactNode }) {
   const filters = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const pathname = usePathname();
@@ -61,19 +81,6 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reset = useCallback(() => commit(INITIAL_FILTERS), []);
-
-  // Deep-link intent wins: arriving at /cafes with explicit query params
-  // (e.g. the home category chips "?tag=view") replaces the current filters,
-  // so stale selections never leak into a fresh shared link. A param-less
-  // visit keeps the current selection for continuity.
-  useEffect(() => {
-    if (!pathname.startsWith("/cafes")) return;
-    if (!window.location.search) return;
-    const incoming = parseFilters(window.location.search);
-    if (filtersToQuery(incoming) !== filtersToQuery(state)) {
-      commit(incoming);
-    }
-  }, [pathname]);
 
   // Keep /cafes shareable: reflect the live filter state in the address bar
   // (no navigation) whenever we are on — or arrive at — the cafes page.
@@ -88,7 +95,12 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     [filters, patch, reset]
   );
 
-  return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
+  return (
+    <SearchContext.Provider value={value}>
+      <Suspense fallback={null}><SearchSync /></Suspense>
+      {children}
+    </SearchContext.Provider>
+  );
 }
 
 export function useSearch(): SearchContextValue {

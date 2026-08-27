@@ -1,4 +1,5 @@
 const LS_KEY = "tnl-favs";
+const MAX_SLUG_LENGTH = 100;
 
 export function readLocalFavs(): string[] {
   if (typeof window === "undefined") return [];
@@ -7,7 +8,11 @@ export function readLocalFavs(): string[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((v): v is string => typeof v === "string").slice(0, 200);
+    const slugs = parsed.filter(
+      (v): v is string => typeof v === "string" && v.length > 0 && v.length <= MAX_SLUG_LENGTH
+    );
+    // Dedupe: duplicates would produce duplicate cards/keys and a failing upsert.
+    return [...new Set(slugs)].slice(0, 200);
   } catch {
     return [];
   }

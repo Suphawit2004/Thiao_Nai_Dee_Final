@@ -33,6 +33,8 @@ const th = {
   "login.authError": "ลิงก์เข้าสู่ระบบไม่ถูกต้องหรือหมดอายุแล้ว ลองขอลิงก์ใหม่อีกครั้ง",
   "login.notConfigured":
     "ยังไม่ได้เชื่อมต่อฐานข้อมูล — ดูวิธีตั้งค่าได้ที่ไฟล์ supabase/schema.sql และ .env.example",
+  "login.orDivider": "หรือ",
+  "login.google": "เข้าสู่ระบบด้วย Google",
 
   "profile.title": "โปรไฟล์ของฉัน",
   "profile.email": "อีเมล",
@@ -44,6 +46,13 @@ const th = {
   "profile.notSignedIn": "คุณยังไม่ได้เข้าสู่ระบบ",
   "profile.signInCta": "เข้าสู่ระบบ",
   "profile.loadError": "โหลดโปรไฟล์ไม่สำเร็จ",
+  "profile.favoritesTitle": "ร้านที่ชอบ",
+  "profile.goToFavorites": "ไปที่ร้านที่ชอบ",
+  "profile.myReviews": "รีวิวของฉัน",
+  "profile.myReviewsEmpty": "ยังไม่มีรีวิว — ไปรีวิวร้านโปรดได้เลย!",
+  "profile.avatarRemove": "ลบรูปโปรไฟล์",
+  "profile.avatarTooBig": "รูปใหญ่เกินไป (สูงสุด 5MB)",
+  "profile.avatarTypeError": "รองรับเฉพาะไฟล์ JPG, PNG, WEBP",
 
   "home.badge": "คาเฟ่เมืองพะเยา",
   "home.heroTitle1": "เช้านี้… เที่ยวไหนดี?",
@@ -86,6 +95,8 @@ const th = {
   "cafes.statusLabel": "สถานะ",
   "filter.open": "ตัวกรอง",
   "filter.remove": "ลบตัวกรองนี้",
+  "filter.copyLink": "คัดลอกลิงก์",
+  "filter.copied": "คัดลอกแล้ว",
 
   "suggest.title": "แนะนำคาเฟ่ใหม่",
   "suggest.desc":
@@ -122,6 +133,7 @@ const th = {
   "suggest.success": "ขอบคุณมาก! ☕ เราได้รับคำแนะนำของคุณแล้ว และจะตรวจสอบเร็ว ๆ นี้",
   "suggest.successAgain": "แนะนำร้านอื่นต่อ",
   "suggest.error": "ส่งไม่สำเร็จ กรุณาลองอีกครั้ง",
+  "suggest.rateLimited": "คุณส่งคำแนะนำบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่ 🙏",
 
   "report.open": "รายงานข้อมูลไม่ถูกต้อง",
   "report.title": "รายงานข้อมูล / ขออัปเดต",
@@ -143,6 +155,7 @@ const th = {
   "report.sending": "กำลังส่ง...",
   "report.success": "ขอบคุณสำหรับการแจ้ง! 🙏 เราจะตรวจสอบและอัปเดตข้อมูลให้เร็วที่สุด",
   "report.error": "ส่งรายงานไม่สำเร็จ กรุณาลองอีกครั้ง",
+  "report.rateLimited": "คุณส่งรายงานบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่ 🙏",
 
   "admin.title": "จัดการข้อมูล",
   "admin.desc": "ตรวจร้านที่แนะนำเข้ามา รายงานข้อมูล และรีวิวจากผู้ใช้",
@@ -189,6 +202,11 @@ const th = {
   "reviews.baseNote": "คะแนนเริ่มต้นจากข้อมูลรีวิวสาธารณะ",
   "reviews.loadError": "โหลดรีวิวไม่สำเร็จ — ฐานข้อมูลอาจไม่พร้อมใช้งาน",
   "reviews.rateLimited": "คุณส่งรีวิวบ่อยเกินไป กรุณารอสักครู่แล้วลองอีกครั้ง 🙏",
+  "reviews.alreadyReviewed": "คุณรีวิวร้านนี้ไปแล้ว",
+  "reviews.delete": "ลบรีวิว",
+  "reviews.deleteConfirm": "แน่ใจหรือไม่ว่าต้องการลบรีวิวนี้?",
+  "reviews.deleted": "ลบรีวิวแล้ว",
+  "common.close": "ปิด",
   "reviews.retry": "ลองโหลดอีกครั้ง",
   "form.name": "ชื่อของคุณ",
   "form.namePh": "เช่น มินท์",
@@ -275,6 +293,8 @@ const en: Record<DictKey, string> = {
   "login.authError": "That login link is invalid or has expired. Request a new one.",
   "login.notConfigured":
     "Database is not connected yet — see supabase/schema.sql and .env.example for setup.",
+  "login.orDivider": "or",
+  "login.google": "Continue with Google",
 
   "profile.title": "My profile",
   "profile.email": "Email",
@@ -286,6 +306,13 @@ const en: Record<DictKey, string> = {
   "profile.notSignedIn": "You are not signed in yet.",
   "profile.signInCta": "Log in",
   "profile.loadError": "Failed to load profile",
+  "profile.favoritesTitle": "Favorite cafes",
+  "profile.goToFavorites": "Go to favorites",
+  "profile.myReviews": "My reviews",
+  "profile.myReviewsEmpty": "No reviews yet — share your first one!",
+  "profile.avatarRemove": "Remove profile photo",
+  "profile.avatarTooBig": "Image is too large (max 5MB)",
+  "profile.avatarTypeError": "Only JPG, PNG or WEBP files are supported",
 
   "home.badge": "Cafes in Phayao old town",
   "home.heroTitle1": "Where should we go today?",
@@ -328,6 +355,8 @@ const en: Record<DictKey, string> = {
   "cafes.statusLabel": "Status",
   "filter.open": "Filters",
   "filter.remove": "Remove this filter",
+  "filter.copyLink": "Copy link",
+  "filter.copied": "Copied",
 
   "suggest.title": "Suggest a new cafe",
   "suggest.desc":
@@ -366,6 +395,7 @@ const en: Record<DictKey, string> = {
   "suggest.success": "Thank you! ☕ We received your suggestion and will review it soon.",
   "suggest.successAgain": "Suggest another cafe",
   "suggest.error": "Failed to send. Please try again.",
+  "suggest.rateLimited": "You're sending suggestions too quickly. Please wait a moment and try again 🙏",
 
   "report.open": "Report incorrect info",
   "report.title": "Report / update request",
@@ -387,6 +417,7 @@ const en: Record<DictKey, string> = {
   "report.sending": "Sending...",
   "report.success": "Thanks for reporting! 🙏 We'll verify and update the info soon.",
   "report.error": "Failed to send the report. Please try again.",
+  "report.rateLimited": "You're sending reports too quickly. Please wait a moment and try again 🙏",
 
   "admin.title": "Moderation",
   "admin.desc": "Review submitted cafe suggestions, data reports and user reviews",
@@ -433,6 +464,11 @@ const en: Record<DictKey, string> = {
   "reviews.baseNote": "Base rating from public review sources",
   "reviews.loadError": "Failed to load reviews — the database may be unavailable.",
   "reviews.rateLimited": "You're submitting reviews too quickly. Please wait a moment and try again 🙏",
+  "reviews.alreadyReviewed": "You've already reviewed this cafe",
+  "reviews.delete": "Delete review",
+  "reviews.deleteConfirm": "Are you sure you want to delete this review?",
+  "reviews.deleted": "Review deleted",
+  "common.close": "Close",
   "reviews.retry": "Retry",
   "form.name": "Your name",
   "form.namePh": "e.g. Mint",

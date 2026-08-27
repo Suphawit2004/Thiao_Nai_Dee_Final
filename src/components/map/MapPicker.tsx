@@ -4,8 +4,7 @@ import L from "leaflet";
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { useLang } from "@/i18n/LangProvider";
-
-const DEFAULT_CENTER: [number, number] = [19.1668, 99.8928];
+import { DEFAULT_CENTER } from "@/lib/map";
 
 const pinIcon = L.divIcon({
   className: "coffee-marker",

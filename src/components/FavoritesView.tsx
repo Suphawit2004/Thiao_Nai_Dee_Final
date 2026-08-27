@@ -28,7 +28,10 @@ export default function FavoritesView() {
       {!user && ready && slugs.length > 0 && (
         <p className="mb-5 rounded-xl bg-sand/60 px-4 py-3 text-sm text-espresso/80">
           🔑 {t("fav.guestNote")}{" "}
-          <Link href="/login" className="font-semibold text-coffee underline underline-offset-2">
+          <Link
+            href="/login?next=/favorites"
+            className="font-semibold text-coffee underline underline-offset-2"
+          >
             {t("profile.signInCta")}
           </Link>
         </p>

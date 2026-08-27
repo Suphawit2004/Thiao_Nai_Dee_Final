@@ -26,7 +26,10 @@ export function filterByMaxDistance(
 export function sortByProximityToLakeside(
   distances: DistanceFromRoad[]
 ): DistanceFromRoad[] {
-  return [...distances].sort((a, b) => (a.fromLakeside && !b.fromLakeside ? -1 : 1));
+  // Stable partition: lakeside entries first, order otherwise preserved.
+  return [...distances].sort((a, b) =>
+    a.fromLakeside === b.fromLakeside ? 0 : a.fromLakeside ? -1 : 1
+  );
 }
 
 // Export for use in other modules

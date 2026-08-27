@@ -2,7 +2,6 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { readLocalFavs, writeLocalFavs } from "@/lib/favorites";
 import { useAuth } from "./AuthProvider";
@@ -22,20 +21,22 @@ interface FavRow {
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
+  const userId = user?.id ?? null;
   const [slugs, setSlugs] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
 
   // Load favourites whenever the auth state settles.
+  // Keyed on user.id (not the user object) so token refreshes don't refetch.
   useEffect(() => {
     if (loading) return;
 
     let cancelled = false;
 
-    async function sync(nextUser: User | null) {
+    async function sync(nextUserId: string | null) {
       const supabase = getSupabaseBrowser();
 
       // Guest mode (or DB not configured): localStorage only.
-      if (!supabase || !nextUser) {
+      if (!supabase || !nextUserId) {
         setSlugs(readLocalFavs());
         setReady(true);
         return;
@@ -45,33 +46,40 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       const local = readLocalFavs();
       if (local.length > 0) {
         const { error } = await supabase.from("favorites").upsert(
-          local.map((cafe_slug) => ({ user_id: nextUser.id, cafe_slug })),
+          local.map((cafe_slug) => ({ user_id: nextUserId, cafe_slug })),
           { onConflict: "user_id,cafe_slug", ignoreDuplicates: true }
         );
         if (error) {
           // Keep the guest list intact — it will be retried on next login.
           console.error("favorites merge failed:", error);
-        } else {
-          writeLocalFavs([]);
         }
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("favorites")
         .select("cafe_slug")
-        .eq("user_id", nextUser.id)
+        .eq("user_id", nextUserId)
         .order("created_at", { ascending: false });
 
-      if (!cancelled) {
-        setSlugs((data ?? []).map((row: FavRow) => row.cafe_slug));
-        setReady(true);
+      if (cancelled) return;
+
+      if (error || !data) {
+        console.error("favorites fetch failed:", error);
+        // Server list unavailable: show whatever we have locally instead of
+        // pretending the account has no favourites.
+        setSlugs(readLocalFavs());
+      } else {
+        setSlugs(data.map((row: FavRow) => row.cafe_slug));
+        // Only drop the guest list once the server list is confirmed.
+        if (local.length > 0) writeLocalFavs([]);
       }
+      setReady(true);
     }
 
-    sync(user).catch(() => {
+    sync(userId).catch(() => {
       // Network/DB failure — fall back to whatever we can show.
       if (!cancelled) {
-        setSlugs(user ? [] : readLocalFavs());
+        setSlugs(userId ? readLocalFavs() : []);
         setReady(true);
       }
     });
@@ -79,7 +87,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user, loading]);
+  }, [userId, loading]);
 
   const toggle = useCallback(
     (slug: string) => {
@@ -95,6 +103,15 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Roll back just this slug instead of restoring a stale snapshot, so a
+      // failed toggle can't undo an unrelated toggle that happened meanwhile.
+      const rollback = () => {
+        console.error(`${exists ? "unfavorite" : "favorite"} failed`);
+        setSlugs((prev) =>
+          exists ? (prev.includes(slug) ? prev : [slug, ...prev]) : prev.filter((s) => s !== slug)
+        );
+      };
+
       if (exists) {
         supabase
           .from("favorites")
@@ -102,14 +119,14 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           .eq("user_id", user.id)
           .eq("cafe_slug", slug)
           .then(({ error }) => {
-            if (error) console.error("unfavorite failed:", error);
+            if (error) rollback();
           });
       } else {
         supabase
           .from("favorites")
           .upsert({ user_id: user.id, cafe_slug: slug })
           .then(({ error }) => {
-            if (error) console.error("favorite failed:", error);
+            if (error) rollback();
           });
       }
     },

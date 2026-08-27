@@ -66,9 +66,13 @@ export async function deleteReview(id: string): Promise<AdminResult> {
   return { ok: true };
 }
 
-/** <form action={...}> wrappers — buttons post id/status via hidden inputs */
-export async function suggestionFormAction(formData: FormData): Promise<void> {
-  await setSuggestionStatus(
+/** <form action={...}> wrappers — buttons post id/status via hidden inputs.
+ * Return the result so client can use useActionState for feedback. */
+export async function suggestionFormAction(
+  _prev: AdminResult | undefined,
+  formData: FormData
+): Promise<AdminResult> {
+  return setSuggestionStatus(
     String(formData.get("id") ?? ""),
     formData.get("status") === "approved"
       ? "approved"
@@ -78,11 +82,17 @@ export async function suggestionFormAction(formData: FormData): Promise<void> {
   );
 }
 
-export async function reportFormAction(formData: FormData): Promise<void> {
+export async function reportFormAction(
+  _prev: AdminResult | undefined,
+  formData: FormData
+): Promise<AdminResult> {
   const status = formData.get("status") === "dismissed" ? "dismissed" : "resolved";
-  await setReportStatus(String(formData.get("id") ?? ""), status);
+  return setReportStatus(String(formData.get("id") ?? ""), status);
 }
 
-export async function deleteReviewFormAction(formData: FormData): Promise<void> {
-  await deleteReview(String(formData.get("id") ?? ""));
+export async function deleteReviewFormAction(
+  _prev: AdminResult | undefined,
+  formData: FormData
+): Promise<AdminResult> {
+  return deleteReview(String(formData.get("id") ?? ""));
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { CAFES } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import type { DictKey } from "@/i18n/dictionaries";
@@ -86,6 +86,30 @@ export default function AdminDashboard({
   const tk = (k: string) => t(k as DictKey);
   const [tab, setTab] = useState<"suggestions" | "reports" | "reviews">("suggestions");
 
+  // Action state for suggestion forms
+  const [approveState, approveAction] = useActionState(suggestionFormAction, undefined);
+  const [rejectState, rejectAction] = useActionState(suggestionFormAction, undefined);
+  const [reopenState, reopenAction] = useActionState(suggestionFormAction, undefined);
+  const approvePending = approveState?.ok === false && approveState.error !== "Not authorized";
+  const rejectPending = rejectState?.ok === false && rejectState.error !== "Not authorized";
+  const reopenPending = reopenState?.ok === false && reopenState.error !== "Not authorized";
+  const approveError = approveState?.ok === false ? approveState.error : null;
+  const rejectError = rejectState?.ok === false ? rejectState.error : null;
+  const reopenError = reopenState?.ok === false ? reopenState.error : null;
+
+  // Action state for report forms
+  const [resolveState, resolveAction] = useActionState(reportFormAction, undefined);
+  const [dismissState, dismissAction] = useActionState(reportFormAction, undefined);
+  const resolvePending = resolveState?.ok === false && resolveState.error !== "Not authorized";
+  const dismissPending = dismissState?.ok === false && dismissState.error !== "Not authorized";
+  const resolveError = resolveState?.ok === false ? resolveState.error : null;
+  const dismissError = dismissState?.ok === false ? dismissState.error : null;
+
+  // Action state for review deletion
+  const [deleteState, deleteAction] = useActionState(deleteReviewFormAction, undefined);
+  const deletePending = deleteState?.ok === false && deleteState.error !== "Not authorized";
+  const deleteError = deleteState?.ok === false ? deleteState.error : null;
+
   if (mode !== "ready") {
     return (
       <div className="mx-auto max-w-md px-4 py-24 text-center">
@@ -113,10 +137,12 @@ export default function AdminDashboard({
     return cafe ? tr(cafe.name) : slug;
   };
 
+  // Pin the timezone so SSR and client hydration render identical strings.
   const fmt = (iso: string) =>
     new Date(iso).toLocaleString(lang === "th" ? "th-TH" : "en-US", {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: "Asia/Bangkok",
     });
 
   const pendingSuggestions = suggestions.filter((s) => s.status === "pending").length;
@@ -229,40 +255,45 @@ export default function AdminDashboard({
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {s.status !== "approved" && (
-                  <form action={suggestionFormAction}>
+                  <form action={approveAction}>
                     <input type="hidden" name="id" value={s.id} />
+                    <input type="hidden" name="status" value="approved" />
                     <button
-                      name="status"
-                      value="approved"
-                      className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                      disabled={approvePending}
+                      className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
                     >
-                      ✓ {t("admin.approve")}
+                      {approvePending ? "⏳" : "✓"} {t("admin.approve")}
                     </button>
                   </form>
                 )}
                 {s.status !== "rejected" && (
-                  <form action={suggestionFormAction}>
+                  <form action={rejectAction}>
                     <input type="hidden" name="id" value={s.id} />
+                    <input type="hidden" name="status" value="rejected" />
                     <button
-                      name="status"
-                      value="rejected"
-                      className="rounded-full border border-[#e8dcc8] px-4 py-1.5 text-sm font-semibold text-espresso/80 transition hover:bg-sand"
+                      disabled={rejectPending}
+                      className="rounded-full border border-[#e8dcc8] px-4 py-1.5 text-sm font-semibold text-espresso/80 transition hover:bg-sand disabled:opacity-50"
                     >
-                      ✕ {t("admin.reject")}
+                      {rejectPending ? "⏳" : "✕"} {t("admin.reject")}
                     </button>
                   </form>
                 )}
                 {s.status !== "pending" && (
-                  <form action={suggestionFormAction}>
+                  <form action={reopenAction}>
                     <input type="hidden" name="id" value={s.id} />
+                    <input type="hidden" name="status" value="pending" />
                     <button
-                      name="status"
-                      value="pending"
-                      className="rounded-full px-4 py-1.5 text-sm font-medium text-coffee underline-offset-2 hover:underline"
+                      disabled={reopenPending}
+                      className="rounded-full px-4 py-1.5 text-sm font-medium text-coffee underline-offset-2 hover:underline disabled:opacity-50"
                     >
-                      ↺ {t("admin.reopen")}
+                      {reopenPending ? "⏳" : "↺"} {t("admin.reopen")}
                     </button>
                   </form>
+                )}
+                {(approveError || rejectError || reopenError) && (
+                  <p className="text-xs text-rose-600">
+                    {approveError ?? rejectError ?? reopenError}
+                  </p>
                 )}
               </div>
             </article>
@@ -315,26 +346,29 @@ export default function AdminDashboard({
 
               {r.status === "pending" ? (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <form action={reportFormAction}>
+                  <form action={resolveAction}>
                     <input type="hidden" name="id" value={r.id} />
+                    <input type="hidden" name="status" value="resolved" />
                     <button
-                      name="status"
-                      value="resolved"
-                      className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                      disabled={resolvePending}
+                      className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
                     >
-                      ✓ {t("admin.resolve")}
+                      {resolvePending ? "⏳" : "✓"} {t("admin.resolve")}
                     </button>
                   </form>
-                  <form action={reportFormAction}>
+                  <form action={dismissAction}>
                     <input type="hidden" name="id" value={r.id} />
+                    <input type="hidden" name="status" value="dismissed" />
                     <button
-                      name="status"
-                      value="dismissed"
-                      className="rounded-full border border-[#e8dcc8] px-4 py-1.5 text-sm font-semibold text-espresso/80 transition hover:bg-sand"
+                      disabled={dismissPending}
+                      className="rounded-full border border-[#e8dcc8] px-4 py-1.5 text-sm font-semibold text-espresso/80 transition hover:bg-sand disabled:opacity-50"
                     >
-                      ✕ {t("admin.dismiss")}
+                      {dismissPending ? "⏳" : "✕"} {t("admin.dismiss")}
                     </button>
                   </form>
+                  {(resolveError || dismissError) && (
+                    <p className="text-xs text-rose-600">{resolveError ?? dismissError}</p>
+                  )}
                 </div>
               ) : (
                 <p className="mt-4 text-xs text-espresso/40">{fmt(r.createdAt)}</p>
@@ -367,16 +401,18 @@ export default function AdminDashboard({
                 {t("admin.review.by").replace("{name}", rv.author_name)} · {fmt(rv.created_at)}
               </p>
               {rv.comment && <p className="mt-2 text-sm">💬 {rv.comment}</p>}
-              <form action={deleteReviewFormAction} className="mt-3">
+              <form action={deleteAction} className="mt-3">
                 <input type="hidden" name="id" value={rv.id} />
                 <button
                   onClick={(e) => {
                     if (!window.confirm(t("admin.confirmDeleteReview"))) e.preventDefault();
                   }}
-                  className="rounded-full border border-red-200 px-4 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                  disabled={deletePending}
+                  className="rounded-full border border-red-200 px-4 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                 >
-                  🗑 {t("admin.delete")}
+                  {deletePending ? "⏳" : "🗑"} {t("admin.delete")}
                 </button>
+                {deleteError && <p className="mt-1 text-xs text-rose-600">{deleteError}</p>}
               </form>
             </article>
           ))}
