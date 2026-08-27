@@ -5,4 +5,11 @@ export interface ReviewRow {
   rating: number;
   comment: string | null;
   created_at: string;
+  user_id?: string | null;
+}
+
+export interface ProfileRow {
+  id: string;
+  display_name: string | null;
+  avatar_url?: string | null;
 }

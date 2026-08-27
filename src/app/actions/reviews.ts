@@ -80,3 +80,27 @@ export async function submitReview(formData: {
 
   return { ok: true, data };
 }
+
+export async function deleteOwnReview(id: string): Promise<{ ok: boolean }> {
+  const sb = await getSupabaseServer();
+  if (!sb) return { ok: false };
+  if (typeof id !== "string" || id.length !== 36) return { ok: false };
+
+  const { data: authData } = await sb.auth.getUser();
+  const userId = authData?.user?.id;
+  if (!userId) return { ok: false };
+
+  // RLS "reviews_delete_own" is the backstop; the explicit eq() keeps the
+  // statement scoped even if policies change later.
+  const { error } = await sb
+    .from("reviews")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("deleteOwnReview failed:", error);
+    return { ok: false };
+  }
+  return { ok: true };
+}

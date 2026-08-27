@@ -3,8 +3,10 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import type { ReviewRow } from "@/lib/types";
+import { useProfile } from "@/lib/use-profile";
 import { useLang } from "@/i18n/LangProvider";
-import { submitReview } from "@/app/actions/reviews";
+import { submitReview, deleteOwnReview } from "@/app/actions/reviews";
+import { useAuth } from "./AuthProvider";
 import RatingStars from "./RatingStars";
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -34,12 +36,18 @@ interface ReviewSectionProps {
 
 export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) {
   const { t, lang } = useLang();
+  const { user } = useAuth();
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
-  const [name, setName] = useState("");
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Name field: null means "not touched" → fall back to the profile name.
+  const { profile } = useProfile();
+  const [nameOverride, setNameOverride] = useState<string | null>(null);
+  const nameValue = nameOverride ?? profile?.display_name ?? "";
 
   const configured = getSupabaseBrowser() !== null;
   const [loading, setLoading] = useState(configured);
@@ -80,10 +88,10 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!nameValue.trim()) return;
     setSending(true);
     setNotice(null);
-    const res = await submitReview({ slug, name, rating, comment });
+    const res = await submitReview({ slug, name: nameValue, rating, comment });
     setSending(false);
     if (!res.ok) {
       setNotice({
@@ -100,6 +108,19 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
     setReviews((prev) => [res.data, ...prev]);
     setComment("");
     setNotice({ ok: true, text: t("form.success") });
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm(t("reviews.deleteConfirm"))) return;
+    setDeletingId(id);
+    const res = await deleteOwnReview(id);
+    setDeletingId(null);
+    if (res.ok) {
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+      setNotice({ ok: true, text: t("reviews.deleted") });
+    } else {
+      setNotice({ ok: false, text: t("form.error") });
+    }
   }
 
   const BASE_WEIGHT = 10;
@@ -157,8 +178,8 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
             <input
               required
               maxLength={60}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={nameValue}
+              onChange={(e) => setNameOverride(e.target.value)}
               placeholder={t("form.namePh")}
               className="w-full rounded-lg border border-[#e8dcc8] bg-white px-3 py-2 text-sm outline-none focus:border-latte"
             />
@@ -225,6 +246,18 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
               </span>
             </div>
             {r.comment && <p className="mt-2 text-sm leading-relaxed text-espresso/80">{r.comment}</p>}
+            {user && r.user_id === user.id && (
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleDelete(r.id)}
+                  disabled={deletingId === r.id}
+                  className="rounded-full px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+                >
+                  🗑 {deletingId === r.id ? t("form.sending") : t("reviews.delete")}
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>

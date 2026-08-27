@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
+import { useProfile } from "@/lib/use-profile";
 import { useAuth } from "./AuthProvider";
 import { useFavorites } from "./FavoritesProvider";
 import { useSearch } from "./SearchProvider";
@@ -19,6 +20,7 @@ const LINKS = [
 export default function Navbar() {
   const { t, toggle } = useLang();
   const { user, loading } = useAuth();
+  const { profile } = useProfile();
   const { slugs } = useFavorites();
   const { filters, patch } = useSearch();
   const pathname = usePathname();
@@ -165,7 +167,23 @@ export default function Navbar() {
               href={user ? "/profile" : "/login"}
               className={linkClass(user ? "/profile" : "/login")}
             >
-              {user ? `👤 ${t("nav.profile")}` : `🔑 ${t("nav.login")}`}
+              {user ? (
+                profile?.avatar_url ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={profile.avatar_url}
+                      alt=""
+                      className="inline-block size-5 rounded-full border border-[#e8dcc8] object-cover align-[-4px]"
+                    />{" "}
+                    {t("nav.profile")}
+                  </>
+                ) : (
+                  `👤 ${t("nav.profile")}`
+                )
+              ) : (
+                `🔑 ${t("nav.login")}`
+              )}
             </Link>
           )}
         </nav>
@@ -251,13 +269,25 @@ export default function Navbar() {
               <Link
                 href={user ? "/profile" : "/login"}
                 onClick={() => setOpen(false)}
-                className={`rounded-xl px-4 py-2.5 text-sm font-medium ${
+                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium ${
                   isActive(user ? "/profile" : "/login")
                     ? "bg-coffee text-cream"
                     : "text-espresso hover:bg-sand"
                 }`}
               >
-                {user ? `👤 ${t("nav.profile")}` : `🔑 ${t("nav.login")}`}
+                {user && profile?.avatar_url && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={profile.avatar_url}
+                    alt=""
+                    className="size-5 rounded-full border border-white/40 object-cover"
+                  />
+                )}
+                {user ? (
+                  <>{profile?.avatar_url ? "" : "👤 "}{t("nav.profile")}</>
+                ) : (
+                  `🔑 ${t("nav.login")}`
+                )}
               </Link>
             )}
           </div>
