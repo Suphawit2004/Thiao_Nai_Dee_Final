@@ -10,6 +10,7 @@
     "test": "vitest run",
     "cafes:pins": "node scripts/apply-pins.mjs",
     "seed-cafes": "node scripts/seed-cafes.mjs",
+    "add-admin": "node scripts/add-admin.mjs",
     "sync-suggestions": "node scripts/sync-suggestions.mjs"
   },
   "dependencies": {
