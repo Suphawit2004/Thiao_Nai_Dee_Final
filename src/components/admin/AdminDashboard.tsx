@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { CAFES } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import type { DictKey } from "@/i18n/dictionaries";
@@ -53,8 +53,6 @@ export interface AdminReview {
 
 type Mode = "ready" | "login" | "forbidden" | "not-configured";
 
-type AdminTab = "overview" | "cafes" | "users" | "suggestions" | "reports" | "reviews";
-
 const REPORT_FIELD_KEY: Record<string, string> = {
   hours: "report.field.hours",
   phone: "report.field.phone",
@@ -101,9 +99,7 @@ export default function AdminDashboard({
 }) {
   const { t, tr, lang } = useLang();
   const tk = (k: string) => t(k as DictKey);
-  const [tab, setTab] = useState<AdminTab>("overview");
 
-  // Action state for suggestion forms
   const [approveState, approveAction] = useActionState(suggestionFormAction, undefined);
   const [rejectState, rejectAction] = useActionState(suggestionFormAction, undefined);
   const [reopenState, reopenAction] = useActionState(suggestionFormAction, undefined);
@@ -114,7 +110,6 @@ export default function AdminDashboard({
   const rejectError = rejectState?.ok === false ? rejectState.error : null;
   const reopenError = reopenState?.ok === false ? reopenState.error : null;
 
-  // Action state for report forms
   const [resolveState, resolveAction] = useActionState(reportFormAction, undefined);
   const [dismissState, dismissAction] = useActionState(reportFormAction, undefined);
   const resolvePending = resolveState?.ok === false && resolveState.error !== "Not authorized";
@@ -122,7 +117,6 @@ export default function AdminDashboard({
   const resolveError = resolveState?.ok === false ? resolveState.error : null;
   const dismissError = dismissState?.ok === false ? dismissState.error : null;
 
-  // Action state for review deletion
   const [deleteState, deleteAction] = useActionState(deleteReviewFormAction, undefined);
   const deletePending = deleteState?.ok === false && deleteState.error !== "Not authorized";
   const deleteError = deleteState?.ok === false ? deleteState.error : null;
@@ -154,7 +148,6 @@ export default function AdminDashboard({
     return cafe ? tr(cafe.name) : slug;
   };
 
-  // Pin the timezone so SSR and client hydration render identical strings.
   const fmt = (iso: string) =>
     new Date(iso).toLocaleString(lang === "th" ? "th-TH" : "en-US", {
       dateStyle: "medium",
@@ -165,56 +158,57 @@ export default function AdminDashboard({
   const pendingSuggestions = suggestions.filter((s) => s.status === "pending").length;
   const pendingReports = reports.filter((r) => r.status === "pending").length;
 
-  const tabs: { key: AdminTab; label: string; badge: number }[] = [
-    { key: "overview", label: t("admin.tab.overview"), badge: pendingSuggestions + pendingReports },
-    { key: "cafes", label: t("admin.tab.cafes"), badge: 0 },
-    { key: "users", label: t("admin.tab.users"), badge: 0 },
-    { key: "suggestions", label: t("admin.tab.suggestions"), badge: pendingSuggestions },
-    { key: "reports", label: t("admin.tab.reports"), badge: pendingReports },
-    { key: "reviews", label: t("admin.tab.reviews"), badge: 0 },
-  ];
+  const renderError = (msg: string | null) =>
+    msg ? <p className="text-xs text-rose-600">{msg}</p> : null;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">🛠️ {t("admin.title")}</h1>
-        <p className="mt-1 text-espresso/60">{t("admin.desc")}</p>
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">🛠️ {t("admin.title")}</h1>
+          <p className="mt-1 text-espresso/60">{t("admin.desc")}</p>
+        </div>
+        <a
+          href="/?preview=1"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full border border-[#e8dcc8] bg-white px-4 py-2 text-sm font-semibold text-espresso transition hover:bg-sand/50"
+        >
+          🖥️ {t("admin.viewSite")}
+        </a>
       </header>
 
-      <div
-        role="tablist"
-        aria-label={t("admin.title")}
-        className="flex gap-2 overflow-x-auto border-b border-[#eadfcd] pb-2"
-      >
-        {tabs.map(({ key, label, badge }) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-              tab === key ? "bg-coffee text-cream" : "text-espresso/70 hover:bg-sand"
-            }`}
-          >
-            {label}
-            {badge > 0 && (
-              <span className="ml-1.5 rounded-full bg-latte px-1.5 text-xs font-extrabold text-espresso">
-                {badge}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {stats && <AdminOverview stats={stats} activity={activity} />}
 
-      {tab === "overview" && stats && <AdminOverview stats={stats} activity={activity} />}
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-bold text-espresso flex items-center gap-2">
+          ☕ {t("admin.tab.cafes")}
+        </h2>
+        <AdminCafes cafes={cafes} />
+      </section>
 
-      {tab === "cafes" && <AdminCafes cafes={cafes} />}
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-bold text-espresso flex items-center gap-2">
+          👥 {t("admin.tab.users")}
+        </h2>
+        <AdminUsers admins={admins} users={users} />
+      </section>
 
-      {tab === "users" && <AdminUsers admins={admins} users={users} />}
-
-      {tab === "suggestions" && (
-        <section className="mt-5 flex flex-col gap-4">
-          {suggestions.length === 0 && <EmptyRow label={t("admin.empty.suggestions")} />}
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-bold text-espresso flex items-center gap-2">
+          📝 {t("admin.tab.suggestions")}
+          {pendingSuggestions > 0 && (
+            <span className="rounded-full bg-latte px-2 py-0.5 text-xs font-extrabold text-espresso">
+              {pendingSuggestions}
+            </span>
+          )}
+        </h2>
+        <div className="mt-5 flex flex-col gap-4">
+          {suggestions.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-[#e0d3bc] bg-white/50 p-10 text-center text-sm text-espresso/50">
+              {t("admin.empty.suggestions")}
+            </p>
+          )}
           {suggestions.map((s) => (
             <article
               key={s.id}
@@ -320,20 +314,28 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {(approveError || rejectError || reopenError) && (
-                  <p className="text-xs text-rose-600">
-                    {approveError ?? rejectError ?? reopenError}
-                  </p>
-                )}
+                {renderError(approveError ?? rejectError ?? reopenError)}
               </div>
             </article>
           ))}
-        </section>
-      )}
+        </div>
+      </section>
 
-      {tab === "reports" && (
-        <section className="mt-5 flex flex-col gap-4">
-          {reports.length === 0 && <EmptyRow label={t("admin.empty.reports")} />}
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-bold text-espresso flex items-center gap-2">
+          🚩 {t("admin.tab.reports")}
+          {pendingReports > 0 && (
+            <span className="rounded-full bg-latte px-2 py-0.5 text-xs font-extrabold text-espresso">
+              {pendingReports}
+            </span>
+          )}
+        </h2>
+        <div className="mt-5 flex flex-col gap-4">
+          {reports.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-[#e0d3bc] bg-white/50 p-10 text-center text-sm text-espresso/50">
+              {t("admin.empty.reports")}
+            </p>
+          )}
           {reports.map((r) => (
             <article
               key={r.id}
@@ -396,21 +398,26 @@ export default function AdminDashboard({
                       {dismissPending ? "⏳" : "✕"} {t("admin.dismiss")}
                     </button>
                   </form>
-                  {(resolveError || dismissError) && (
-                    <p className="text-xs text-rose-600">{resolveError ?? dismissError}</p>
-                  )}
+                  {renderError(resolveError ?? dismissError)}
                 </div>
               ) : (
                 <p className="mt-4 text-xs text-espresso/40">{fmt(r.createdAt)}</p>
               )}
             </article>
           ))}
-        </section>
-      )}
+        </div>
+      </section>
 
-      {tab === "reviews" && (
-        <section className="mt-5 flex flex-col gap-4">
-          {reviews.length === 0 && <EmptyRow label={t("admin.empty.reviews")} />}
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-bold text-espresso flex items-center gap-2">
+          ⭐ {t("admin.tab.reviews")}
+        </h2>
+        <div className="mt-5 flex flex-col gap-4">
+          {reviews.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-[#e0d3bc] bg-white/50 p-10 text-center text-sm text-espresso/50">
+              {t("admin.empty.reviews")}
+            </p>
+          )}
           {reviews.map((rv) => (
             <article
               key={rv.id}
@@ -442,20 +449,12 @@ export default function AdminDashboard({
                 >
                   {deletePending ? "⏳" : "🗑"} {t("admin.delete")}
                 </button>
-                {deleteError && <p className="mt-1 text-xs text-rose-600">{deleteError}</p>}
+                {renderError(deleteError)}
               </form>
             </article>
           ))}
-        </section>
-      )}
+        </div>
+      </section>
     </div>
-  );
-}
-
-function EmptyRow({ label }: { label: string }) {
-  return (
-    <p className="rounded-2xl border border-dashed border-[#e0d3bc] bg-white/50 p-10 text-center text-sm text-espresso/50">
-      {label}
-    </p>
   );
 }

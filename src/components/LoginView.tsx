@@ -39,7 +39,16 @@ function LoginFormInner() {
 
   const clearError = () => setErrorMsg(null);
 
-  const redirectAfterLogin = () => {
+  const redirectAfterLogin = async () => {
+    const supabase = getSupabaseBrowser();
+    if (supabase) {
+      const { data: isAdmin } = await supabase.rpc("is_admin");
+      if (isAdmin) {
+        router.push("/admin");
+        router.refresh();
+        return;
+      }
+    }
     router.push(safeNext);
     router.refresh();
   };
@@ -77,7 +86,7 @@ function LoginFormInner() {
       }
     } else {
       setStatus("sent");
-      setTimeout(redirectAfterLogin, 800);
+      setTimeout(() => redirectAfterLogin(), 800);
     }
   };
 
@@ -139,7 +148,7 @@ function LoginFormInner() {
     setStatus(error ? "error" : "sent");
     if (!error) {
       setPasswordMode("signin");
-      setTimeout(redirectAfterLogin, 800);
+      setTimeout(() => redirectAfterLogin(), 800);
     }
   };
 

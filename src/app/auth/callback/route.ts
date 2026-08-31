@@ -16,6 +16,10 @@ export async function GET(request: NextRequest) {
         if (type === "recovery") {
           return NextResponse.redirect(`${origin}/login?mode=reset`);
         }
+        const { data: isAdmin } = await supabase.rpc("is_admin");
+        if (isAdmin) {
+          return NextResponse.redirect(`${origin}/admin`);
+        }
         return NextResponse.redirect(`${origin}${next}`);
       }
     }
