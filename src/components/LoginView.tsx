@@ -5,8 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useLang } from "@/i18n/LangProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
-type Mode = "magic" | "password";
-type PasswordMode = "signin" | "signup" | "forgot" | "reset";
+type PasswordMode = "signin" | "signup";
 
 function LoginFormInner() {
   const { t } = useLang();
@@ -15,7 +14,6 @@ function LoginFormInner() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [mode, setMode] = useState<Mode>("magic");
   const [passwordMode, setPasswordMode] = useState<PasswordMode>("signin");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -30,12 +28,6 @@ function LoginFormInner() {
     if (safeNext !== "/") cb.searchParams.set("next", safeNext);
     return cb.toString();
   };
-
-  const urlMode = searchParams.get("mode");
-  if (urlMode === "reset" && passwordMode !== "reset") {
-    setPasswordMode("reset");
-    setMode("password");
-  }
 
   const clearError = () => setErrorMsg(null);
 
@@ -53,21 +45,7 @@ function LoginFormInner() {
     router.refresh();
   };
 
-  const handleMagicSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearError();
-    const supabase = getSupabaseBrowser();
-    if (!supabase || !email.trim()) return;
-    setStatus("sending");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: callbackUrl() },
-    });
-    setStatus(error ? "error" : "sent");
-    if (error) setErrorMsg(t("login.error"));
-  };
-
-  const handlePasswordSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     const supabase = getSupabaseBrowser();
@@ -79,14 +57,10 @@ function LoginFormInner() {
     });
     if (error) {
       setStatus("error");
-      if (error.message.includes("Email not confirmed")) {
-        setErrorMsg(t("login.emailNotConfirmed"));
-      } else {
-        setErrorMsg(t("login.invalidCredentials"));
-      }
+      setErrorMsg(t("login.invalidCredentials"));
     } else {
       setStatus("sent");
-      setTimeout(() => redirectAfterLogin(), 800);
+      setTimeout(() => redirectAfterLogin(), 500);
     }
   };
 
@@ -107,48 +81,13 @@ function LoginFormInner() {
     const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: callbackUrl() },
     });
     if (error) {
       setStatus("error");
       setErrorMsg(error.message);
     } else {
       setStatus("sent");
-    }
-  };
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearError();
-    const supabase = getSupabaseBrowser();
-    if (!supabase || !email.trim()) return;
-    setStatus("sending");
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/login?mode=reset`,
-    });
-    setStatus(error ? "error" : "sent");
-    if (!error) setPasswordMode("signin");
-  };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearError();
-    if (password !== confirmPassword) {
-      setErrorMsg(t("login.passwordsMismatch"));
-      return;
-    }
-    if (password.length < 6) {
-      setErrorMsg(t("login.passwordTooShort"));
-      return;
-    }
-    const supabase = getSupabaseBrowser();
-    if (!supabase) return;
-    setStatus("sending");
-    const { error } = await supabase.auth.updateUser({ password });
-    setStatus(error ? "error" : "sent");
-    if (!error) {
-      setPasswordMode("signin");
-      setTimeout(() => redirectAfterLogin(), 800);
+      setTimeout(() => redirectAfterLogin(), 500);
     }
   };
 
@@ -165,55 +104,18 @@ function LoginFormInner() {
   };
 
   if (status === "sent") {
-    if (mode === "magic" || passwordMode === "forgot") {
-      return (
-        <div className="animate-fade-in rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-          <div className="mx-auto mb-4 size-14 rounded-full bg-emerald-100 flex items-center justify-center">
-            <span className="text-2xl">✉️</span>
-          </div>
-          <p className="text-base font-semibold text-emerald-800">
-            {mode === "magic" ? t("login.checkEmail") : t("login.resetEmailSent")}
-          </p>
-          <p className="mt-2 text-sm text-emerald-700/80">{email}</p>
-          <p className="mt-4 text-xs text-emerald-600/70">
-            {mode === "magic"
-              ? "ลิงก์จะหมดอายุใน 1 ชั่วโมง"
-              : "ลิงก์รีเซ็ตจะหมดอายุใน 1 ชั่วโมง"}
-          </p>
+    return (
+      <div className="animate-fade-in rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center">
+        <div className="mx-auto mb-4 size-14 rounded-full bg-emerald-100 flex items-center justify-center">
+          <span className="text-2xl">✨</span>
         </div>
-      );
-    }
-    if (passwordMode === "reset") {
-      return (
-        <div className="animate-fade-in rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-          <div className="mx-auto mb-4 size-14 rounded-full bg-emerald-100 flex items-center justify-center">
-            <span className="text-2xl">🔑</span>
-          </div>
-          <p className="text-base font-semibold text-emerald-800">
-            {t("login.resetPassword")}
-          </p>
-          <p className="mt-2 text-sm text-emerald-700/80">
-            {t("login.checkEmail")}
-          </p>
-        </div>
-      );
-    }
-    if (passwordMode === "signup") {
-      return (
-        <div className="animate-fade-in rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-          <div className="mx-auto mb-4 size-14 rounded-full bg-emerald-100 flex items-center justify-center">
-            <span className="text-2xl">✨</span>
-          </div>
-          <p className="text-base font-semibold text-emerald-800">
-            {t("login.checkEmail")}
-          </p>
-          <p className="mt-2 text-sm text-emerald-700/80">{email}</p>
-          <p className="mt-4 text-xs text-emerald-600/70">
-            กดลิงก์ในอีเมลเพื่อยืนยันและเข้าสู่ระบบ
-          </p>
-        </div>
-      );
-    }
+        <p className="text-base font-semibold text-emerald-800">
+          {passwordMode === "signup" ? t("login.accountCreated") : t("login.signedIn")}
+        </p>
+        <p className="mt-2 text-sm text-emerald-700/80">{email}</p>
+        <p className="mt-4 text-xs text-emerald-600/70">{t("login.redirecting")}</p>
+      </div>
+    );
   }
 
   const inputClassName =
@@ -223,130 +125,50 @@ function LoginFormInner() {
 
   const errorClassName = "animate-shake rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700";
 
-  const renderMagicForm = () => (
-    <form onSubmit={handleMagicSubmit} className="space-y-5 animate-slide-up" noValidate>
-      <div>
-        <label htmlFor="login-email" className={labelClassName}>
-          {t("login.emailLabel")}
-        </label>
-        <input
-          id="login-email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder={t("login.emailPh")}
-          autoComplete="email"
-          className={inputClassName}
-          autoFocus
-        />
+  const tabClassName = (selected: boolean) => `
+    flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200
+    ${selected
+      ? "bg-coffee text-cream shadow-md shadow-coffee/30"
+      : "bg-sand/50 text-espresso hover:bg-sand hover:text-coffee"
+    }
+  `;
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex gap-2" role="tablist" aria-label={t("login.desc")}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={passwordMode === "signin"}
+          onClick={() => {
+            setPasswordMode("signin");
+            clearError();
+          }}
+          className={tabClassName(passwordMode === "signin")}
+        >
+          {t("login.signIn")}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={passwordMode === "signup"}
+          onClick={() => {
+            setPasswordMode("signup");
+            clearError();
+          }}
+          className={tabClassName(passwordMode === "signup")}
+        >
+          {t("login.signUp")}
+        </button>
       </div>
 
-      {!supabaseReady && (
-        <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          {t("login.notConfigured")}
-        </p>
-      )}
-      {authError && status !== "error" && (
-        <p className={errorClassName}>{t("login.authError")}</p>
-      )}
-      {status === "error" && (
-        <p className={errorClassName}>{errorMsg || t("login.error")}</p>
-      )}
-
-      <button
-        type="submit"
-        disabled={status === "sending" || !supabaseReady}
-        className="w-full rounded-xl bg-coffee px-6 py-3.5 text-sm font-semibold text-cream transition-all duration-200 hover:bg-[#684a37] hover:shadow-lg hover:shadow-coffee/30 active:scale-[0.98] disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed focus:ring-2 focus:ring-coffee/40 focus:ring-offset-2"
-      >
-        {status === "sending" ? (
-          <>
-            <span className="inline-block animate-spin mr-2">⏳</span>
-            {t("login.sending")}
-          </>
-        ) : (
-          <>
-            <span className="inline-block mr-2">✉️</span>
-            {t("login.submit")}
-          </>
-        )}
-      </button>
-    </form>
-  );
-
-  const renderPasswordForm = () => {
-    const isSignIn = passwordMode === "signin";
-    const isSignUp = passwordMode === "signup";
-    const isForgot = passwordMode === "forgot";
-    const isReset = passwordMode === "reset";
-
-    const submitHandler = isSignIn
-      ? handlePasswordSignIn
-      : isSignUp
-      ? handleSignUp
-      : isForgot
-      ? handleForgotPassword
-      : handleResetPassword;
-
-    const submitLabel = isSignIn
-      ? t("login.signIn")
-      : isSignUp
-      ? t("login.signUp")
-      : isForgot
-      ? t("login.submit")
-      : t("login.resetPassword");
-
-    const submitIcon = isSignIn
-      ? "🔐"
-      : isSignUp
-      ? "✨"
-      : isForgot
-      ? "✉️"
-      : "🔑";
-
-    const tabClassName = (selected: boolean) => `
-      flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200
-      ${selected
-        ? "bg-coffee text-cream shadow-md shadow-coffee/30"
-        : "bg-sand/50 text-espresso hover:bg-sand hover:text-coffee"
-      }
-    `;
-
-    return (
-      <form onSubmit={submitHandler} className="space-y-5 animate-slide-up" noValidate>
-        <div className="flex gap-2" role="tablist" aria-label={t("login.modePassword")}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={isSignIn}
-            onClick={() => {
-              setPasswordMode("signin");
-              clearError();
-            }}
-            className={tabClassName(isSignIn)}
-          >
-            {t("login.signIn")}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={isSignUp}
-            onClick={() => {
-              setPasswordMode("signup");
-              clearError();
-            }}
-            className={tabClassName(isSignUp)}
-          >
-            {t("login.signUp")}
-          </button>
-        </div>
-
+      <form onSubmit={passwordMode === "signin" ? handleSignIn : handleSignUp} className="space-y-5 animate-slide-up" noValidate>
         <div>
-          <label htmlFor="login-email-pwd" className={labelClassName}>
+          <label htmlFor="login-email" className={labelClassName}>
             {t("login.emailLabel")}
           </label>
           <input
-            id="login-email-pwd"
+            id="login-email"
             type="email"
             required
             value={email}
@@ -358,48 +180,38 @@ function LoginFormInner() {
           />
         </div>
 
-        {!isForgot && (
-          <>
-            <div>
-              <label
-                htmlFor={isReset ? "login-new-password" : "login-password"}
-                className={labelClassName}
-              >
-                {isReset ? t("login.newPasswordLabel") : t("login.passwordLabel")}
-              </label>
-              <input
-                id={isReset ? "login-new-password" : "login-password"}
-                type="password"
-                required={!isForgot}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={isReset ? t("login.newPasswordPh") : t("login.passwordPh")}
-                autoComplete={isReset ? "new-password" : "current-password"}
-                className={inputClassName}
-              />
-            </div>
+        <div>
+          <label htmlFor="login-password" className={labelClassName}>
+            {t("login.passwordLabel")}
+          </label>
+          <input
+            id="login-password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t("login.passwordPh")}
+            autoComplete={passwordMode === "signup" ? "new-password" : "current-password"}
+            className={inputClassName}
+          />
+        </div>
 
-            {(isSignUp || isReset) && (
-              <div>
-                <label
-                  htmlFor="login-confirm-password"
-                  className={labelClassName}
-                >
-                  {t("login.confirmPasswordLabel")}
-                </label>
-                <input
-                  id="login-confirm-password"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={isReset ? t("login.newPasswordPh") : t("login.passwordPh")}
-                  autoComplete={isReset ? "new-password" : "current-password"}
-                  className={inputClassName}
-                />
-              </div>
-            )}
-          </>
+        {passwordMode === "signup" && (
+          <div>
+            <label htmlFor="login-confirm-password" className={labelClassName}>
+              {t("login.confirmPasswordLabel")}
+            </label>
+            <input
+              id="login-confirm-password"
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t("login.confirmPasswordPh")}
+              autoComplete="new-password"
+              className={inputClassName}
+            />
+          </div>
         )}
 
         {!supabaseReady && (
@@ -414,19 +226,6 @@ function LoginFormInner() {
           <p className={errorClassName}>{errorMsg || t("login.error")}</p>
         )}
 
-        {isSignIn && (
-          <button
-            type="button"
-            onClick={() => {
-              setPasswordMode("forgot");
-              clearError();
-            }}
-            className="text-sm text-coffee hover:text-[#684a37] transition-colors self-start font-medium"
-          >
-            {t("login.forgotPassword")}
-          </button>
-        )}
-
         <button
           type="submit"
           disabled={status === "sending" || !supabaseReady}
@@ -439,54 +238,12 @@ function LoginFormInner() {
             </>
           ) : (
             <>
-              <span className="inline-block mr-2">{submitIcon}</span>
-              {submitLabel}
+              <span className="inline-block mr-2">{passwordMode === "signin" ? "🔐" : "✨"}</span>
+              {passwordMode === "signin" ? t("login.signIn") : t("login.signUp")}
             </>
           )}
         </button>
       </form>
-    );
-  };
-
-  const modeTabClassName = (selected: boolean) => `
-    flex-1 rounded-xl py-3 text-sm font-semibold transition-all duration-200
-    ${selected
-      ? "bg-coffee text-cream shadow-md shadow-coffee/30"
-      : "bg-sand/50 text-espresso hover:bg-sand hover:text-coffee"
-    }
-  `;
-
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex gap-2" role="tablist" aria-label={t("login.title")}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === "magic"}
-          onClick={() => {
-            setMode("magic");
-            clearError();
-          }}
-          className={modeTabClassName(mode === "magic")}
-        >
-          {t("login.modeMagic")}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === "password"}
-          onClick={() => {
-            setMode("password");
-            setPasswordMode("signin");
-            clearError();
-          }}
-          className={modeTabClassName(mode === "password")}
-        >
-          {t("login.modePassword")}
-        </button>
-      </div>
-
-      {mode === "magic" ? renderMagicForm() : renderPasswordForm()}
 
       <div className="relative pt-2" aria-hidden>
         <div className="absolute inset-0 flex items-center">
