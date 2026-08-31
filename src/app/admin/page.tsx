@@ -26,9 +26,9 @@ export default async function AdminPage() {
     sb.from("data_reports").select("*").limit(100),
     sb.from("reviews").select("*").order("created_at", { ascending: false }).limit(30),
     sb.from("cafes").select("*").limit(500),
-    sb.from("profiles").select("id, display_name, email, created_at").order("created_at", { ascending: false }).limit(500),
+    sb.from("profiles").select("id, display_name, email, role, created_at").order("created_at", { ascending: false }).limit(500),
     sb.from("favorites").select("id", { count: "exact", head: true }),
-    sb.from("admins").select("email").order("email"),
+    sb.from("profiles").select("email").eq("role", "admin").order("email"),
   ]);
 
   const statusRank: Record<string, number> = { pending: 0, approved: 1, rejected: 2 };
@@ -109,6 +109,7 @@ export default async function AdminPage() {
     id: p.id as string,
     display_name: (p.display_name as string | null) ?? null,
     email: (p.email as string | null) ?? null,
+    role: (p.role as "user" | "admin" | null) ?? "user",
     created_at: p.created_at as string,
   }));
 

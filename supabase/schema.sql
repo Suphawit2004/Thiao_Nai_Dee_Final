@@ -43,6 +43,8 @@ create policy "reviews_insert_public"
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text check (char_length(display_name) between 1 and 60),
+  email text,
+  role text not null default 'user' check (role in ('user', 'admin')),
   created_at timestamptz not null default now()
 );
 
@@ -64,21 +66,50 @@ create policy "profiles_update_own"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
+-- Admin can read all profiles (for User Management)
+drop policy if exists "profiles_select_admin" on public.profiles;
+create policy "profiles_select_admin"
+  on public.profiles for select
+  using (public.is_admin());
+
+-- Admin can update any profile's role (for add/remove admin)
+drop policy if exists "profiles_update_admin" on public.profiles;
+create policy "profiles_update_admin"
+  on public.profiles for update
+  using (public.is_admin())
+  with check (public.is_admin());
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, display_name)
-  values (
-    new.id,
-    coalesce(
-      new.raw_user_meta_data ->> 'display_name',
-      split_part(coalesce(new.email, 'member'), '@', 1)
+  -- If this is the very first user, make them admin
+  if not exists (select 1 from public.profiles) then
+    insert into public.profiles (id, display_name, email, role)
+    values (
+      new.id,
+      coalesce(
+        new.raw_user_meta_data ->> 'display_name',
+        split_part(coalesce(new.email, 'member'), '@', 1)
+      ),
+      new.email,
+      'admin'
     )
-  )
-  on conflict (id) do nothing;
+    on conflict (id) do update set role = 'admin';
+  else
+    insert into public.profiles (id, display_name, email)
+    values (
+      new.id,
+      coalesce(
+        new.raw_user_meta_data ->> 'display_name',
+        split_part(coalesce(new.email, 'member'), '@', 1)
+      ),
+      new.email
+    )
+    on conflict (id) do update set email = excluded.email;
+  end if;
   return new;
 end;
 $$;
@@ -202,32 +233,22 @@ create policy "suggestion_photos_insert"
   );
 
 -- ============================================================
--- admins - email allowlist for the moderation UI (/admin)
--- Seed with: insert into public.admins (email)
---            values ('you@example.com') on conflict do nothing;
--- RLS enabled with zero policies: clients can only reach it through the
--- is_admin() SECURITY DEFINER function; direct reads/writes are denied.
+-- is_admin() — checks current user's profiles.role = 'admin'
 -- ============================================================
-create table if not exists public.admins (
-  email text primary key
-);
-
-alter table public.admins enable row level security;
-
 create or replace function public.is_admin()
 returns boolean
 language sql
 stable
 security definer set search_path = public
 as $$
-  select exists (
-    select 1 from public.admins
-    where lower(email) = lower(coalesce(auth.email(), ''))
+  select coalesce(
+    (select role = 'admin' from public.profiles where id = auth.uid()),
+    false
   );
 $$;
 
 -- ============================================================
--- Admin moderation policies
+-- Admin moderation policies (use is_admin())
 -- ============================================================
 
 drop policy if exists "suggestions_select_admin" on public.cafe_suggestions;

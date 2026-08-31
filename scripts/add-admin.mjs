@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Manage the admin email allowlist from the CLI (bootstrapping the first admin).
+ * Manage admin role on profiles from the CLI (bootstrapping the first admin).
  *
  *   npm run add-admin asvyou90@gmail.com        # add an admin (idempotent)
  *   npm run add-admin -- --list              # list current admins
@@ -10,6 +10,9 @@
  * Requires: NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
  * Reads them from .env.local (or the shell). The service role bypasses RLS,
  * so this works before any admin exists.
+ *
+ * Note: Admins must already have a profile (signed up). Pre-seeding emails
+ * is no longer supported — the user must sign up first, then promote.
  */
 
 import { readFileSync, existsSync } from "node:fs";
@@ -51,7 +54,9 @@ function help() {
   npm run add-admin <email>          add an admin (idempotent)
   npm run add-admin -- --list        list current admins
   npm run add-admin -- --remove <email>  remove an admin
-  npm run add-admin -- --help        show this help`);
+  npm run add-admin -- --help        show this help
+
+Note: User must already have an account (profile).`);
 }
 
 if (args.includes("--help") || args.includes("-h")) {
@@ -64,7 +69,7 @@ const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 });
 
 async function listAdmins() {
-  const { data, error } = await sb.from("admins").select("email").order("email");
+  const { data, error } = await sb.from("profiles").select("email").eq("role", "admin").order("email");
   if (error) {
     console.error(`❌ Failed to list admins: ${error.message}`);
     process.exit(1);
@@ -83,18 +88,31 @@ async function addAdmin(email) {
     console.error(`❌ Invalid email: "${email}"`);
     process.exit(1);
   }
-  const { error } = await sb.from("admins").upsert({ email: clean }, { onConflict: "email" });
-  if (error) {
-    if (error.message.toLowerCase().includes("does not exist")) {
-      console.error(
-        "❌ The admins table does not exist. Run the admin_dashboard_upgrade migration first."
-      );
-    } else {
-      console.error(`❌ Failed to add admin: ${error.message}`);
-    }
+  // Find profile by email, update role to admin
+  const { data: profile, error: findError } = await sb
+    .from("profiles")
+    .select("id, role")
+    .eq("email", clean)
+    .maybeSingle();
+
+  if (findError) {
+    console.error(`❌ Failed to find user: ${findError.message}`);
     process.exit(1);
   }
-  console.log(`✅ Added admin: ${clean}`);
+  if (!profile) {
+    console.error(`❌ No user with email "${clean}" found. They must sign up first.`);
+    process.exit(1);
+  }
+  if (profile.role === "admin") {
+    console.log(`ℹ️  ${clean} is already an admin.`);
+    return;
+  }
+  const { error } = await sb.from("profiles").update({ role: "admin" }).eq("id", profile.id);
+  if (error) {
+    console.error(`❌ Failed to add admin: ${error.message}`);
+    process.exit(1);
+  }
+  console.log(`✅ Promoted to admin: ${clean}`);
   console.log("   Log in at /login with that email, then open /admin.");
 }
 
@@ -104,12 +122,30 @@ async function removeAdmin(email) {
     console.error(`❌ Invalid email: "${email}"`);
     process.exit(1);
   }
-  const { error } = await sb.from("admins").delete().eq("email", clean);
+  const { data: profile, error: findError } = await sb
+    .from("profiles")
+    .select("id, role")
+    .eq("email", clean)
+    .maybeSingle();
+
+  if (findError) {
+    console.error(`❌ Failed to find user: ${findError.message}`);
+    process.exit(1);
+  }
+  if (!profile) {
+    console.error(`❌ No user with email "${clean}" found.`);
+    process.exit(1);
+  }
+  if (profile.role !== "admin") {
+    console.log(`ℹ️  ${clean} is not an admin.`);
+    return;
+  }
+  const { error } = await sb.from("profiles").update({ role: "user" }).eq("id", profile.id);
   if (error) {
     console.error(`❌ Failed to remove admin: ${error.message}`);
     process.exit(1);
   }
-  console.log(`✅ Removed admin: ${clean}`);
+  console.log(`✅ Removed admin role: ${clean}`);
 }
 
 async function main() {

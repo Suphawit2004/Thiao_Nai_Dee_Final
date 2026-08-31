@@ -10,7 +10,7 @@ function validEmail(email: string): boolean {
 export async function getAdminList(): Promise<string[]> {
   const sb = await requireAdmin();
   if (!sb) return [];
-  const { data } = await sb.from("admins").select("email").order("email");
+  const { data } = await sb.from("profiles").select("email").eq("role", "admin").order("email");
   return (data ?? []).map((r) => r.email as string);
 }
 
@@ -21,14 +21,22 @@ export async function addAdmin(email: string): Promise<AdminResult> {
   const clean = email.trim().toLowerCase();
   if (!validEmail(clean)) return { ok: false, error: "Invalid email" };
 
-  const { data: existing } = await sb
-    .from("admins")
-    .select("email")
+  // Find profile by email and update role to admin
+  const { data: existingProfile } = await sb
+    .from("profiles")
+    .select("id, role")
     .eq("email", clean)
     .maybeSingle();
-  if (existing) return { ok: false, error: "Already admin" };
 
-  const { error } = await sb.from("admins").insert({ email: clean });
+  if (!existingProfile) {
+    return { ok: false, error: "User not found. They must sign up first." };
+  }
+
+  if (existingProfile.role === "admin") {
+    return { ok: false, error: "Already admin" };
+  }
+
+  const { error } = await sb.from("profiles").update({ role: "admin" }).eq("id", existingProfile.id);
   if (error) {
     console.error("addAdmin failed:", error);
     return { ok: false, error: "Add failed" };
@@ -49,7 +57,21 @@ export async function removeAdmin(email: string): Promise<AdminResult> {
     return { ok: false, error: "Cannot remove self" };
   }
 
-  const { error } = await sb.from("admins").delete().eq("email", clean);
+  const { data: targetProfile } = await sb
+    .from("profiles")
+    .select("id, role")
+    .eq("email", clean)
+    .maybeSingle();
+
+  if (!targetProfile) {
+    return { ok: false, error: "User not found" };
+  }
+
+  if (targetProfile.role !== "admin") {
+    return { ok: false, error: "Not an admin" };
+  }
+
+  const { error } = await sb.from("profiles").update({ role: "user" }).eq("id", targetProfile.id);
   if (error) {
     console.error("removeAdmin failed:", error);
     return { ok: false, error: "Remove failed" };

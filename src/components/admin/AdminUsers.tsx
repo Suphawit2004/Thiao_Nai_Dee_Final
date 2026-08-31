@@ -8,6 +8,7 @@ export interface AdminUser {
   id: string;
   display_name: string | null;
   email: string | null;
+  role: "user" | "admin" | null;
   created_at: string;
 }
 
@@ -36,7 +37,16 @@ export default function AdminUsers({
     });
 
   const renderError = (msg: string | null) =>
-    msg ? <p className="mt-1 text-xs text-rose-600">{msg}</p> : null;
+    msg ? <p className="mt-1 text-xs text-rose-600">{translateError(msg)}</p> : null;
+
+  function translateError(msg: string): string {
+    if (msg.includes("User not found")) return t("admin.user.notFound");
+    if (msg.includes("Already admin")) return t("admin.user.alreadyAdmin");
+    if (msg.includes("Cannot remove self")) return t("admin.user.cannotRemoveSelf");
+    if (msg.includes("Not an admin")) return t("admin.user.notAdmin");
+    if (msg.includes("Invalid email")) return t("admin.user.invalidEmail");
+    return msg;
+  }
 
   return (
     <div className="mt-5 flex flex-col gap-6">
@@ -113,6 +123,7 @@ export default function AdminUsers({
                 <tr>
                   <th className="px-4 py-3 font-semibold">{t("profile.displayName")}</th>
                   <th className="px-4 py-3 font-semibold">{t("profile.email")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("admin.user.role")}</th>
                   <th className="px-4 py-3 font-semibold">{t("admin.user.joinedAt")}</th>
                 </tr>
               </thead>
@@ -123,6 +134,11 @@ export default function AdminUsers({
                       {u.display_name ?? "—"}
                     </td>
                     <td className="px-4 py-2.5 text-espresso/70">{u.email ?? "—"}</td>
+                    <td className="px-4 py-2.5">
+                      <span className={u.role === "admin" ? "rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-xs font-bold" : "text-espresso/50"}>
+                        {u.role === "admin" ? t("admin.user.adminRole") : t("admin.user.userRole")}
+                      </span>
+                    </td>
                     <td className="px-4 py-2.5 text-espresso/50">{fmt(u.created_at)}</td>
                   </tr>
                 ))}
