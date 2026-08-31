@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
 import { useProfile } from "@/lib/use-profile";
 import { useAuth } from "./AuthProvider";
+import { useIsAdmin } from "./AdminProvider";
 import { useFavorites } from "./FavoritesProvider";
 import { useSearch } from "./SearchProvider";
 import SearchSuggestions from "./SearchSuggestions";
@@ -20,6 +21,7 @@ const LINKS = [
 export default function Navbar() {
   const { t, toggle } = useLang();
   const { user, loading } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const { profile } = useProfile();
   const { slugs } = useFavorites();
   const { filters, patch } = useSearch();
@@ -152,6 +154,11 @@ export default function Navbar() {
               {t(l.key)}
             </Link>
           ))}
+          {isAdmin && (
+            <Link href="/admin" className={linkClass("/admin")}>
+              🛠️ {t("nav.admin")}
+            </Link>
+          )}
           <button
             type="button"
             onClick={toggle}
@@ -256,6 +263,17 @@ export default function Navbar() {
                 {t(l.key)}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className={`rounded-xl px-4 py-2.5 text-sm font-medium ${
+                  isActive("/admin") ? "bg-coffee text-cream" : "text-espresso hover:bg-sand"
+                }`}
+              >
+                🛠️ {t("nav.admin")}
+              </Link>
+            )}
             <Link
               href="/favorites"
               onClick={() => setOpen(false)}

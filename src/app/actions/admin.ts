@@ -7,7 +7,7 @@ export type AdminResult =
   | { ok: true }
   | { ok: false; error: string };
 
-async function requireAdmin() {
+export async function requireAdmin() {
   const sb = await getSupabaseServer();
   if (!sb) return null;
   const { data, error } = await sb.rpc("is_admin");

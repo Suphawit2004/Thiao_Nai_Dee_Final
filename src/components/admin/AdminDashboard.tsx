@@ -9,6 +9,11 @@ import {
   reportFormAction,
   suggestionFormAction,
 } from "@/app/actions/admin";
+import AdminOverview from "./AdminOverview";
+import AdminCafes from "./AdminCafes";
+import AdminUsers from "./AdminUsers";
+import type { AdminUser } from "./AdminUsers";
+import type { ActivityItem, AdminCafe, AdminStats } from "./types";
 
 export interface AdminSuggestion {
   id: string;
@@ -48,6 +53,8 @@ export interface AdminReview {
 
 type Mode = "ready" | "login" | "forbidden" | "not-configured";
 
+type AdminTab = "overview" | "cafes" | "users" | "suggestions" | "reports" | "reviews";
+
 const REPORT_FIELD_KEY: Record<string, string> = {
   hours: "report.field.hours",
   phone: "report.field.phone",
@@ -76,15 +83,25 @@ export default function AdminDashboard({
   suggestions = [],
   reports = [],
   reviews = [],
+  cafes = [],
+  stats,
+  activity = [],
+  admins = [],
+  users = [],
 }: {
   mode: Mode;
   suggestions?: AdminSuggestion[];
   reports?: AdminReport[];
   reviews?: AdminReview[];
+  cafes?: AdminCafe[];
+  stats?: AdminStats;
+  activity?: ActivityItem[];
+  admins?: string[];
+  users?: AdminUser[];
 }) {
   const { t, tr, lang } = useLang();
   const tk = (k: string) => t(k as DictKey);
-  const [tab, setTab] = useState<"suggestions" | "reports" | "reviews">("suggestions");
+  const [tab, setTab] = useState<AdminTab>("overview");
 
   // Action state for suggestion forms
   const [approveState, approveAction] = useActionState(suggestionFormAction, undefined);
@@ -148,10 +165,13 @@ export default function AdminDashboard({
   const pendingSuggestions = suggestions.filter((s) => s.status === "pending").length;
   const pendingReports = reports.filter((r) => r.status === "pending").length;
 
-  const tabs = [
-    { key: "suggestions" as const, label: t("admin.tab.suggestions"), badge: pendingSuggestions },
-    { key: "reports" as const, label: t("admin.tab.reports"), badge: pendingReports },
-    { key: "reviews" as const, label: t("admin.tab.reviews"), badge: 0 },
+  const tabs: { key: AdminTab; label: string; badge: number }[] = [
+    { key: "overview", label: t("admin.tab.overview"), badge: pendingSuggestions + pendingReports },
+    { key: "cafes", label: t("admin.tab.cafes"), badge: 0 },
+    { key: "users", label: t("admin.tab.users"), badge: 0 },
+    { key: "suggestions", label: t("admin.tab.suggestions"), badge: pendingSuggestions },
+    { key: "reports", label: t("admin.tab.reports"), badge: pendingReports },
+    { key: "reviews", label: t("admin.tab.reviews"), badge: 0 },
   ];
 
   return (
@@ -161,7 +181,11 @@ export default function AdminDashboard({
         <p className="mt-1 text-espresso/60">{t("admin.desc")}</p>
       </header>
 
-      <div role="tablist" aria-label={t("admin.title")} className="flex gap-2 border-b border-[#eadfcd] pb-2">
+      <div
+        role="tablist"
+        aria-label={t("admin.title")}
+        className="flex gap-2 overflow-x-auto border-b border-[#eadfcd] pb-2"
+      >
         {tabs.map(({ key, label, badge }) => (
           <button
             key={key}
@@ -181,6 +205,12 @@ export default function AdminDashboard({
           </button>
         ))}
       </div>
+
+      {tab === "overview" && stats && <AdminOverview stats={stats} activity={activity} />}
+
+      {tab === "cafes" && <AdminCafes cafes={cafes} />}
+
+      {tab === "users" && <AdminUsers admins={admins} users={users} />}
 
       {tab === "suggestions" && (
         <section className="mt-5 flex flex-col gap-4">

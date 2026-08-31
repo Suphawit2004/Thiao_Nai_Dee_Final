@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "cafes:pins": "node scripts/apply-pins.mjs",
+    "seed-cafes": "node scripts/seed-cafes.mjs",
     "sync-suggestions": "node scripts/sync-suggestions.mjs"
   },
   "dependencies": {
