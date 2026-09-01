@@ -27,7 +27,7 @@ export async function checkRateLimit(
 ): Promise<RateLimitResult> {
   const sb = await getSupabaseServer();
   if (!sb) {
-    return { allowed: true };
+    return { allowed: false, retryAfterSec: cfg.windowSeconds };
   }
 
   const allowed = await sb.rpc("check_rate_limit", {
@@ -38,7 +38,7 @@ export async function checkRateLimit(
 
   if (allowed.error) {
     console.error("check_rate_limit RPC error:", allowed.error);
-    return { allowed: true };
+    return { allowed: false, retryAfterSec: cfg.windowSeconds };
   }
 
   if (!allowed.data) {

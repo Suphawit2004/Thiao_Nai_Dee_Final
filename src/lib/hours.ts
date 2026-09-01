@@ -46,9 +46,9 @@ export function getOpenStatus(cafe: Cafe, dateObj: Date = new Date()): OpenStatu
   const closedToday = cafe.closedDays.includes(dayIndex);
   const closedYesterday = cafe.closedDays.includes(prevDayIndex);
 
-  // Equal open/close times are treated as open around the clock
-  if (!closedToday && start === end) {
-    return { isOpenToday: true, isOpenNow: true };
+  // Unknown hours (00:00-00:00) are not open
+  if (hasUnknownHours(cafe)) {
+    return { isOpenToday: false, isOpenNow: false };
   }
 
   const crossesMidnight = end < start;

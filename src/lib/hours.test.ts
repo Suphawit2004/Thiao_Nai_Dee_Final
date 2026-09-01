@@ -124,16 +124,20 @@ describe("getOpenStatus — overnight session (20:00 → 02:00)", () => {
   });
 });
 
-describe("getOpenStatus — around-the-clock cafes", () => {
+describe("getOpenStatus — unknown hours (00:00-00:00)", () => {
   const cafe = makeCafe({ openTime: "00:00", closeTime: "00:00" });
 
-  it("is open at any hour of an operating day", () => {
+  it("is closed at any hour (unknown hours treated as not open)", () => {
     for (const hour of [3, 9, 15, 21]) {
-      expect(getOpenStatus(cafe, bangkok(MON, hour)).isOpenNow).toBe(true);
+      expect(getOpenStatus(cafe, bangkok(MON, hour)).isOpenNow).toBe(false);
     }
   });
 
-  it("is closed on its closing weekday", () => {
+  it("reports isOpenToday = false", () => {
+    expect(getOpenStatus(cafe, bangkok(MON, 12)).isOpenToday).toBe(false);
+  });
+
+  it("is closed on its closing weekday too", () => {
     const cafeClosedSundays = makeCafe({
       openTime: "00:00",
       closeTime: "00:00",

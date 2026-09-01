@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { checkReviewRateLimit } from "@/lib/rate-limit-supabase";
 import { resolveClientIp } from "@/lib/client-ip";
 import { getSupabaseServer } from "@/lib/supabase-server";
+import { CAFES } from "@/data/cafes";
 import type { ReviewRow } from "@/lib/types";
 
 export type ReviewResult =
@@ -34,14 +35,15 @@ export async function submitReview(formData: {
 
   const { slug, name, rating, comment } = formData;
 
-  // Server-side validation — cafe must exist (and be live) in the DB
+  // Server-side validation — cafe must exist in DB (active) or in the static curated list
   const { data: cafe, error: cafeErr } = await sb
     .from("cafes")
     .select("slug")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
-  if (cafeErr || !cafe) return { ok: false, error: "Invalid cafe" };
+  const inStaticList = CAFES.some((c) => c.slug === slug);
+  if ((cafeErr || !cafe) && !inStaticList) return { ok: false, error: "Invalid cafe" };
 
   const safeName = name.trim();
   const safeComment = comment.trim();
