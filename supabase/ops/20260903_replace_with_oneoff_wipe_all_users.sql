@@ -1,6 +1,8 @@
 -- ============================================================
--- FULL WIPE: all user accounts + all user-generated content
--- Keeps schema + curated cafe data.
+-- ONE-OFF OPS RESET (NOT a schema migration)
+-- Moved out of supabase/migrations/ so `supabase db push` never
+-- auto-applies it. Apply manually ONLY to reset all user accounts
+-- + all user-generated content (keeps schema + curated cafe data).
 -- ============================================================
 
 -- user content (before auth.users; keeps FKs happy)

@@ -12,14 +12,15 @@ A curated guide to cafes in Phayao, Thailand — with map, reviews, filters and 
 - ❤️ **รายการโปรด** — guest เก็บใน localStorage, login แล้ว merge เข้าฐานข้อมูลอัตโนมัติ
 - ⭐ **รีวิว + กันสแปม** — รีวิวสาธารณะ จำกัดความถี่ต่อ IP (in-memory sliding window) และ admin ลบได้
 - 📮 **แนะนำร้านใหม่ / รายงานข้อมูล** — ฟอร์มแนะนำพร้อม pin picker + อัปโหลดรูป, dialog รายงานข้อมูลไม่ถูกต้องในหน้าร้าน
-- 🛠️ **Admin panel (`/admin`)** — อนุมัติ/ปฏิเสธร้านที่แนะนำ, ปิดรายงาน, ลบรีวิว (สิทธิ์ผ่าน RLS `is_admin()`)
+- 🛠️ **Admin panel (`/admin`)** — อนุมัติ/ปฏิเสธร้านที่แนะนำ, ปิดรายงาน, ลบรีวิว, จัดการผู้ใช้/บทบาท, จัดการคาเฟ่ (สิทธิ์ผ่าน RLS `is_admin()`)
+- 👑 **บทบาทเจ้าของร้าน** — เจ้าของร้านขอเป็นเจ้าของผ่านฟอร์ม → admin อนุมัติ → จัดการข้อมูลร้าน + เมนูของตัวเองได้ (`is_owner()`)
 - 🌐 **สองภาษา th/en** · 📱 responsive มือถือ–แท็บเล็ต · SEO (sitemap, robots, OG image)
 
 ## Tech Stack
 
 - [Next.js](https://nextjs.org) 16 (App Router, Turbopack) + React 19 + TypeScript
 - Tailwind CSS v4
-- Supabase (Postgres + Auth Magic Link + Storage + RLS)
+- Supabase (Postgres + Auth Password/OAuth + Storage + RLS)
 - Leaflet / react-leaflet
 - Vitest + GitHub Actions CI
 
@@ -42,21 +43,24 @@ npm run dev                  # http://localhost:3000
 ### ตั้งค่า Supabase
 
 1. SQL Editor → รัน `supabase/schema.sql` ทั้งไฟล์ (idempotent — รันซ้ำได้)
-   สร้างตาราง: `reviews`, `profiles`, `favorites`, `cafe_suggestions`, `data_reports`, `admins`
+   สร้างตาราง: `reviews`, `profiles`, `favorites`, `cafe_suggestions`, `data_reports`, `cafes`, `menu_items`, `owner_requests`, `rate_limits`
    + RLS policies + storage bucket `cafe-suggestions`
-2. Authentication → Providers → Email → เปิด **Magic Link**
+2. Authentication → Providers → Email → เปิด **Email** (สมัคร/login ด้วยรหัสผ่าน)
 3. Authentication → URL Configuration → เพิ่ม Redirect URLs:
    - `http://localhost:3000/auth/callback`
    - `https://your-domain.example/auth/callback`
 
-### เพิ่ม Admin
+### จัดการ Admin / บทบาท
+
+ผู้ใช้คนแรกที่สมัครจะถูกตั้งเป็น `admin` อัตโนมัติ (ผ่าน trigger `handle_new_user()`)
+หลังจากนั้น admin คนอื่นเพิ่ม/ลดบทบาทได้จากหน้า `/admin` → User Management
+หรือกำหนดด้วยมือ:
 
 ```sql
-insert into public.admins (email) values ('you@example.com')
-on conflict do nothing;
+update public.profiles set role = 'admin' where id = '<user-id>';
 ```
 
-อีเมลนี้ต้อง login ผ่าน Magic Link แล้วจึงเข้า `/admin` ได้ (สิทธิ์ตรวจฝั่ง server ทุก action)
+สิทธิ์ตรวจฝั่ง server ทุก action ผ่านฟังก์ชัน RLS `is_admin()` / `is_owner()`
 
 ## Content Workflow — เพิ่มคาเฟ่ใหม่
 
@@ -78,6 +82,9 @@ on conflict do nothing;
 | `npm run lint` | ESLint |
 | `npx tsc --noEmit` | Typecheck |
 | `npm run cafes:pins` | Sync pins.txt → enriched cafe data |
+| `npm run seed-cafes` | Seed static cafe catalog into Supabase `cafes` table |
+| `npm run add-admin` | CLI — promote a user to admin by email |
+| `npm run sync-suggestions` | Sync approved suggestions into cafe data |
 
 ## Deployment
 
@@ -95,6 +102,9 @@ src/
 ├── data/cafes.ts   # ข้อมูลคาเฟ่หลัก (static, typed)
 ├── i18n/           # th/en dictionaries + LangProvider
 └── lib/            # pure logic (hours, fuzzy, filters-url, rate-limit, distance) + supabase clients
-supabase/schema.sql # DB schema — idempotent, รันซ้ำได้
+supabase/schema.sql # DB schema — idempotent, รันซ้ำได้ (รวม owner role + menu)
+supabase/migrations/ # incremental schema migrations (supabase CLI / db push)
+supabase/ops/        # one-off ops scripts (เช่น reset ข้อมูลผู้ใช้) — รันด้วยมือเท่านั้น ไม่ auto-apply
+scripts/            # CLI: apply-pins, seed-cafes, add-admin, sync-suggestions
 pins.txt            # พิกัดร้านสำหรับ apply-pins script
 ```
