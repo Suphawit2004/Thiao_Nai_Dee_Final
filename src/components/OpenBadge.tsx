@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import type { Cafe } from "@/data/cafes";
-import { getOpenStatus } from "@/lib/hours";
+import { getOpenStatus, hasUnknownHours } from "@/lib/hours";
 import { useLang } from "@/i18n/LangProvider";
 
 let currentTs = 0;
@@ -43,6 +43,14 @@ export function useNowTick(): number {
 export default function OpenBadge({ cafe }: { cafe: Cafe }) {
   const { t } = useLang();
   const ts = useNowTick();
+
+  if (hasUnknownHours(cafe)) {
+    return (
+      <span className="inline-flex h-6 items-center rounded-full bg-sand px-2.5 text-xs font-semibold text-espresso/60">
+        {t("hours.unknown")}
+      </span>
+    );
+  }
 
   if (ts === 0) {
     return (

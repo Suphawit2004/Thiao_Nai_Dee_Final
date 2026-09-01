@@ -340,6 +340,30 @@ alter table public.cafes add column if not exists owner_id uuid
   references auth.users (id) on delete set null;
 create index if not exists cafes_owner_idx on public.cafes (owner_id);
 
+-- is_owner(slug) — is the current user the owner of this cafe?
+-- Defined BEFORE the RLS policies below that reference it.
+create or replace function public.is_owner(p_slug text)
+returns boolean
+language sql
+stable
+security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.cafes
+    where slug = p_slug and owner_id = auth.uid()
+  );
+$$;
+
+-- get_my_cafes() — cafes owned by the current user
+create or replace function public.get_my_cafes()
+returns setof public.cafes
+language sql
+stable
+security definer set search_path = public
+as $$
+  select * from public.cafes where owner_id = auth.uid();
+$$;
+
 -- menu_items — full menu per cafe
 create table if not exists public.menu_items (
   id            uuid primary key default gen_random_uuid(),
@@ -425,29 +449,6 @@ drop policy if exists "owner_requests_delete_admin" on public.owner_requests;
 create policy "owner_requests_delete_admin"
   on public.owner_requests for delete
   using (public.is_admin());
-
--- is_owner(slug) — is the current user the owner of this cafe?
-create or replace function public.is_owner(p_slug text)
-returns boolean
-language sql
-stable
-security definer set search_path = public
-as $$
-  select exists (
-    select 1 from public.cafes
-    where slug = p_slug and owner_id = auth.uid()
-  );
-$$;
-
--- get_my_cafes() — cafes owned by the current user
-create or replace function public.get_my_cafes()
-returns setof public.cafes
-language sql
-stable
-security definer set search_path = public
-as $$
-  select * from public.cafes where owner_id = auth.uid();
-$$;
 
 -- cafes update — let an owner edit their own cafe
 drop policy if exists "cafes_update_owner" on public.cafes;

@@ -5,6 +5,15 @@ export interface OpenStatus {
   isOpenNow: boolean;
 }
 
+/**
+ * True when a cafe's opening hours aren't known yet. Newly-added cafes default
+ * to "00:00"–"00:00" in the DB; we render those as an unknown/"—" label rather
+ * than implying they are open around the clock.
+ */
+export function hasUnknownHours(cafe: { openTime: string; closeTime: string }): boolean {
+  return cafe.openTime === "00:00" && cafe.closeTime === "00:00";
+}
+
 export function minutesOf(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;

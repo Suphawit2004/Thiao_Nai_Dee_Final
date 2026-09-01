@@ -10,6 +10,7 @@ import {
 } from "@/data/cafes";
 import { DAY_KEYS } from "@/i18n/dictionaries";
 import { useLang } from "@/i18n/LangProvider";
+import { hasUnknownHours } from "@/lib/hours";
 import CafeThumb from "./CafeThumb";
 import AreaChip from "./AreaChip";
 import OpenBadge from "./OpenBadge";
@@ -67,7 +68,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
             <div>
               <dt className="font-semibold text-espresso">🕒 {t("detail.hours")}</dt>
               <dd className="mt-0.5 text-espresso/70">
-                {cafe.openTime} – {cafe.closeTime}
+                {hasUnknownHours(cafe) ? "—" : `${cafe.openTime} – ${cafe.closeTime}`}
                 {cafe.closedDays.length > 0 && (
                   <>
                     {" · "}

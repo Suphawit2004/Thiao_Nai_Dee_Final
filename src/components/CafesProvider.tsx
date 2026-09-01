@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { Cafe } from "@/data/cafes";
 import { CAFES } from "@/data/cafes";
-import { fetchCafesWithMenus } from "@/data/cafes-data";
+import { fetchCafesWithMenus, mergeCafes } from "@/data/cafes-data";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 interface CafesContextValue {
@@ -34,7 +34,7 @@ export function CafesProvider({
     const hasServerData = initialCafes !== undefined && initialCafes.length > 0;
     return {
       loading: !hasServerData && supabase !== null,
-      cafes: hasServerData && initialCafes ? initialCafes : CAFES,
+      cafes: mergeCafes(CAFES, initialCafes ?? []),
     };
   });
 
@@ -46,7 +46,7 @@ export function CafesProvider({
 
     fetchCafesWithMenus(supabase).then((cafes) => {
       if (!cancelled) {
-        setState({ loading: false, cafes: cafes.length > 0 ? cafes : CAFES });
+        setState({ loading: false, cafes: mergeCafes(CAFES, cafes) });
       }
     });
 

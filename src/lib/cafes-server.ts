@@ -1,18 +1,19 @@
 import type { Cafe } from "@/data/cafes";
 import { CAFES } from "@/data/cafes";
-import { fetchCafesWithMenus } from "@/data/cafes-data";
+import { fetchCafesWithMenus, mergeCafes } from "@/data/cafes-data";
 import { getSupabaseServer } from "@/lib/supabase-server";
 
 /**
  * Server-side cafe list with menu items.
- * Fetches from Supabase when configured; otherwise falls back to the
- * static curated data so the site still renders without a database.
+ * Merges the static curated list with database rows — curated cafes always
+ * show (even without a seeded DB) and DB-only (newly-added) cafes appear too.
+ * Falls back to just the static list when no database is configured.
  */
 export async function getCafes(): Promise<Cafe[]> {
   const sb = await getSupabaseServer();
-  if (!sb) return CAFES;
+  if (!sb) return mergeCafes(CAFES, []);
   const cafes = await fetchCafesWithMenus(sb);
-  return cafes.length > 0 ? cafes : CAFES;
+  return mergeCafes(CAFES, cafes);
 }
 
 export async function getCafe(slug: string): Promise<Cafe | undefined> {
