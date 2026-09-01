@@ -196,6 +196,7 @@ const th = {
   "admin.sentAt": "ส่งเมื่อ",
   "admin.suggest.location": "พิกัด",
   "admin.suggest.photo": "ดูรูปภาพ",
+  "admin.suggest.promote": "เพิ่มเป็นคาเฟ่",
   "admin.review.by": "โดย {name}",
 
   "admin.tab.overview": "ภาพรวม",
@@ -539,6 +540,7 @@ const en: Record<DictKey, string> = {
   "admin.sentAt": "Submitted",
   "admin.suggest.location": "Location",
   "admin.suggest.photo": "View photo",
+  "admin.suggest.promote": "Add as Cafe",
   "admin.review.by": "By {name}",
 
   "admin.tab.overview": "Overview",

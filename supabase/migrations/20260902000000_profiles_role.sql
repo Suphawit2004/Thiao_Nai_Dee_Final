@@ -6,6 +6,12 @@
 alter table public.profiles add column if not exists role text not null default 'user'
   check (role in ('user', 'admin'));
 
+-- Populate email for all profiles from auth.users (handles existing profiles with NULL email)
+update public.profiles p
+set email = u.email
+from auth.users u
+where p.id = u.id;
+
 -- Backfill existing admins from admins table -> profiles.role
 update public.profiles p
 set role = 'admin'

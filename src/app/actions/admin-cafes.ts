@@ -261,3 +261,10 @@ export async function setCafeActiveFormAction(
 ): Promise<AdminResult> {
   return setCafeActive(val(formData, "slug"), formData.get("active") === "1");
 }
+
+export async function promoteSuggestionFormAction(
+  _prev: AdminResult | undefined,
+  formData: FormData
+): Promise<AdminResult> {
+  return promoteSuggestionToCafe(String(formData.get("id") ?? ""));
+}

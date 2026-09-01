@@ -9,6 +9,7 @@ import {
   reportFormAction,
   suggestionFormAction,
 } from "@/app/actions/admin";
+import { promoteSuggestionFormAction } from "@/app/actions/admin-cafes";
 import AdminOverview from "./AdminOverview";
 import AdminCafes from "./AdminCafes";
 import AdminUsers from "./AdminUsers";
@@ -103,12 +104,15 @@ export default function AdminDashboard({
   const [approveState, approveAction] = useActionState(suggestionFormAction, undefined);
   const [rejectState, rejectAction] = useActionState(suggestionFormAction, undefined);
   const [reopenState, reopenAction] = useActionState(suggestionFormAction, undefined);
+  const [promoteState, promoteAction] = useActionState(promoteSuggestionFormAction, undefined);
   const approvePending = approveState?.ok === false && approveState.error !== "Not authorized";
   const rejectPending = rejectState?.ok === false && rejectState.error !== "Not authorized";
   const reopenPending = reopenState?.ok === false && reopenState.error !== "Not authorized";
+  const promotePending = promoteState?.ok === false && promoteState.error !== "Not authorized";
   const approveError = approveState?.ok === false ? approveState.error : null;
   const rejectError = rejectState?.ok === false ? rejectState.error : null;
   const reopenError = reopenState?.ok === false ? reopenState.error : null;
+  const promoteError = promoteState?.ok === false ? promoteState.error : null;
 
   const [resolveState, resolveAction] = useActionState(reportFormAction, undefined);
   const [dismissState, dismissAction] = useActionState(reportFormAction, undefined);
@@ -314,7 +318,18 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {renderError(approveError ?? rejectError ?? reopenError)}
+                {s.status === "approved" && (
+                  <form action={promoteAction}>
+                    <input type="hidden" name="id" value={s.id} />
+                    <button
+                      disabled={promotePending}
+                      className="rounded-full bg-latte px-4 py-1.5 text-sm font-semibold text-coffee transition hover:bg-latte/40 disabled:opacity-50"
+                    >
+                      {promotePending ? "⏳" : "📦"} {t("admin.suggest.promote")}
+                    </button>
+                  </form>
+                )}
+                {renderError(approveError ?? rejectError ?? reopenError ?? promoteError)}
               </div>
             </article>
           ))}
