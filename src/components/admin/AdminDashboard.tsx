@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import { CAFES } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import type { DictKey } from "@/i18n/dictionaries";
 import {
@@ -9,12 +8,12 @@ import {
   reportFormAction,
   suggestionFormAction,
 } from "@/app/actions/admin";
-import { promoteSuggestionFormAction } from "@/app/actions/admin-cafes";
+import { approveOwnerRequestFormAction, rejectOwnerRequestFormAction } from "@/app/actions/admin-owners";
 import AdminOverview from "./AdminOverview";
 import AdminCafes from "./AdminCafes";
 import AdminUsers from "./AdminUsers";
 import type { AdminUser } from "./AdminUsers";
-import type { ActivityItem, AdminCafe, AdminStats } from "./types";
+import type { ActivityItem, AdminCafe, AdminStats, OwnerRequestRow } from "./types";
 
 export interface AdminSuggestion {
   id: string;
@@ -87,6 +86,8 @@ export default function AdminDashboard({
   activity = [],
   admins = [],
   users = [],
+  ownerRequests = [],
+  ownerEmailById = {},
 }: {
   mode: Mode;
   suggestions?: AdminSuggestion[];
@@ -97,22 +98,21 @@ export default function AdminDashboard({
   activity?: ActivityItem[];
   admins?: string[];
   users?: AdminUser[];
+  ownerRequests?: OwnerRequestRow[];
+  ownerEmailById?: Record<string, string>;
 }) {
-  const { t, tr, lang } = useLang();
+  const { t, lang } = useLang();
   const tk = (k: string) => t(k as DictKey);
 
   const [approveState, approveAction] = useActionState(suggestionFormAction, undefined);
   const [rejectState, rejectAction] = useActionState(suggestionFormAction, undefined);
   const [reopenState, reopenAction] = useActionState(suggestionFormAction, undefined);
-  const [promoteState, promoteAction] = useActionState(promoteSuggestionFormAction, undefined);
   const approvePending = approveState?.ok === false && approveState.error !== "Not authorized";
   const rejectPending = rejectState?.ok === false && rejectState.error !== "Not authorized";
   const reopenPending = reopenState?.ok === false && reopenState.error !== "Not authorized";
-  const promotePending = promoteState?.ok === false && promoteState.error !== "Not authorized";
   const approveError = approveState?.ok === false ? approveState.error : null;
   const rejectError = rejectState?.ok === false ? rejectState.error : null;
   const reopenError = reopenState?.ok === false ? reopenState.error : null;
-  const promoteError = promoteState?.ok === false ? promoteState.error : null;
 
   const [resolveState, resolveAction] = useActionState(reportFormAction, undefined);
   const [dismissState, dismissAction] = useActionState(reportFormAction, undefined);
@@ -124,6 +124,11 @@ export default function AdminDashboard({
   const [deleteState, deleteAction] = useActionState(deleteReviewFormAction, undefined);
   const deletePending = deleteState?.ok === false && deleteState.error !== "Not authorized";
   const deleteError = deleteState?.ok === false ? deleteState.error : null;
+
+  const [approveOwnerState, approveOwnerAction] = useActionState(approveOwnerRequestFormAction, undefined);
+  const [rejectOwnerState, rejectOwnerAction] = useActionState(rejectOwnerRequestFormAction, undefined);
+  const approveOwnerError = approveOwnerState?.ok === false ? approveOwnerState.error : null;
+  const rejectOwnerError = rejectOwnerState?.ok === false ? rejectOwnerState.error : null;
 
   if (mode !== "ready") {
     return (
@@ -148,8 +153,8 @@ export default function AdminDashboard({
   }
 
   const cafeName = (slug: string) => {
-    const cafe = CAFES.find((c) => c.slug === slug);
-    return cafe ? tr(cafe.name) : slug;
+    const cafe = cafes.find((c) => c.slug === slug);
+    return cafe ? (lang === "th" ? cafe.name_th : cafe.name_en || cafe.name_th) : slug;
   };
 
   const fmt = (iso: string) =>
@@ -161,6 +166,7 @@ export default function AdminDashboard({
 
   const pendingSuggestions = suggestions.filter((s) => s.status === "pending").length;
   const pendingReports = reports.filter((r) => r.status === "pending").length;
+  const pendingOwnerRequests = ownerRequests.filter((r) => r.status === "pending").length;
 
   const renderError = (msg: string | null) =>
     msg ? <p className="text-xs text-rose-600">{msg}</p> : null;
@@ -188,7 +194,7 @@ export default function AdminDashboard({
         <h2 className="mb-4 text-lg font-bold text-espresso flex items-center gap-2">
           ☕ {t("admin.tab.cafes")}
         </h2>
-        <AdminCafes cafes={cafes} />
+        <AdminCafes cafes={cafes} ownerEmailById={ownerEmailById} />
       </section>
 
       <section className="mt-10">
@@ -318,18 +324,7 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {s.status === "approved" && (
-                  <form action={promoteAction}>
-                    <input type="hidden" name="id" value={s.id} />
-                    <button
-                      disabled={promotePending}
-                      className="rounded-full bg-latte px-4 py-1.5 text-sm font-semibold text-coffee transition hover:bg-latte/40 disabled:opacity-50"
-                    >
-                      {promotePending ? "⏳" : "📦"} {t("admin.suggest.promote")}
-                    </button>
-                  </form>
-                )}
-                {renderError(approveError ?? rejectError ?? reopenError ?? promoteError)}
+                {renderError(approveError ?? rejectError ?? reopenError)}
               </div>
             </article>
           ))}
@@ -468,6 +463,86 @@ export default function AdminDashboard({
               </form>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-bold text-espresso flex items-center gap-2">
+          🏪 {t("admin.tab.owners")}
+          {pendingOwnerRequests > 0 && (
+            <span className="rounded-full bg-latte px-2 py-0.5 text-xs font-extrabold text-espresso">
+              {pendingOwnerRequests}
+            </span>
+          )}
+        </h2>
+        <div className="mt-5 flex flex-col gap-4">
+          {ownerRequests.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-[#e0d3bc] bg-white/50 p-10 text-center text-sm text-espresso/50">
+              {t("admin.empty.owners")}
+            </p>
+          )}
+          {ownerRequests.map((req) => {
+            const currentOwnerId = cafes.find((c) => c.slug === req.cafe_slug)?.owner_id ?? null;
+            const alreadyOwned =
+              req.status === "approved" ||
+              (currentOwnerId && currentOwnerId === req.user_id);
+            return (
+              <article
+                key={req.id}
+                className="rounded-2xl border border-[#eee3d2] bg-white p-5 shadow-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-bold">
+                    <a href={`/cafes/${req.cafe_slug}`} className="hover:text-coffee hover:underline">
+                      {cafeName(req.cafe_slug)} ↗
+                    </a>
+                  </h3>
+                  <StatusBadge status={req.status} tk={tk} />
+                </div>
+
+                <p className="mt-2 text-sm">
+                  <span className="font-medium">{req.user_name ?? ownerEmailById[req.user_id] ?? "—"}</span>
+                  {ownerEmailById[req.user_id] && <span className="text-espresso/50"> · {ownerEmailById[req.user_id]}</span>}
+                </p>
+                {req.contact && (
+                  <p className="mt-1 text-sm text-espresso/60">
+                    {t("report.contact")}: {req.contact}
+                  </p>
+                )}
+                {req.message && (
+                  <p className="mt-2 rounded-xl bg-sand/50 p-3 text-sm">💬 {req.message}</p>
+                )}
+                <p className="mt-2 text-xs text-espresso/40">{fmt(req.created_at)}</p>
+
+                {req.status === "pending" && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <form action={approveOwnerAction}>
+                      <input type="hidden" name="id" value={req.id} />
+                      <button
+                        className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                      >
+                        ✓ {t("admin.approve")}
+                      </button>
+                    </form>
+                    <form action={rejectOwnerAction}>
+                      <input type="hidden" name="id" value={req.id} />
+                      <button
+                        className="rounded-full border border-[#e8dcc8] px-4 py-1.5 text-sm font-semibold text-espresso/80 transition hover:bg-sand"
+                      >
+                        ✕ {t("admin.reject")}
+                      </button>
+                    </form>
+                    {renderError(approveOwnerError ?? rejectOwnerError)}
+                    {alreadyOwned && (
+                      <span className="text-xs text-espresso/50 self-center">
+                        ⚠️ {t("admin.owner.alreadyOwned")}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>

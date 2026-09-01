@@ -1,16 +1,15 @@
 import { notFound } from "next/navigation";
-import { CAFES, type Cafe } from "@/data/cafes";
+import type { Cafe } from "@/data/cafes";
+import { getCafe } from "@/lib/cafes-server";
 import DetailView from "@/components/DetailView";
 
 interface Params {
   params: Promise<{ slug: string }>;
 }
 
-export function generateStaticParams() {
-  return CAFES.map((cafe) => ({ slug: cafe.slug }));
-}
-
-export const dynamicParams = false;
+// Menu edits made by owners must appear immediately, so keep this page
+// rendered dynamically (server) rather than statically at build time.
+export const dynamic = "force-dynamic";
 
 const SCHEMA_DAYS = [
   "Sunday",
@@ -57,7 +56,7 @@ function cafeJsonLd(cafe: Cafe): string {
 
 export async function generateMetadata({ params }: Params) {
   const { slug } = await params;
-  const cafe = CAFES.find((c) => c.slug === slug);
+  const cafe = await getCafe(slug);
   if (!cafe) return { title: "Not found" };
   return {
     title: `${cafe.name.th} (${cafe.name.en})`,
@@ -67,7 +66,7 @@ export async function generateMetadata({ params }: Params) {
 
 export default async function CafeDetailPage({ params }: Params) {
   const { slug } = await params;
-  const cafe = CAFES.find((c) => c.slug === slug);
+  const cafe = await getCafe(slug);
   if (!cafe) notFound();
   return (
     <>

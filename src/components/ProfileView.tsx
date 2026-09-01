@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CAFES } from "@/data/cafes";
 import { useAuth } from "@/components/AuthProvider";
 import { useFavorites } from "@/components/FavoritesProvider";
+import { useCafes } from "@/components/CafesProvider";
 import { useProfile } from "@/lib/use-profile";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import type { ReviewRow } from "@/lib/types";
 import { deleteOwnReview } from "@/app/actions/reviews";
 import { useLang } from "@/i18n/LangProvider";
 import RatingStars from "./RatingStars";
+import OwnerShops from "./OwnerShops";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -28,11 +29,12 @@ function avatarPathFromUrl(url: string): string | null {
   return url.slice(i + marker.length).split("?")[0];
 }
 
-export default function ProfileView() {
+export default function ProfileView({ ownedSlugs = [] }: { ownedSlugs?: string[] }) {
   const { t, tr } = useLang();
   const { user, loading, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { slugs } = useFavorites();
+  const { cafes: CAFES } = useCafes();
 
   // Name form: null means "not touched" → derive from profile / email prefix.
   const [nameDraft, setNameDraft] = useState<string | null>(null);
@@ -314,6 +316,9 @@ export default function ProfileView() {
           </ul>
         )}
       </section>
+
+      {/* My shops / ownership */}
+      <OwnerShops ownedSlugs={ownedSlugs} />
     </div>
   );
 }

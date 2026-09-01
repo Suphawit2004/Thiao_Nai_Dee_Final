@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { CAFES } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
+import { useCafes } from "./CafesProvider";
 import CafeThumb from "./CafeThumb";
 import RatingStars from "./RatingStars";
 import MapBlock from "./map/MapBlock";
 
 export default function MapViewPage() {
   const { t, tr } = useLang();
+  const { cafes: CAFES } = useCafes();
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <header>

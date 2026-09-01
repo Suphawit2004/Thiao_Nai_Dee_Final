@@ -30,6 +30,18 @@ export interface AdminCafe {
   menu_highlights: { th: string; en: string }[];
   base_rating: number;
   is_active: boolean;
+  owner_id: string | null;
+}
+
+export interface OwnerRequestRow {
+  id: string;
+  cafe_slug: string;
+  user_id: string;
+  user_name: string | null;
+  contact: string | null;
+  message: string | null;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
 }
 
 export type ActivityType = "suggestion" | "report" | "review";

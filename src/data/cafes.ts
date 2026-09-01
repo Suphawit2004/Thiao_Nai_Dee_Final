@@ -18,6 +18,33 @@ export type LifeStyleTag =
 
 export type CafeArea = "lakeside" | "maeka-uni";
 
+export type MenuCategory = "coffee" | "drinks" | "dessert" | "food" | "other";
+
+export interface MenuItem {
+  id: string;
+  name: LocalText;
+  price: number | null;
+  category: MenuCategory;
+  isAvailable: boolean;
+  sortOrder: number;
+}
+
+export const MENU_CATEGORY_ORDER: MenuCategory[] = [
+  "coffee",
+  "drinks",
+  "dessert",
+  "food",
+  "other",
+];
+
+export const MENU_CATEGORY_META: Record<MenuCategory, { label: LocalText; emoji: string }> = {
+  coffee: { label: { th: "กาแฟ", en: "Coffee" }, emoji: "☕" },
+  drinks: { label: { th: "เครื่องดื่ม", en: "Drinks" }, emoji: "🥤" },
+  dessert: { label: { th: "ของหวาน", en: "Desserts" }, emoji: "🍰" },
+  food: { label: { th: "อาหาร", en: "Food" }, emoji: "🍽️" },
+  other: { label: { th: "อื่น ๆ", en: "Other" }, emoji: "✨" },
+};
+
 export const AREA_META: Record<CafeArea, { label: LocalText; emoji: string }> = {
   lakeside: { label: { th: "ริมกว๊าน–ในเมือง", en: "Lakeside & Old Town" }, emoji: "🌊" },
   "maeka-uni": { label: { th: "แม่กา–ม.พะเยา", en: "Mae Ka & University of Phayao" }, emoji: "🎓" },
@@ -42,6 +69,7 @@ export interface Cafe {
   lng: number;
   photo?: string;
   menuHighlights: LocalText[];
+  menuItems?: MenuItem[];
   baseRating: number;
 }
 

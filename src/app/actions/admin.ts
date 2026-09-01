@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSupabaseServer } from "@/lib/supabase-server";
+import { insertSuggestionAsCafe } from "./admin-cafes";
 
 export type AdminResult =
   | { ok: true }
@@ -23,6 +24,27 @@ export async function setSuggestionStatus(
   if (!sb) return { ok: false, error: "Not authorized" };
   if (!/^[0-9a-f-]{36}$/i.test(id)) return { ok: false, error: "Invalid id" };
 
+  // Approving a suggestion adds the cafe to the public list automatically.
+  if (status === "approved") {
+    const { data: suggestion, error: fetchErr } = await sb
+      .from("cafe_suggestions")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (fetchErr || !suggestion) return { ok: false, error: "Suggestion not found" };
+
+    // Skip duplicate insert if this cafe was already added (e.g. reopened).
+    const { data: existing } = await sb
+      .from("cafes")
+      .select("slug")
+      .eq("slug", slugifyName(suggestion.name))
+      .maybeSingle();
+    if (!existing) {
+      const promoted = await insertSuggestionAsCafe(sb, suggestion);
+      if (!promoted.ok) return promoted;
+    }
+  }
+
   const { error } = await sb
     .from("cafe_suggestions")
     .update({ status })
@@ -32,7 +54,19 @@ export async function setSuggestionStatus(
     return { ok: false, error: "Update failed" };
   }
   revalidatePath("/admin");
+  revalidatePath("/cafes");
+  revalidatePath("/");
   return { ok: true };
+}
+
+function slugifyName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 100);
 }
 
 export async function setReportStatus(

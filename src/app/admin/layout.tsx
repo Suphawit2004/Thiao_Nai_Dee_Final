@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import AdminDashboard, { type AdminReport, type AdminReview, type AdminSuggestion } from "@/components/admin/AdminDashboard";
 import type { AdminUser } from "@/components/admin/AdminUsers";
-import type { ActivityItem, AdminCafe, AdminStats } from "@/components/admin/types";
+import type { ActivityItem, AdminCafe, AdminStats, OwnerRequestRow } from "@/components/admin/types";
 import { LangProvider } from "@/i18n/LangProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { AdminProvider } from "@/components/AdminProvider";
@@ -24,7 +24,7 @@ export default async function AdminLayout() {
   const { data: isAdmin } = await sb.rpc("is_admin");
   if (!isAdmin) return <AdminDashboard mode="forbidden" />;
 
-  const [suggestions, reports, reviews, cafes, profiles, favorites, admins] = await Promise.all([
+  const [suggestions, reports, reviews, cafes, profiles, favorites, admins, ownerRequests] = await Promise.all([
     sb.from("cafe_suggestions").select("*").limit(100),
     sb.from("data_reports").select("*").limit(100),
     sb.from("reviews").select("*").order("created_at", { ascending: false }).limit(30),
@@ -32,6 +32,7 @@ export default async function AdminLayout() {
     sb.from("profiles").select("id, display_name, email, role, created_at").order("created_at", { ascending: false }).limit(500),
     sb.from("favorites").select("id", { count: "exact", head: true }),
     sb.from("profiles").select("email").eq("role", "admin").order("email"),
+    sb.from("owner_requests").select("*").order("created_at", { ascending: false }).limit(100),
   ]);
 
   const statusRank: Record<string, number> = { pending: 0, approved: 1, rejected: 2 };
@@ -106,6 +107,7 @@ export default async function AdminLayout() {
     menu_highlights: (r.menu_highlights as { th: string; en: string }[]) ?? [],
     base_rating: Number(r.base_rating ?? 0),
     is_active: (r.is_active as boolean) ?? true,
+    owner_id: (r.owner_id as string | null) ?? null,
   }));
 
   const userRows: AdminUser[] = (profiles.data ?? []).map((p) => ({
@@ -117,6 +119,24 @@ export default async function AdminLayout() {
   }));
 
   const adminList = (admins.data ?? []).map((a) => a.email as string);
+
+  const ownerEmailById: Record<string, string> = {};
+  for (const p of profiles.data ?? []) {
+    const id = p.id as string;
+    const email = (p.email as string | null) ?? "";
+    if (email) ownerEmailById[id] = email;
+  }
+
+  const ownerRequestsList: OwnerRequestRow[] = (ownerRequests.data ?? []).map((r) => ({
+    id: r.id as string,
+    cafe_slug: r.cafe_slug as string,
+    user_id: r.user_id as string,
+    user_name: (r.user_name as string | null) ?? null,
+    contact: (r.contact as string | null) ?? null,
+    message: (r.message as string | null) ?? null,
+    status: r.status as OwnerRequestRow["status"],
+    created_at: r.created_at as string,
+  }));
 
   const counts = {
     reviewCount: reviews.count ?? reviewRows.length,
@@ -168,6 +188,8 @@ export default async function AdminLayout() {
               activity={activity}
               admins={adminList}
               users={userRows}
+              ownerRequests={ownerRequestsList}
+              ownerEmailById={ownerEmailById}
             />
           </div>
         </AdminProvider>

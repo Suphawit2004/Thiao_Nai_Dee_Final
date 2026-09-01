@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CAFES } from "@/data/cafes";
 import { getOpenStatus } from "@/lib/hours";
 import { fuzzyMatch } from "@/lib/fuzzy";
 import { useLang } from "@/i18n/LangProvider";
+import { useCafes } from "./CafesProvider";
 import { useSearch } from "./SearchProvider";
 import { filterByMaxDistance, getCafesBetweenAreas, MAX_DISTANCE_KM } from "@/lib/cafes-between";
 import CafeCard from "./CafeCard";
@@ -14,6 +14,7 @@ import { useNowTick } from "./OpenBadge";
 
 export default function CafesExplorer() {
   const { t, tr, lang } = useLang();
+  const { cafes: CAFES } = useCafes();
   const { filters, reset } = useSearch();
   const nowTick = useNowTick();
 
@@ -85,6 +86,7 @@ export default function CafesExplorer() {
       )
       .map((x) => x.cafe);
   }, [
+    CAFES,
     debouncedQuery,
     filters.tags,
     filters.life,

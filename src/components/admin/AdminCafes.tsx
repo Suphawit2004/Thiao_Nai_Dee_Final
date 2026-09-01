@@ -7,19 +7,28 @@ import {
   deleteCafeFormAction,
   setCafeActiveFormAction,
 } from "@/app/actions/admin-cafes";
+import { setCafeOwnerFormAction } from "@/app/actions/admin-owners";
 import CafeFormModal from "./CafeFormModal";
 import type { AdminCafe } from "./types";
 
-export default function AdminCafes({ cafes }: { cafes: AdminCafe[] }) {
+export default function AdminCafes({
+  cafes,
+  ownerEmailById = {},
+}: {
+  cafes: AdminCafe[];
+  ownerEmailById?: Record<string, string>;
+}) {
   const { t, tr } = useLang();
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState<AdminCafe | null>(null);
   const [adding, setAdding] = useState(false);
+  const [editingOwner, setEditingOwner] = useState<string | null>(null);
 
   const [deleteState, deleteAction] = useActionState(deleteCafeFormAction, undefined);
   const [activeState, activeAction] = useActionState(setCafeActiveFormAction, undefined);
+  const [ownerState, ownerAction] = useActionState(setCafeOwnerFormAction, undefined);
 
-  const error = deleteState?.ok === false ? deleteState.error : activeState?.ok === false ? activeState.error : null;
+  const error = deleteState?.ok === false ? deleteState.error : activeState?.ok === false ? activeState.error : ownerState?.ok === false ? ownerState.error : null;
 
   const filtered = cafes.filter((c) => {
     const q = query.trim().toLowerCase();
@@ -77,6 +86,15 @@ export default function AdminCafes({ cafes }: { cafes: AdminCafe[] }) {
                 {!c.is_active && (
                   <span className="rounded-full bg-stone-200 px-2.5 py-0.5 text-xs font-bold text-stone-600">
                     {t("admin.cafe.inactive")}
+                  </span>
+                )}
+                {c.owner_id && (
+                  <span
+                    className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700"
+                    title={ownerEmailById[c.owner_id] ?? c.owner_id}
+                  >
+                    🏪 {t("admin.cafe.ownerBadge")}
+                    {ownerEmailById[c.owner_id] && <span className="ml-1 font-medium">· {ownerEmailById[c.owner_id]}</span>}
                   </span>
                 )}
               </div>
@@ -142,6 +160,35 @@ export default function AdminCafes({ cafes }: { cafes: AdminCafe[] }) {
                 </form>
               </span>
             </div>
+
+            {editingOwner === c.slug ? (
+              <form action={ownerAction} className="mt-3 flex flex-wrap items-center gap-2">
+                <input type="hidden" name="slug" value={c.slug} />
+                <input
+                  name="owner"
+                  defaultValue={c.owner_id ? (ownerEmailById[c.owner_id] ?? "") : ""}
+                  placeholder={t("admin.cafe.ownerPlaceholder")}
+                  className="min-w-0 flex-1 rounded-full border border-[#eee3d2] bg-sand/40 px-3 py-1.5 text-sm outline-none focus:border-latte focus:bg-white"
+                />
+                <button className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700">
+                  {t("admin.save")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingOwner(null)}
+                  className="rounded-full px-3 py-1.5 text-xs font-medium text-espresso/60 hover:underline"
+                >
+                  {t("common.cancel")}
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={() => setEditingOwner(c.slug)}
+                className="mt-3 rounded-full border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50"
+              >
+                🏪 {t("admin.cafe.setOwner")}
+              </button>
+            )}
           </article>
         ))
       )}

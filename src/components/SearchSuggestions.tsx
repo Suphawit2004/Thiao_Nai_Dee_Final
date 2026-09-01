@@ -3,8 +3,9 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CAFES, AREA_META, type Cafe } from "@/data/cafes";
+import { AREA_META, type Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
+import { useCafes } from "./CafesProvider";
 import { useSearch } from "./SearchProvider";
 import { fuzzyMatch } from "@/lib/fuzzy";
 import { gradientFor } from "@/lib/thumbs";
@@ -22,6 +23,7 @@ interface SearchSuggestionsProps {
 export default function SearchSuggestions({ open, onClose }: SearchSuggestionsProps) {
   const { t, tr } = useLang();
   const { filters } = useSearch();
+  const { cafes: CAFES } = useCafes();
   const router = useRouter();
   const query = filters.query.trim();
 
@@ -37,7 +39,7 @@ export default function SearchSuggestions({ open, onClose }: SearchSuggestionsPr
       .filter((x) => x.score > 0)
       .sort((a, b) => b.score - a.score || b.cafe.baseRating - a.cafe.baseRating)
       .slice(0, 5);
-  }, [query]);
+  }, [query, CAFES]);
 
   if (!open || !query) return null;
 

@@ -182,22 +182,10 @@ export async function setCafeActive(slug: string, isActive: boolean): Promise<Ad
   return { ok: true };
 }
 
-/** Promote an approved suggestion into the cafes table. */
-export async function promoteSuggestionToCafe(id: string): Promise<AdminResult> {
-  const sb = await requireAdmin();
-  if (!sb) return { ok: false, error: "Not authorized" };
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return { ok: false, error: "Invalid id" };
-
-  const { data: suggestion, error } = await sb
-    .from("cafe_suggestions")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error || !suggestion) return { ok: false, error: "Suggestion not found" };
-  if (suggestion.status !== "approved") return { ok: false, error: "Not approved" };
-
+/** Build the cafes-table row for a cafe_suggestion. */
+function suggestionRow(suggestion: SuggestionRow) {
   const slug = slugify(suggestion.name);
-  const row = {
+  return {
     slug,
     name_th: suggestion.name,
     name_en: suggestion.name,
@@ -211,6 +199,7 @@ export async function promoteSuggestionToCafe(id: string): Promise<AdminResult> 
     price_range: (suggestion.price_range ?? 2) as 1 | 2,
     tags: [] as string[],
     lifestyle_tags: [] as string[],
+    area: "lakeside" as const,
     lat: suggestion.lat,
     lng: suggestion.lng,
     phone: suggestion.contact ?? null,
@@ -219,15 +208,36 @@ export async function promoteSuggestionToCafe(id: string): Promise<AdminResult> 
     base_rating: 4.0,
     is_active: true,
   };
+}
 
-  const { error: insError } = await sb.from("cafes").insert(row);
-  if (insError) {
-    console.error("promoteSuggestionToCafe failed:", insError);
-    if (insError.code === "23505") return { ok: false, error: "Cafe slug already exists" };
+interface SuggestionRow {
+  name: string;
+  note?: string | null;
+  address?: string | null;
+  open_time?: string | null;
+  close_time?: string | null;
+  price_range?: number | null;
+  lat: number;
+  lng: number;
+  contact?: string | null;
+  photo_url?: string | null;
+}
+
+/** Insert an approved suggestion into the cafes table. Shared by approve + manual promote. */
+export async function insertSuggestionAsCafe(
+  sb: NonNullable<Awaited<ReturnType<typeof requireAdmin>>>,
+  suggestion: SuggestionRow
+): Promise<AdminResult> {
+  const row = suggestionRow(suggestion);
+  const { error } = await sb.from("cafes").insert(row);
+  if (error) {
+    console.error("insertSuggestionAsCafe failed:", error);
+    if (error.code === "23505") return { ok: false, error: "Cafe already exists" };
     return { ok: false, error: "Create failed" };
   }
   revalidatePath("/admin");
   revalidatePath("/cafes");
+  revalidatePath(`/cafes/${row.slug}`);
   revalidatePath("/");
   return { ok: true };
 }
@@ -260,11 +270,4 @@ export async function setCafeActiveFormAction(
   formData: FormData
 ): Promise<AdminResult> {
   return setCafeActive(val(formData, "slug"), formData.get("active") === "1");
-}
-
-export async function promoteSuggestionFormAction(
-  _prev: AdminResult | undefined,
-  formData: FormData
-): Promise<AdminResult> {
-  return promoteSuggestionToCafe(String(formData.get("id") ?? ""));
 }

@@ -6,6 +6,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { AdminProvider } from "@/components/AdminProvider";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
 import { SearchProvider } from "@/components/SearchProvider";
+import { CafesProvider } from "@/components/CafesProvider";
+import { getCafes } from "@/lib/cafes-server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -34,7 +36,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cafes = await getCafes();
   return (
     <html lang="th" className={`${plexThai.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
@@ -43,9 +46,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AdminProvider>
               <FavoritesProvider>
                 <SearchProvider>
-                  <Navbar />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
+                  <CafesProvider initialCafes={cafes}>
+                    <Navbar />
+                    <main className="flex-1">{children}</main>
+                    <Footer />
+                  </CafesProvider>
                 </SearchProvider>
               </FavoritesProvider>
             </AdminProvider>

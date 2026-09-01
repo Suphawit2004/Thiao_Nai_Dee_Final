@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { CAFES, TAG_META, TAG_ORDER } from "@/data/cafes";
+import { TAG_META, TAG_ORDER } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
+import { useCafes } from "./CafesProvider";
 import CafeCard from "./CafeCard";
 import MapBlock from "./map/MapBlock";
 
 export default function HomeView() {
   const { t, tr } = useLang();
-  const featured = [...CAFES].sort((a, b) => b.baseRating - a.baseRating).slice(0, 3);
+  const { cafes } = useCafes();
+  const featured = [...cafes].sort((a, b) => b.baseRating - a.baseRating).slice(0, 3);
 
   return (
     <div>
@@ -45,7 +47,7 @@ export default function HomeView() {
           </div>
           <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-3 text-sm">
             {[
-              [String(CAFES.length), t("home.stat1")],
+              [String(cafes.length), t("home.stat1")],
               [String(TAG_ORDER.length), t("home.stat2")],
               ["฿0", t("home.stat3")],
             ].map(([num, label]) => (
@@ -91,7 +93,7 @@ export default function HomeView() {
                 </span>
                 <span className="mt-2 block font-semibold text-espresso">{tr(TAG_META[tag].label)}</span>
                 <span className="mt-0.5 block text-xs text-espresso/70">
-                  {CAFES.filter((c) => c.tags.includes(tag)).length} {t("home.cafesInTag")}
+                  {cafes.filter((c) => c.tags.includes(tag)).length} {t("home.cafesInTag")}
                 </span>
               </Link>
             ))}
@@ -109,7 +111,7 @@ export default function HomeView() {
             {t("home.openMap")}
           </Link>
         </div>
-        <MapBlock cafes={CAFES} className="mt-6 h-[420px]" />
+        <MapBlock cafes={cafes} className="mt-6 h-[420px]" />
       </section>
     </div>
   );
