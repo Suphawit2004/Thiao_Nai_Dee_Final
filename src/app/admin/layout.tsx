@@ -24,7 +24,7 @@ export default async function AdminLayout() {
   const { data: isAdmin } = await sb.rpc("is_admin");
   if (!isAdmin) return <AdminDashboard mode="forbidden" />;
 
-  const [suggestions, reports, reviews, cafes, profiles, favorites, admins, ownerRequests] = await Promise.all([
+  const [suggestions, reports, reviews, cafes, profiles, favorites, admins, ownerRequests, reviewCount, userCount] = await Promise.all([
     sb.from("cafe_suggestions").select("*").limit(100),
     sb.from("data_reports").select("*").limit(100),
     sb.from("reviews").select("*").order("created_at", { ascending: false }).limit(30),
@@ -33,6 +33,8 @@ export default async function AdminLayout() {
     sb.from("favorites").select("id", { count: "exact", head: true }),
     sb.from("profiles").select("email").eq("role", "admin").order("email"),
     sb.from("owner_requests").select("*").order("created_at", { ascending: false }).limit(100),
+    sb.from("reviews").select("id", { count: "exact", head: true }),
+    sb.from("profiles").select("id", { count: "exact", head: true }),
   ]);
 
   const statusRank: Record<string, number> = { pending: 0, approved: 1, rejected: 2 };
@@ -139,8 +141,8 @@ export default async function AdminLayout() {
   }));
 
   const counts = {
-    reviewCount: reviews.count ?? reviewRows.length,
-    userCount: profiles.count ?? userRows.length,
+    reviewCount: reviewCount.count ?? reviewRows.length,
+    userCount: userCount.count ?? userRows.length,
     favoriteCount: favorites.count ?? 0,
     cafeCount: cafes.data?.length ?? cafeRows.length,
     pendingSuggestions: suggestionRows.filter((s) => s.status === "pending").length,

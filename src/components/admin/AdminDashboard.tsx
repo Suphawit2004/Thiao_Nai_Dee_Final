@@ -104,29 +104,23 @@ export default function AdminDashboard({
   const { t, lang } = useLang();
   const tk = (k: string) => t(k as DictKey);
 
-  const [approveState, approveAction] = useActionState(suggestionFormAction, undefined);
-  const [rejectState, rejectAction] = useActionState(suggestionFormAction, undefined);
-  const [reopenState, reopenAction] = useActionState(suggestionFormAction, undefined);
-  const approvePending = approveState?.ok === false && approveState.error !== "Not authorized";
-  const rejectPending = rejectState?.ok === false && rejectState.error !== "Not authorized";
-  const reopenPending = reopenState?.ok === false && reopenState.error !== "Not authorized";
+  const [approveState, approveAction, approvePending] = useActionState(suggestionFormAction, undefined);
+  const [rejectState, rejectAction, rejectPending] = useActionState(suggestionFormAction, undefined);
+  const [reopenState, reopenAction, reopenPending] = useActionState(suggestionFormAction, undefined);
   const approveError = approveState?.ok === false ? approveState.error : null;
   const rejectError = rejectState?.ok === false ? rejectState.error : null;
   const reopenError = reopenState?.ok === false ? reopenState.error : null;
 
-  const [resolveState, resolveAction] = useActionState(reportFormAction, undefined);
-  const [dismissState, dismissAction] = useActionState(reportFormAction, undefined);
-  const resolvePending = resolveState?.ok === false && resolveState.error !== "Not authorized";
-  const dismissPending = dismissState?.ok === false && dismissState.error !== "Not authorized";
+  const [resolveState, resolveAction, resolvePending] = useActionState(reportFormAction, undefined);
+  const [dismissState, dismissAction, dismissPending] = useActionState(reportFormAction, undefined);
   const resolveError = resolveState?.ok === false ? resolveState.error : null;
   const dismissError = dismissState?.ok === false ? dismissState.error : null;
 
-  const [deleteState, deleteAction] = useActionState(deleteReviewFormAction, undefined);
-  const deletePending = deleteState?.ok === false && deleteState.error !== "Not authorized";
+  const [deleteState, deleteAction, deletePending] = useActionState(deleteReviewFormAction, undefined);
   const deleteError = deleteState?.ok === false ? deleteState.error : null;
 
-  const [approveOwnerState, approveOwnerAction] = useActionState(approveOwnerRequestFormAction, undefined);
-  const [rejectOwnerState, rejectOwnerAction] = useActionState(rejectOwnerRequestFormAction, undefined);
+  const [approveOwnerState, approveOwnerAction, approveOwnerPending] = useActionState(approveOwnerRequestFormAction, undefined);
+  const [rejectOwnerState, rejectOwnerAction, rejectOwnerPending] = useActionState(rejectOwnerRequestFormAction, undefined);
   const approveOwnerError = approveOwnerState?.ok === false ? approveOwnerState.error : null;
   const rejectOwnerError = rejectOwnerState?.ok === false ? rejectOwnerState.error : null;
 
@@ -519,17 +513,19 @@ export default function AdminDashboard({
                     <form action={approveOwnerAction}>
                       <input type="hidden" name="id" value={req.id} />
                       <button
-                        className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                        disabled={approveOwnerPending}
+                        className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
                       >
-                        ✓ {t("admin.approve")}
+                        {approveOwnerPending ? "⏳" : ""} ✓ {t("admin.approve")}
                       </button>
                     </form>
                     <form action={rejectOwnerAction}>
                       <input type="hidden" name="id" value={req.id} />
                       <button
-                        className="rounded-full border border-[#e8dcc8] px-4 py-1.5 text-sm font-semibold text-espresso/80 transition hover:bg-sand"
+                        disabled={rejectOwnerPending}
+                        className="rounded-full border border-[#e8dcc8] px-4 py-1.5 text-sm font-semibold text-espresso/80 transition hover:bg-sand disabled:opacity-50"
                       >
-                        ✕ {t("admin.reject")}
+                        {rejectOwnerPending ? "⏳" : ""} ✕ {t("admin.reject")}
                       </button>
                     </form>
                     {renderError(approveOwnerError ?? rejectOwnerError)}
