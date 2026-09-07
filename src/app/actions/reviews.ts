@@ -2,7 +2,7 @@
 
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
-import { CAFES } from "@/data/cafes";
+import { getCafe } from "@/lib/catalog";
 import { checkReviewRateLimit } from "@/lib/rate-limit-supabase";
 import { resolveClientIp } from "@/lib/client-ip";
 import { getSupabaseServer } from "@/lib/supabase-server";
@@ -36,7 +36,7 @@ export async function submitReview(formData: {
   const { slug, name, rating, comment } = formData;
 
   // Server-side validation
-  const cafe = CAFES.find(c => c.slug === slug);
+  const cafe = await getCafe(slug);
   if (!cafe) return { ok: false, error: "Invalid cafe" };
 
   const safeName = name.trim();

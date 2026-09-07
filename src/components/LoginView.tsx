@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLang } from "@/i18n/LangProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import PasswordLogin from "./PasswordLogin";
 
 function LoginFormInner() {
   const { t } = useLang();
@@ -147,7 +148,8 @@ export default function LoginView() {
       <div className="mt-8 rounded-2xl border border-[#eee3d2] bg-white p-6 shadow-sm">
         <Suspense fallback={<div className="h-40" aria-hidden />}>
           <LoginFormInner />
-        </Suspense>
+          </Suspense>
+          <PasswordLogin />
       </div>
     </div>
   );

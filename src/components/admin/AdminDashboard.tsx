@@ -1,13 +1,18 @@
 "use client";
+import { useCatalog } from "@/components/CatalogProvider";
 
 import { useActionState, useState } from "react";
-import { CAFES } from "@/data/cafes";
+import styles from "./AdminDashboard.module.css";
+import Link from "next/link";
+import ActionForm from "@/components/ActionForm";
+
 import { useLang } from "@/i18n/LangProvider";
 import type { DictKey } from "@/i18n/dictionaries";
 import {
   deleteReviewFormAction,
   reportFormAction,
   suggestionFormAction,
+  saveSuggestionDetails,
 } from "@/app/actions/admin";
 
 export interface AdminSuggestion {
@@ -82,32 +87,42 @@ export default function AdminDashboard({
   reports?: AdminReport[];
   reviews?: AdminReview[];
 }) {
+  const CAFES = useCatalog();
   const { t, tr, lang } = useLang();
   const tk = (k: string) => t(k as DictKey);
   const [tab, setTab] = useState<"suggestions" | "reports" | "reviews">("suggestions");
 
+  const [pendingOnly, setPendingOnly] = useState(false);
+  const copy = lang === "th" ? {
+    back: "กลับไปหน้าเว็บไซต์", workspace: "จัดการข้อมูลคาเฟ่", loaded: "รายการที่โหลดมา",
+    queue: "รอตรวจสอบ", recent: "รีวิวล่าสุด", all: "รายการทั้งหมด", pending: "แสดงเฉพาะที่รอตรวจสอบ",
+    manage: "เลือกหมวดที่ต้องการจัดการ", done: "ไม่มีรายการรอตรวจสอบในหมวดนี้",
+    suggestions: "ตรวจสอบข้อมูลร้าน ก่อนอนุมัติหรือส่งกลับ", reports: "ตรวจสอบคำขอแก้ไขข้อมูลจากผู้ใช้",
+    reviews: "ดูความคิดเห็นและจัดการรีวิวที่ไม่เหมาะสม",
+  } : {
+    back: "Back to website", workspace: "Cafe management", loaded: "Loaded records",
+    queue: "Awaiting review", recent: "Latest reviews", all: "All records", pending: "Show pending only",
+    manage: "Choose a section to manage", done: "No pending items in this section",
+    suggestions: "Review cafe details before approving or rejecting", reports: "Check corrections submitted by visitors",
+    reviews: "Read feedback and moderate inappropriate reviews",
+  };
+
   // Action state for suggestion forms
-  const [approveState, approveAction] = useActionState(suggestionFormAction, undefined);
-  const [rejectState, rejectAction] = useActionState(suggestionFormAction, undefined);
-  const [reopenState, reopenAction] = useActionState(suggestionFormAction, undefined);
-  const approvePending = approveState?.ok === false && approveState.error !== "Not authorized";
-  const rejectPending = rejectState?.ok === false && rejectState.error !== "Not authorized";
-  const reopenPending = reopenState?.ok === false && reopenState.error !== "Not authorized";
+  const [approveState, approveAction, approvePending] = useActionState(suggestionFormAction, undefined);
+  const [rejectState, rejectAction, rejectPending] = useActionState(suggestionFormAction, undefined);
+  const [reopenState, reopenAction, reopenPending] = useActionState(suggestionFormAction, undefined);
   const approveError = approveState?.ok === false ? approveState.error : null;
   const rejectError = rejectState?.ok === false ? rejectState.error : null;
   const reopenError = reopenState?.ok === false ? reopenState.error : null;
 
   // Action state for report forms
-  const [resolveState, resolveAction] = useActionState(reportFormAction, undefined);
-  const [dismissState, dismissAction] = useActionState(reportFormAction, undefined);
-  const resolvePending = resolveState?.ok === false && resolveState.error !== "Not authorized";
-  const dismissPending = dismissState?.ok === false && dismissState.error !== "Not authorized";
+  const [resolveState, resolveAction, resolvePending] = useActionState(reportFormAction, undefined);
+  const [dismissState, dismissAction, dismissPending] = useActionState(reportFormAction, undefined);
   const resolveError = resolveState?.ok === false ? resolveState.error : null;
   const dismissError = dismissState?.ok === false ? dismissState.error : null;
 
   // Action state for review deletion
-  const [deleteState, deleteAction] = useActionState(deleteReviewFormAction, undefined);
-  const deletePending = deleteState?.ok === false && deleteState.error !== "Not authorized";
+  const [deleteState, deleteAction, deletePending] = useActionState(deleteReviewFormAction, undefined);
   const deleteError = deleteState?.ok === false ? deleteState.error : null;
 
   if (mode !== "ready") {
@@ -155,40 +170,45 @@ export default function AdminDashboard({
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">🛠️ {t("admin.title")}</h1>
-        <p className="mt-1 text-espresso/60">{t("admin.desc")}</p>
+    <div className={styles.dashboard}>
+      <header className={styles.header}>
+        <div><h1>{t("admin.title")}</h1><p>{t("admin.desc")}</p></div>
+        <Link href="/" className={styles.backLink}>{copy.back} <span aria-hidden>↗</span></Link>
       </header>
-
-      <div role="tablist" aria-label={t("admin.title")} className="flex gap-2 border-b border-[#eadfcd] pb-2">
-        {tabs.map(({ key, label, badge }) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-              tab === key ? "bg-coffee text-cream" : "text-espresso/70 hover:bg-sand"
-            }`}
-          >
-            {label}
-            {badge > 0 && (
-              <span className="ml-1.5 rounded-full bg-latte px-1.5 text-xs font-extrabold text-espresso">
-                {badge}
-              </span>
-            )}
-          </button>
-        ))}
+      <div className={styles.summary} aria-label={copy.loaded}>
+        <div><span>{t("admin.tab.suggestions")}</span><strong>{suggestions.length}</strong><small>{pendingSuggestions} {copy.queue}</small></div>
+        <div><span>{t("admin.tab.reports")}</span><strong>{reports.length}</strong><small>{pendingReports} {copy.queue}</small></div>
+        <div><span>{copy.recent}</span><strong>{reviews.length}</strong><small>{copy.loaded}</small></div>
       </div>
-
+      <div className={styles.workspace}>
+        <aside className={styles.sidebar}>
+          <h2>{copy.workspace}</h2>
+          <p>{copy.manage}</p>
+          <nav aria-label={t("admin.title")} className={styles.navigation}>
+            {tabs.map(({ key, label, badge }) => (
+              <button key={key} type="button" aria-pressed={tab === key}
+                onClick={() => { setTab(key); setPendingOnly(false); }}
+                className={tab === key ? styles.active : undefined}>
+                <span>{label}</span><span className={styles.count}>{key === "reviews" ? reviews.length : badge}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+        <div className={styles.content}>
+          <div className={styles.toolbar}>
+            <div><h2>{tabs.find((item) => item.key === tab)?.label}</h2><p>{copy[tab]}</p></div>
+            {tab !== "reviews" && <label className={styles.filter}>
+              <input type="checkbox" checked={pendingOnly} onChange={(e) => setPendingOnly(e.target.checked)} />
+              {copy.pending}
+            </label>}
+          </div>
       {tab === "suggestions" && (
-        <section className="mt-5 flex flex-col gap-4">
-          {suggestions.length === 0 && <EmptyRow label={t("admin.empty.suggestions")} />}
-          {suggestions.map((s) => (
+        <section className={styles.list}>
+          {suggestions.filter((s) => !pendingOnly || s.status === "pending").length === 0 && <EmptyRow label={pendingOnly ? copy.done : t("admin.empty.suggestions")} />}
+          {suggestions.filter((s) => !pendingOnly || s.status === "pending").map((s) => (
             <article
               key={s.id}
-              className="rounded-2xl border border-[#eee3d2] bg-white p-5 shadow-sm"
+              className={styles.card}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-bold">{s.name}</h3>
@@ -253,11 +273,18 @@ export default function AdminDashboard({
                 </a>
               )}
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              {s.status !== "approved" && <details className="mt-4 rounded-xl border border-[#eadfcd] p-4"><summary className="cursor-pointer text-sm font-semibold">ตรวจและเติมข้อมูลก่อนเผยแพร่</summary><div className="mt-4"><ActionForm action={saveSuggestionDetails}>
+                <input type="hidden" name="id" value={s.id} />
+                <label>ชื่อร้าน<input name="name" defaultValue={s.name} maxLength={120} required /></label>
+                <label>ที่อยู่<input name="address" defaultValue={s.address ?? ""} maxLength={300} required /></label>
+                <div className="feature-grid"><label>เวลาเปิด<input type="time" name="openTime" defaultValue={s.openTime ?? ""} required /></label><label>เวลาปิด<input type="time" name="closeTime" defaultValue={s.closeTime ?? ""} required /></label></div>
+              </ActionForm></div></details>}
+              <div className={styles.actions}>
                 {s.status !== "approved" && (
                   <form action={approveAction}>
                     <input type="hidden" name="id" value={s.id} />
                     <input type="hidden" name="status" value="approved" />
+                    <label className="mb-3 block text-xs"><input type="checkbox" name="inDistrict" required /> ตรวจแล้วว่าร้านอยู่ในอำเภอเมืองพะเยา</label>
                     <button
                       disabled={approvePending}
                       className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
@@ -266,7 +293,7 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {s.status !== "rejected" && (
+                {s.status !== "rejected" && s.status !== "approved" && (
                   <form action={rejectAction}>
                     <input type="hidden" name="id" value={s.id} />
                     <input type="hidden" name="status" value="rejected" />
@@ -278,7 +305,7 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {s.status !== "pending" && (
+                {s.status === "rejected" && (
                   <form action={reopenAction}>
                     <input type="hidden" name="id" value={s.id} />
                     <input type="hidden" name="status" value="pending" />
@@ -296,22 +323,23 @@ export default function AdminDashboard({
                   </p>
                 )}
               </div>
+              {s.status === "approved" && <Link className="mt-3 inline-block text-sm underline" href={`/owner/cafe-${s.id}`}>จัดการร้านที่เผยแพร่ →</Link>}
             </article>
           ))}
         </section>
       )}
 
       {tab === "reports" && (
-        <section className="mt-5 flex flex-col gap-4">
-          {reports.length === 0 && <EmptyRow label={t("admin.empty.reports")} />}
-          {reports.map((r) => (
+        <section className={styles.list}>
+          {reports.filter((r) => !pendingOnly || r.status === "pending").length === 0 && <EmptyRow label={pendingOnly ? copy.done : t("admin.empty.reports")} />}
+          {reports.filter((r) => !pendingOnly || r.status === "pending").map((r) => (
             <article
               key={r.id}
-              className="rounded-2xl border border-[#eee3d2] bg-white p-5 shadow-sm"
+              className={styles.card}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-bold">
-                  <a href={`/cafes/${r.cafeSlug}`} className="hover:text-coffee hover:underline">
+                  <a href={`/owner/${r.cafeSlug}`} className="hover:text-coffee hover:underline">
                     {cafeName(r.cafeSlug)} ↗
                   </a>
                 </h3>
@@ -345,7 +373,7 @@ export default function AdminDashboard({
               </dl>
 
               {r.status === "pending" ? (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className={styles.actions}>
                   <form action={resolveAction}>
                     <input type="hidden" name="id" value={r.id} />
                     <input type="hidden" name="status" value="resolved" />
@@ -379,12 +407,12 @@ export default function AdminDashboard({
       )}
 
       {tab === "reviews" && (
-        <section className="mt-5 flex flex-col gap-4">
+        <section className={styles.list}>
           {reviews.length === 0 && <EmptyRow label={t("admin.empty.reviews")} />}
           {reviews.map((rv) => (
             <article
               key={rv.id}
-              className="rounded-2xl border border-[#eee3d2] bg-white p-5 shadow-sm"
+              className={styles.card}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-bold">
@@ -401,7 +429,7 @@ export default function AdminDashboard({
                 {t("admin.review.by").replace("{name}", rv.author_name)} · {fmt(rv.created_at)}
               </p>
               {rv.comment && <p className="mt-2 text-sm">💬 {rv.comment}</p>}
-              <form action={deleteAction} className="mt-3">
+              <form action={deleteAction} className={styles.actions}>
                 <input type="hidden" name="id" value={rv.id} />
                 <button
                   onClick={(e) => {
@@ -418,6 +446,8 @@ export default function AdminDashboard({
           ))}
         </section>
       )}
+        </div>
+      </div>
     </div>
   );
 }

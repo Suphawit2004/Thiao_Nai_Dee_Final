@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { CAFES, type Cafe } from "@/data/cafes";
+import { getCafe } from "@/lib/catalog";
 import DetailView from "@/components/DetailView";
 
 interface Params {
@@ -10,7 +11,7 @@ export function generateStaticParams() {
   return CAFES.map((cafe) => ({ slug: cafe.slug }));
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 const SCHEMA_DAYS = [
   "Sunday",
@@ -57,7 +58,7 @@ function cafeJsonLd(cafe: Cafe): string {
 
 export async function generateMetadata({ params }: Params) {
   const { slug } = await params;
-  const cafe = CAFES.find((c) => c.slug === slug);
+  const cafe = await getCafe(slug);
   if (!cafe) return { title: "Not found" };
   return {
     title: `${cafe.name.th} (${cafe.name.en})`,
@@ -67,7 +68,7 @@ export async function generateMetadata({ params }: Params) {
 
 export default async function CafeDetailPage({ params }: Params) {
   const { slug } = await params;
-  const cafe = CAFES.find((c) => c.slug === slug);
+  const cafe = await getCafe(slug);
   if (!cafe) notFound();
   return (
     <>
