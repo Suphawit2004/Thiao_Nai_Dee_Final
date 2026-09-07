@@ -137,7 +137,7 @@ export default function ReportDialog({ slug, open, onClose }: ReportDialogProps)
       message: message.trim(),
       suggestedValue: suggested.trim() || null,
       contact: contact.trim() || null,
-    });
+    }).catch(() => ({ ok: false, error: "failed" } as const));
     if (!res.ok && res.error === "rate_limited") {
       setRateLimited(true);
       setStatus("error");

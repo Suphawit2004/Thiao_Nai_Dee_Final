@@ -73,7 +73,11 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
         setReviews(data);
       }
       setLoading(false);
-    })();
+    })().catch(() => {
+      if (!active) return;
+      setLoadError(true);
+      setLoading(false);
+    });
     return () => {
       active = false;
     };
@@ -91,7 +95,8 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
     if (!nameValue.trim()) return;
     setSending(true);
     setNotice(null);
-    const res = await submitReview({ slug, name: nameValue, rating, comment });
+    const res = await submitReview({ slug, name: nameValue, rating, comment })
+      .catch(() => ({ ok: false, error: "failed" } as const));
     setSending(false);
     if (!res.ok) {
       setNotice({
@@ -113,7 +118,7 @@ export default function ReviewSection({ slug, baseRating }: ReviewSectionProps) 
   async function handleDelete(id: string) {
     if (!window.confirm(t("reviews.deleteConfirm"))) return;
     setDeletingId(id);
-    const res = await deleteOwnReview(id);
+    const res = await deleteOwnReview(id).catch(() => ({ ok: false }));
     setDeletingId(null);
     if (res.ok) {
       setReviews((prev) => prev.filter((r) => r.id !== id));

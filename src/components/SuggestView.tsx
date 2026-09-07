@@ -117,7 +117,7 @@ export default function SuggestView() {
       lat: coords[0],
       lng: coords[1],
       photo: photoFile,
-    });
+    }).catch(() => ({ ok: false, error: "failed" } as const));
 
     if (res.ok) {
       setStatus("sent");
