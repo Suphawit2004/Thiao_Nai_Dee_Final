@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CAFES } from "@/data/cafes";
+import { useCatalog } from "@/components/CatalogProvider";
 import { getOpenStatus } from "@/lib/hours";
-import { fuzzyMatch } from "@/lib/fuzzy";
+import { scoreCafe } from "@/lib/cafe-search";
 import { useLang } from "@/i18n/LangProvider";
 import { useSearch } from "./SearchProvider";
 import { filterByMaxDistance, getCafesBetweenAreas, MAX_DISTANCE_KM } from "@/lib/cafes-between";
@@ -13,6 +13,7 @@ import FilterBar from "./FilterBar";
 import { useNowTick } from "./OpenBadge";
 
 export default function CafesExplorer() {
+  const CAFES = useCatalog();
   const { t, tr, lang } = useLang();
   const { filters, reset } = useSearch();
   const nowTick = useNowTick();
@@ -22,29 +23,11 @@ export default function CafesExplorer() {
 
   const results = useMemo(() => {
     const q = debouncedQuery.trim();
-    const ql = q.toLowerCase();
     const locale = lang === "th" ? "th" : "en";
 
     // Score every cafe against the query: name matches (fuzzy) weigh most,
     // address / tag hits act as weaker secondary signals. No query = show all.
-    let scored = CAFES.map((cafe) => {
-      if (!q) return { cafe, score: 1 };
-
-      const nameScore = Math.max(
-        fuzzyMatch(cafe.name.th, q) ?? -1,
-        fuzzyMatch(cafe.name.en, q) ?? -1
-      );
-      const addressScore = `${cafe.address.th} ${cafe.address.en}`
-        .toLowerCase()
-        .includes(ql)
-        ? 40
-        : -1;
-      const tagScore = [...cafe.tags, ...cafe.lifestyleTags].join(" ").toLowerCase().includes(ql)
-        ? 40
-        : -1;
-
-      return { cafe, score: Math.max(nameScore, addressScore, tagScore) };
-    }).filter((x) => x.score > 0);
+    let scored = CAFES.map(cafe => ({ cafe, score: scoreCafe(cafe, q) })).filter(x => x.score > 0);
 
     scored = scored.filter(({ cafe }) => {
       if (filters.tags.length > 0 && !filters.tags.some((tg) => cafe.tags.includes(tg))) {
@@ -85,6 +68,7 @@ export default function CafesExplorer() {
       )
       .map((x) => x.cafe);
   }, [
+    CAFES,
     debouncedQuery,
     filters.tags,
     filters.life,
@@ -104,6 +88,7 @@ export default function CafesExplorer() {
       </header>
 
       <FilterBar className="mb-3" />
+      <Link href="/chat" className="inline-block mb-4 text-sm font-semibold text-coffee underline">ให้ผู้ช่วยค้นหาร้านจากความต้องการ →</Link>
 
       <p className="text-sm font-semibold text-espresso/70" aria-live="polite">
         {t("cafes.found").replaceAll("{n}", String(results.length))}

@@ -1,12 +1,13 @@
 "use client";
+import { useCatalog } from "@/components/CatalogProvider";
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CAFES, AREA_META, type Cafe } from "@/data/cafes";
+import { AREA_META, type Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import { useSearch } from "./SearchProvider";
-import { fuzzyMatch } from "@/lib/fuzzy";
+import { scoreCafe } from "@/lib/cafe-search";
 import { gradientFor } from "@/lib/thumbs";
 
 interface ScoredCafe {
@@ -20,6 +21,7 @@ interface SearchSuggestionsProps {
 }
 
 export default function SearchSuggestions({ open, onClose }: SearchSuggestionsProps) {
+  const CAFES = useCatalog();
   const { t, tr } = useLang();
   const { filters } = useSearch();
   const router = useRouter();
@@ -29,15 +31,12 @@ export default function SearchSuggestions({ open, onClose }: SearchSuggestionsPr
     if (!query) return [];
     return CAFES.map((cafe) => ({
       cafe,
-      score: Math.max(
-        fuzzyMatch(cafe.name.th, query) ?? -1,
-        fuzzyMatch(cafe.name.en, query) ?? -1
-      ),
+      score: scoreCafe(cafe, query),
     }))
       .filter((x) => x.score > 0)
       .sort((a, b) => b.score - a.score || b.cafe.baseRating - a.cafe.baseRating)
       .slice(0, 5);
-  }, [query]);
+  }, [query, CAFES]);
 
   if (!open || !query) return null;
 
