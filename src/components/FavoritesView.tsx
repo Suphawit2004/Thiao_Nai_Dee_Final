@@ -1,13 +1,15 @@
 "use client";
+import { useCatalog } from "@/components/CatalogProvider";
 
 import Link from "next/link";
-import { CAFES } from "@/data/cafes";
+
 import { useAuth } from "./AuthProvider";
 import { useFavorites } from "./FavoritesProvider";
 import { useLang } from "@/i18n/LangProvider";
 import CafeCard from "./CafeCard";
 
 export default function FavoritesView() {
+  const CAFES = useCatalog();
   const { t } = useLang();
   const { user } = useAuth();
   const { slugs, ready } = useFavorites();

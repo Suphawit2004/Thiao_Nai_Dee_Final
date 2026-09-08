@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { CAFES } from "@/data/cafes";
+import { getCatalog } from "@/lib/catalog";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const CAFES = await getCatalog();
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
   return [
     { url: `${base}/`, changeFrequency: "weekly", priority: 1 },

@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
-import { readLocalFavs, writeLocalFavs } from "@/lib/favorites";
+import { readLocalFavs, writeLocalFavs, reconcileFavorites } from "@/lib/favorites";
 import { useAuth } from "./AuthProvider";
 
 interface FavoritesContextValue {
@@ -44,11 +44,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
       // One-time merge of guest favourites into the database after login.
       const local = readLocalFavs();
+      let merged = local.length === 0;
       if (local.length > 0) {
         const { error } = await supabase.from("favorites").upsert(
           local.map((cafe_slug) => ({ user_id: nextUserId, cafe_slug })),
           { onConflict: "user_id,cafe_slug", ignoreDuplicates: true }
         );
+        merged = !error;
         if (error) {
           // Keep the guest list intact — it will be retried on next login.
           console.error("favorites merge failed:", error);
@@ -69,9 +71,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         // pretending the account has no favourites.
         setSlugs(readLocalFavs());
       } else {
-        setSlugs(data.map((row: FavRow) => row.cafe_slug));
-        // Only drop the guest list once the server list is confirmed.
-        if (local.length > 0) writeLocalFavs([]);
+        setSlugs(reconcileFavorites(local, data.map((row: FavRow) => row.cafe_slug), merged));
       }
       setReady(true);
     }
