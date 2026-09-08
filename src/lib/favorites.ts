@@ -20,5 +20,16 @@ export function readLocalFavs(): string[] {
 
 export function writeLocalFavs(slugs: string[]): void {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(LS_KEY, JSON.stringify(slugs.slice(0, 200)));
+  try {
+    window.localStorage.setItem(LS_KEY, JSON.stringify(slugs.slice(0, 200)));
+  } catch {
+    // Storage can be disabled or full. Keep the in-memory UI usable.
+  }
+}
+
+/** Keep unsynced guest entries until both the merge and server read succeed. */
+export function reconcileFavorites(local: string[], server: string[], merged: boolean): string[] {
+  if (!merged) return [...new Set([...server, ...local])];
+  if (local.length > 0) writeLocalFavs([]);
+  return server;
 }

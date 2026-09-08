@@ -1,4 +1,5 @@
 "use client";
+import { useCatalog } from "@/components/CatalogProvider";
 
 import { useActionState, useState } from "react";
 import styles from "./AdminDashboard.module.css";
@@ -10,6 +11,7 @@ import {
   deleteReviewFormAction,
   reportFormAction,
   suggestionFormAction,
+  saveSuggestionDetails,
 } from "@/app/actions/admin";
 
 export interface AdminSuggestion {
@@ -84,6 +86,7 @@ export default function AdminDashboard({
   reports?: AdminReport[];
   reviews?: AdminReview[];
 }) {
+  const CAFES = useCatalog();
   const { t, tr, lang } = useLang();
   const tk = (k: string) => t(k as DictKey);
   const [tab, setTab] = useState<"suggestions" | "reports" | "reviews">("suggestions");
@@ -274,6 +277,7 @@ export default function AdminDashboard({
                   <form action={approveAction}>
                     <input type="hidden" name="id" value={s.id} />
                     <input type="hidden" name="status" value="approved" />
+                    <label className="mb-3 block text-xs"><input type="checkbox" name="inDistrict" required /> ตรวจแล้วว่าร้านอยู่ในอำเภอเมืองพะเยา</label>
                     <button
                       disabled={approvePending}
                       className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
@@ -282,7 +286,7 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {s.status !== "rejected" && (
+                {s.status !== "rejected" && s.status !== "approved" && (
                   <form action={rejectAction}>
                     <input type="hidden" name="id" value={s.id} />
                     <input type="hidden" name="status" value="rejected" />
@@ -294,7 +298,7 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {s.status !== "pending" && (
+                {s.status === "rejected" && (
                   <form action={reopenAction}>
                     <input type="hidden" name="id" value={s.id} />
                     <input type="hidden" name="status" value="pending" />
@@ -312,6 +316,7 @@ export default function AdminDashboard({
                   </p>
                 )}
               </div>
+              {s.status === "approved" && <Link className="mt-3 inline-block text-sm underline" href={`/owner/cafe-${s.id}`}>จัดการร้านที่เผยแพร่ →</Link>}
             </article>
           ))}
         </section>
@@ -327,7 +332,7 @@ export default function AdminDashboard({
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-bold">
-                  <a href={`/cafes/${r.cafeSlug}`} className="hover:text-coffee hover:underline">
+                  <a href={`/owner/${r.cafeSlug}`} className="hover:text-coffee hover:underline">
                     {cafeName(r.cafeSlug)} ↗
                   </a>
                 </h3>

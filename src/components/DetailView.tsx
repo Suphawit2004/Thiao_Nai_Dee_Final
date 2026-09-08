@@ -15,6 +15,8 @@ import ReviewSection from "./ReviewSection";
 import MapBlock from "./map/MapBlock";
 import FavoriteButton from "./FavoriteButton";
 import ReportDialog from "./ReportDialog";
+import CafeCommunity from "./CafeCommunity";
+import LiveMenu from "./LiveMenu";
 
 export default function DetailView({ cafe }: { cafe: Cafe }) {
   const { t, tr } = useLang();
@@ -124,6 +126,8 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
         </div>
       </div>
 
+      <LiveMenu slug={cafe.slug} />
+      <CafeCommunity slug={cafe.slug} />
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-bold text-espresso">🗺️ {t("detail.onMap")}</h2>
         <MapBlock cafes={[cafe]} className="h-72" />

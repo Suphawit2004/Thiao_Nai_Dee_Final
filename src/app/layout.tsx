@@ -6,6 +6,9 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
 import { SearchProvider } from "@/components/SearchProvider";
 import Navbar from "@/components/Navbar";
+import { getCatalog } from "@/lib/catalog";
+import { CatalogProvider } from "@/components/CatalogProvider";
+import FeatureNav from "@/components/FeatureNav";
 import Footer from "@/components/Footer";
 
 const plexThai = IBM_Plex_Sans_Thai({
@@ -33,19 +36,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const cafes = await getCatalog();
   return (
     <html lang="th" className={`${plexThai.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <LangProvider>
           <AuthProvider>
-            <FavoritesProvider>
+            <CatalogProvider cafes={cafes}><FavoritesProvider>
               <SearchProvider>
-                <Navbar />
+                <Navbar /><FeatureNav />
                 <main className="flex-1">{children}</main>
                 <Footer />
               </SearchProvider>
-            </FavoritesProvider>
+            </FavoritesProvider></CatalogProvider>
           </AuthProvider>
         </LangProvider>
       </body>

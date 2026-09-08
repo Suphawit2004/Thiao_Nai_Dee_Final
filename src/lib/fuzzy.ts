@@ -30,5 +30,17 @@ export function fuzzyMatch(text: string, query: string): number | null {
     }
   }
 
+  if (n.length >= 4 && n.length <= 80 && hayTokens.some(word => editDistance(word, n) <= 1)) return 45;
   return null;
+}
+
+function editDistance(a: string, b: string): number {
+  if (Math.abs(a.length - b.length) > 1) return 2;
+  let row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const next = [i];
+    for (let j = 1; j <= b.length; j++) next[j] = Math.min(next[j - 1] + 1, row[j] + 1, row[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    row = next;
+  }
+  return row[b.length];
 }

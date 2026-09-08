@@ -1,12 +1,14 @@
 "use client";
+import { useCatalog } from "@/components/CatalogProvider";
 
 import Link from "next/link";
-import { CAFES, TAG_META, TAG_ORDER } from "@/data/cafes";
+import { TAG_META, TAG_ORDER } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import CafeCard from "./CafeCard";
 import MapBlock from "./map/MapBlock";
 
 export default function HomeView() {
+  const CAFES = useCatalog();
   const { t, tr } = useLang();
   const featured = [...CAFES].sort((a, b) => b.baseRating - a.baseRating).slice(0, 3);
 

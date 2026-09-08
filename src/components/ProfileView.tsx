@@ -1,8 +1,9 @@
 "use client";
+import { useCatalog } from "@/components/CatalogProvider";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CAFES } from "@/data/cafes";
+
 import { useAuth } from "@/components/AuthProvider";
 import { useFavorites } from "@/components/FavoritesProvider";
 import { useProfile } from "@/lib/use-profile";
@@ -11,6 +12,7 @@ import type { ReviewRow } from "@/lib/types";
 import { deleteOwnReview } from "@/app/actions/reviews";
 import { useLang } from "@/i18n/LangProvider";
 import RatingStars from "./RatingStars";
+import PasswordSettings from "./PasswordSettings";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -29,6 +31,7 @@ function avatarPathFromUrl(url: string): string | null {
 }
 
 export default function ProfileView() {
+  const CAFES = useCatalog();
   const { t, tr } = useLang();
   const { user, loading, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
@@ -258,6 +261,7 @@ export default function ProfileView() {
         </button>
       </div>
 
+      <PasswordSettings />
       {/* Favorites summary */}
       <section className="mt-6 flex items-center justify-between rounded-2xl border border-[#eee3d2] bg-white p-6 shadow-sm">
         <div>
