@@ -4,8 +4,7 @@ import { useCatalog } from "@/components/CatalogProvider";
 import { useActionState, useState } from "react";
 import styles from "./AdminDashboard.module.css";
 import Link from "next/link";
-import ActionForm from "@/components/ActionForm";
-
+import { CAFES } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import type { DictKey } from "@/i18n/dictionaries";
 import {
@@ -273,12 +272,6 @@ export default function AdminDashboard({
                 </a>
               )}
 
-              {s.status !== "approved" && <details className="mt-4 rounded-xl border border-[#eadfcd] p-4"><summary className="cursor-pointer text-sm font-semibold">ตรวจและเติมข้อมูลก่อนเผยแพร่</summary><div className="mt-4"><ActionForm action={saveSuggestionDetails}>
-                <input type="hidden" name="id" value={s.id} />
-                <label>ชื่อร้าน<input name="name" defaultValue={s.name} maxLength={120} required /></label>
-                <label>ที่อยู่<input name="address" defaultValue={s.address ?? ""} maxLength={300} required /></label>
-                <div className="feature-grid"><label>เวลาเปิด<input type="time" name="openTime" defaultValue={s.openTime ?? ""} required /></label><label>เวลาปิด<input type="time" name="closeTime" defaultValue={s.closeTime ?? ""} required /></label></div>
-              </ActionForm></div></details>}
               <div className={styles.actions}>
                 {s.status !== "approved" && (
                   <form action={approveAction}>
