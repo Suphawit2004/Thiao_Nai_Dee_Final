@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  experimental: {
+    serverActions: {
+      // Allow a 5 MiB suggestion photo plus multipart/form metadata.
+      bodySizeLimit: "6mb",
+    },
+  },
   images: {
     remotePatterns: [
       {
