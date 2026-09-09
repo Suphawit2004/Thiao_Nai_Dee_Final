@@ -10,6 +10,7 @@ import { getCatalog } from "@/lib/catalog";
 import { CatalogProvider } from "@/components/CatalogProvider";
 import FeatureNav from "@/components/FeatureNav";
 import Footer from "@/components/Footer";
+import { getSiteUrl } from "@/lib/site-url";
 
 const plexThai = IBM_Plex_Sans_Thai({
   subsets: ["latin", "thai"],
@@ -18,7 +19,7 @@ const plexThai = IBM_Plex_Sans_Thai({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "เที่ยวไหนดี | Thiao Nai Dee — คาเฟ่เมืองพะเยา",
     template: "%s | Thiao Nai Dee",
