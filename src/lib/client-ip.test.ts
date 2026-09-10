@@ -6,6 +6,18 @@ function getter(headers: Record<string, string>) {
 }
 
 describe("resolveClientIp", () => {
+  it("prefers cf-connecting-ip over other headers", () => {
+    expect(
+      resolveClientIp(
+        getter({
+          "cf-connecting-ip": "203.0.113.195",
+          "x-real-ip": "1.2.3.4",
+          "x-forwarded-for": "5.6.7.8",
+        })
+      )
+    ).toBe("203.0.113.195");
+  });
+
   it("prefers x-real-ip over x-forwarded-for", () => {
     expect(
       resolveClientIp(getter({ "x-real-ip": "1.2.3.4", "x-forwarded-for": "5.6.7.8" }))

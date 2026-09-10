@@ -7,6 +7,9 @@
  * limit — only the global fuse holds in that case.
  */
 export function resolveClientIp(headerGet: (name: string) => string | null): string {
+  const cf = headerGet("cf-connecting-ip")?.trim();
+  if (cf) return cf;
+
   const real = headerGet("x-real-ip")?.trim();
   if (real) return real;
 

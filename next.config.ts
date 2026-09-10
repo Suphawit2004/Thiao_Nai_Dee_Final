@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  experimental: {
+    cpus: 4,
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
   images: {
     localPatterns: [
       { pathname: "/**", search: "" },

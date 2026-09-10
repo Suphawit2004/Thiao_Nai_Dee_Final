@@ -9,6 +9,7 @@ create schema auth; create schema storage;
 create table auth.users(id uuid primary key, email text, raw_user_meta_data jsonb default '{}');
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
 create function auth.email() returns text language sql stable as $$ select current_setting('request.jwt.claim.email',true) $$;
+create function auth.jwt() returns jsonb language sql stable as $$ select json_build_object('email', current_setting('request.jwt.claim.email',true), 'sub', current_setting('request.jwt.claim.sub',true))::jsonb $$;
 create function auth.role() returns text language sql stable as $$ select current_user::text $$;
 grant usage on schema auth, storage to anon, authenticated;
 create table storage.buckets(id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
