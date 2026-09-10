@@ -16,6 +16,7 @@ import {
 } from "@/app/actions/admin";
 
 export interface AdminSuggestion {
+  publishedSlug?: string | null;
   id: string;
   name: string;
   address: string | null;
@@ -305,7 +306,7 @@ export default function AdminDashboard({
                     </button>
                   </form>
                 )}
-                {s.status === "rejected" && (
+                {(s.status === "rejected" || (s.status === "approved" && s.publishedSlug === null)) && (
                   <form action={reopenAction}>
                     <input type="hidden" name="id" value={s.id} />
                     <input type="hidden" name="status" value="pending" />
@@ -323,7 +324,8 @@ export default function AdminDashboard({
                   </p>
                 )}
               </div>
-              {s.status === "approved" && <Link className="mt-3 inline-block text-sm underline" href={`/owner/cafe-${s.id}`}>จัดการร้านที่เผยแพร่ →</Link>}
+              {s.status === "approved" && s.publishedSlug === null && <p className="mt-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">รายการนี้เคยอนุมัติในระบบเดิม แต่ยังไม่มีหน้าร้าน กดส่งกลับเพื่อตรวจสอบข้อมูลและอนุมัติให้เผยแพร่ได้</p>}
+              {s.publishedSlug && <Link className="mt-3 inline-block text-sm underline" href={`/owner/${s.publishedSlug}`}>จัดการร้านที่เผยแพร่ →</Link>}
             </article>
           ))}
         </section>

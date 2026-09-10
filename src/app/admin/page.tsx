@@ -3,6 +3,7 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 import AdminDashboard, { type AdminReport, type AdminReview, type AdminSuggestion } from "@/components/admin/AdminDashboard";
 import Link from "next/link";
 import { cafeFromRow } from "@/lib/cafe-row";
+import { suggestionPublication } from "@/lib/suggestion-publication";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -99,7 +100,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     </div>
     <AdminDashboard
       mode="ready"
-      suggestions={suggestionRows}
+      suggestions={suggestionRows.map(s => ({ ...s, publishedSlug: suggestionPublication(s.id, catalog.error ? null : cafes) }))}
       reports={reportRows}
       reviews={reviewRows}
     />
