@@ -8,7 +8,7 @@ import { resolveClientIp } from "@/lib/client-ip";
 
 export type SuggestionResult =
   | { ok: true }
-  | { ok: false; error: "not_configured" | "rate_limited" | "invalid" | "photo_too_big" | "photo_wrong_type" | "upload_failed" | "failed" };
+  | { ok: false; error: "not_authenticated" | "not_configured" | "rate_limited" | "invalid" | "photo_too_big" | "photo_wrong_type" | "upload_failed" | "failed" };
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -39,6 +39,8 @@ export async function submitSuggestion(input: {
 }): Promise<SuggestionResult> {
   const sb = await getSupabaseServer();
   if (!sb) return { ok: false, error: "not_configured" };
+
+  if (input.photo?.size && !(await sb.auth.getUser()).data.user) return { ok: false, error: "not_authenticated" };
 
   // Rate limit by client IP (Supabase-backed durable limiter)
   const hdrs = await headers();

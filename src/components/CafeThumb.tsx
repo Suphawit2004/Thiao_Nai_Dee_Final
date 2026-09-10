@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Cafe } from "@/data/cafes";
 import { gradientFor } from "@/lib/thumbs";
 import { useLang } from "@/i18n/LangProvider";
+import photoCredits from "@/data/photo-credits.json";
 
 interface CafeThumbProps {
   cafe: Cafe;
@@ -32,7 +33,7 @@ export default function CafeThumb({
   }
   return (
     <Image
-      src={cafe.photo}
+      src={cafe.slug in photoCredits && cafe.photo === `/images/cafes/${cafe.slug}/main.jpg` ? `${cafe.photo}?v=20260910-real` : cafe.photo}
       onError={() => setFailedPhoto(cafe.photo ?? null)}
       alt={tr(cafe.name)}
       fill

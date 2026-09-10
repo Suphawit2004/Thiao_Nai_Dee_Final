@@ -1,13 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverActions: {
-      // Allow a 5 MiB suggestion photo plus multipart/form metadata.
-      bodySizeLimit: "6mb",
-    },
-  },
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   images: {
+    localPatterns: [
+      { pathname: "/**", search: "" },
+      { pathname: "/images/cafes/**", search: "?v=20260910-real" },
+    ],
     remotePatterns: [
       {
         protocol: "https",

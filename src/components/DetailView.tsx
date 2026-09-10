@@ -17,10 +17,12 @@ import FavoriteButton from "./FavoriteButton";
 import ReportDialog from "./ReportDialog";
 import CafeCommunity from "./CafeCommunity";
 import LiveMenu from "./LiveMenu";
+import photoCredits from "@/data/photo-credits.json";
 
 export default function DetailView({ cafe }: { cafe: Cafe }) {
   const { t, tr } = useLang();
   const [reportOpen, setReportOpen] = useState(false);
+  const credit = cafe.photo === `/images/cafes/${cafe.slug}/main.jpg` ? (photoCredits as Record<string, { source: string; credit: string }>)[cafe.slug] : undefined;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -35,6 +37,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
             emojiClassName="select-none text-[7rem] drop-shadow-xl"
             sizes="(max-width: 1024px) 100vw, 55vw"
           />
+          {credit && <a href={credit.source} target="_blank" rel="noopener noreferrer" className="absolute bottom-3 left-3 right-3 rounded-lg bg-black/70 px-3 py-2 text-xs text-white underline">ภาพ: {credit.credit}</a>}
         </div>
 
         <div className="flex flex-col gap-5">

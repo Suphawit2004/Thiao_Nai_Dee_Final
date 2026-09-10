@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "./AuthProvider";
 import dynamic from "next/dynamic";
 import { useLang } from "@/i18n/LangProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -40,6 +42,7 @@ const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export default function SuggestView() {
   const { t } = useLang();
+  const { user } = useAuth();
   const supabaseReady = getSupabaseBrowser() !== null;
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -232,7 +235,7 @@ export default function SuggestView() {
           <span className="block text-sm font-semibold text-espresso">{t("suggest.photo")}</span>
           <p className="mt-0.5 text-xs text-espresso/60">{t("suggest.photoHint")}</p>
 
-          {photoPreview ? (
+          {!user ? <Link href="/login?next=/suggest" className="mt-3 inline-block underline">เข้าสู่ระบบก่อนแนบรูปภาพ</Link> : photoPreview ? (
             <div className="relative mt-2 overflow-hidden rounded-xl border border-[#e8dcc8]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photoPreview} alt="" className="max-h-56 w-full object-cover" />

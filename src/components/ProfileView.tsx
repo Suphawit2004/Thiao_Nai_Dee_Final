@@ -12,6 +12,7 @@ import type { ReviewRow } from "@/lib/types";
 import { deleteOwnReview } from "@/app/actions/reviews";
 import { useLang } from "@/i18n/LangProvider";
 import RatingStars from "./RatingStars";
+import { MyPhotos } from "./CafeCommunity";
 import PasswordSettings from "./PasswordSettings";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
@@ -33,7 +34,7 @@ function avatarPathFromUrl(url: string): string | null {
 export default function ProfileView() {
   const CAFES = useCatalog();
   const { t, tr, lang } = useLang();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, isOwner, isAdmin } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { slugs } = useFavorites();
 
@@ -275,9 +276,10 @@ export default function ProfileView() {
       {accountError && <p role="alert" className="mt-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{accountError}</p>}
       <nav aria-label="บริการสำหรับสมาชิก" className="mt-6 flex flex-wrap gap-3">
         <Link href="/membership" className="feature-button">บัตรสมาชิก</Link>
-        <Link href="/owner" className="rounded-xl border border-[#d9c9ac] px-5 py-3">จัดการร้านของคุณ</Link>
-        <Link href="/admin" className="rounded-xl border border-[#d9c9ac] px-5 py-3">สำหรับผู้ดูแลระบบ</Link>
+        {isOwner && <Link href="/owner" className="rounded-xl border border-[#d9c9ac] px-5 py-3">จัดการร้านของคุณ</Link>}
+        {isAdmin && <Link href="/admin" className="rounded-xl border border-[#d9c9ac] px-5 py-3">สำหรับผู้ดูแลระบบ</Link>}
       </nav>
+      <MyPhotos />
       <PasswordSettings />
       {/* Favorites summary */}
       <section className="mt-6 flex items-center justify-between rounded-2xl border border-[#eee3d2] bg-white p-6 shadow-sm">
