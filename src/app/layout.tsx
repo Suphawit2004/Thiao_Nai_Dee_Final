@@ -46,8 +46,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <AuthProvider>
             <CatalogProvider cafes={cafes}><FavoritesProvider>
               <SearchProvider>
+                <a href="#main-content" className="skip-link">ข้ามไปเนื้อหา / Skip to content</a>
                 <Navbar /><FeatureNav />
-                <main className="flex-1">{children}</main>
+                <main id="main-content" tabIndex={-1} className="flex-1">{children}</main>
                 <Footer />
               </SearchProvider>
             </FavoritesProvider></CatalogProvider>

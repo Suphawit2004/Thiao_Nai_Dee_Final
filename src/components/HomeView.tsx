@@ -4,6 +4,7 @@ import { useCatalog } from "@/components/CatalogProvider";
 import Link from "next/link";
 import { TAG_META, TAG_ORDER } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
+import CafeThumb from "./CafeThumb";
 import CafeCard from "./CafeCard";
 import MapBlock from "./map/MapBlock";
 
@@ -14,21 +15,15 @@ export default function HomeView() {
 
   return (
     <div>
-      <section className="relative overflow-hidden bg-gradient-to-br from-coffee to-espresso text-cream">
-        <div
-          className="pointer-events-none absolute -right-10 -top-10 select-none text-[12rem] opacity-10"
-          aria-hidden
-        >
-          ☕
-        </div>
-        <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-cream/25 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur">
+      <section className="home-hero relative overflow-hidden text-cream">
+        <div className="hero-inner mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <div className="hero-copy"><span className="inline-flex items-center gap-1.5 rounded-full border border-cream/25 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur">
             📍 {t("home.badge")}
           </span>
           <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight md:text-5xl">
             {t("home.heroTitle1")}
             <br />
-            <span className="text-[#dcc09a]">{t("home.heroTitle2")}</span>
+            <span>{t("home.heroTitle2")}</span>
           </h1>
           <p className="mt-4 max-w-xl leading-relaxed text-cream/80">{t("home.heroDesc")}</p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -56,7 +51,11 @@ export default function HomeView() {
                 <dd className="text-cream/70">{label}</dd>
               </div>
             ))}
-          </dl>
+          </dl></div>
+          {featured[0] && <Link href={`/cafes/${featured[0].slug}`} className="hero-photo">
+            <CafeThumb cafe={featured[0]} sizes="(max-width: 800px) 100vw, 45vw" />
+            <div><span>{t("home.featured")}</span><strong>{tr(featured[0].name)}</strong><span>{featured[0].openTime} – {featured[0].closeTime}</span></div>
+          </Link>}
         </div>
       </section>
 

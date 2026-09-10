@@ -16,9 +16,9 @@ export default function CafeCard({ cafe }: { cafe: Cafe }) {
   return (
     <Link
       href={`/cafes/${cafe.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-[#eee3d2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="cafe-card group flex flex-col overflow-hidden rounded-2xl border border-[#eee3d2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="relative flex h-40 items-center justify-center overflow-hidden">
+      <div className="relative flex h-52 items-center justify-center overflow-hidden">
         <FavoriteButton slug={cafe.slug} variant="overlay" />
         <CafeThumb
           cafe={cafe}
@@ -34,9 +34,9 @@ export default function CafeCard({ cafe }: { cafe: Cafe }) {
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-espresso group-hover:text-coffee">{tr(cafe.name)}</h3>
-          <span className="flex items-center gap-1 text-xs font-semibold text-coffee">
+          <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-coffee">
             <RatingStars value={cafe.baseRating} />
             {cafe.baseRating.toFixed(1)}
           </span>

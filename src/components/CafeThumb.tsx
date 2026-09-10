@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import type { Cafe } from "@/data/cafes";
 import { gradientFor } from "@/lib/thumbs";
@@ -17,7 +18,8 @@ export default function CafeThumb({
   sizes = "(max-width: 768px) 100vw, 33vw",
 }: CafeThumbProps) {
   const { tr } = useLang();
-  if (!cafe.photo) {
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
+  if (!cafe.photo || failedPhoto === cafe.photo) {
     return (
       <div
         className="absolute inset-0 flex items-center justify-center"
@@ -31,6 +33,7 @@ export default function CafeThumb({
   return (
     <Image
       src={cafe.photo}
+      onError={() => setFailedPhoto(cafe.photo ?? null)}
       alt={tr(cafe.name)}
       fill
       sizes={sizes}

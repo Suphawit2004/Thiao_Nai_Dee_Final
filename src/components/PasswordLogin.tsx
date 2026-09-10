@@ -4,7 +4,7 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 export default function PasswordLogin() {
   const [mode, setMode] = useState<"login" | "signup" | "reset">("login");
   const [pending, setPending] = useState(false), [message, setMessage] = useState("");
-  return <div className="mt-8 border-t border-[#eadfcd] pt-6"><h2 className="font-bold mb-3">ใช้อีเมลและรหัสผ่าน</h2><div className="flex flex-wrap gap-4 text-sm mb-5">{(["login", "signup", "reset"] as const).map(key => <button key={key} disabled={pending} aria-pressed={mode === key} className={mode === key ? "font-bold underline" : "text-coffee"} onClick={() => { setMode(key); setMessage(""); }}>{key === "login" ? "เข้าสู่ระบบ" : key === "signup" ? "สมัครสมาชิก" : "ลืมรหัสผ่าน"}</button>)}</div>
+  return <div className="password-login"><h2 className="font-bold mb-3">ใช้อีเมลและรหัสผ่าน</h2><div className="auth-tabs">{(["login", "signup", "reset"] as const).map(key => <button key={key} disabled={pending} aria-pressed={mode === key} className={mode === key ? "is-selected" : ""} onClick={() => { setMode(key); setMessage(""); }}>{key === "login" ? "เข้าสู่ระบบ" : key === "signup" ? "สมัครสมาชิก" : "ลืมรหัสผ่าน"}</button>)}</div>
     <form className="feature-form" onSubmit={async e => {
       e.preventDefault(); const data = new FormData(e.currentTarget); const email = String(data.get("email")), password = String(data.get("password") ?? ""); setPending(true); setMessage("");
       try { const sb = getSupabaseBrowser(); if (!sb) throw Error();
