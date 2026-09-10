@@ -89,7 +89,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const totalPages = Math.max(1, Math.ceil(Math.max(suggestions.count ?? 0, reports.count ?? 0, reviews.count ?? 0) / 50));
   return (
     <>
-    <div className="feature-page !pb-0">
+    <div className="feature-page !max-w-7xl !px-4 sm:!px-6 !pb-0">
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="feature-card"><p>ร้านที่เผยแพร่ / ร้านทั้งหมด</p><strong className="text-3xl">{catalog.error ? "—" : `${catalog.data?.filter(c => c.is_active).length} / ${cafes.length}`}</strong></div>
         <div className="feature-card"><p>สมาชิกทั้งหมด</p><strong className="text-3xl">{profiles.error ? "—" : profiles.count}</strong></div>
@@ -104,7 +104,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       reports={reportRows}
       reviews={reviewRows}
     />
-    <nav className="feature-page !pt-0 flex justify-between" aria-label="หน้ารายการแอดมิน">
+    <nav className="feature-page !max-w-7xl !px-4 sm:!px-6 !pt-0 flex justify-between" aria-label="หน้ารายการแอดมิน">
       {page > 0 ? <Link href={`/admin?page=${page - 1}`}>← หน้าก่อน</Link> : <span />}
       <span>หน้า {page + 1} / {totalPages} · หมวดละ 50 รายการ</span>
       {page + 1 < totalPages ? <Link href={`/admin?page=${page + 1}`}>หน้าถัดไป →</Link> : <span />}
