@@ -38,7 +38,8 @@ export async function setSuggestionStatus(
   if (!/^[0-9a-f-]{36}$/i.test(id)) return { ok: false, error: "Invalid id" };
 
   if (status !== "approved") {
-    const { data: published } = await sb.from("cafes").select("slug").eq("slug", `cafe-${id}`).maybeSingle();
+    const { data: published, error: lookupError } = await sb.from("cafes").select("slug").eq("slug", `cafe-${id}`).maybeSingle();
+    if (lookupError) return { ok: false, error: "ตรวจสถานะร้านไม่สำเร็จ กรุณาลองใหม่" };
     if (published) return { ok: false, error: "ร้านนี้เผยแพร่แล้ว กรุณาแก้ข้อมูลในหน้าจัดการร้าน" };
   }
   const { error } = status === "approved"
