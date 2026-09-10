@@ -60,9 +60,8 @@ function SearchSync() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!pathname.startsWith("/cafes")) return;
+    if (pathname !== "/cafes") return;
     const search = searchParams.toString();
-    if (!search) return;
     const incoming = parseFilters(`?${search}`);
     if (filtersToQuery(incoming) !== filtersToQuery(state)) {
       commit(incoming);
@@ -74,21 +73,18 @@ function SearchSync() {
 
 export function SearchProvider({ children }: { children: ReactNode }) {
   const filters = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const pathname = usePathname();
-
   const patch = useCallback((p: Partial<FilterState>) => {
-    commit({ ...state, ...p });
+    const next = { ...state, ...p };
+    commit(next);
+    if (window.location.pathname === "/cafes") {
+      const qs = filtersToQuery(next);
+      window.history.replaceState(null, "", qs ? `/cafes?${qs}` : "/cafes");
+    }
   }, []);
 
-  const reset = useCallback(() => commit(INITIAL_FILTERS), []);
-
-  // Keep /cafes shareable: reflect the live filter state in the address bar
-  // (no navigation) whenever we are on — or arrive at — the cafes page.
-  useEffect(() => {
-    if (!pathname.startsWith("/cafes")) return;
-    const qs = filtersToQuery(filters);
-    window.history.replaceState(null, "", qs ? `/cafes?${qs}` : "/cafes");
-  }, [filters, pathname]);
+  // Only user edits on the listing write its URL. Navigation reads the URL;
+  // it must never replace a detail route or overwrite an incoming shared link.
+  const reset = useCallback(() => patch(INITIAL_FILTERS), [patch]);
 
   const value = useMemo<SearchContextValue>(
     () => ({ filters, patch, reset }),

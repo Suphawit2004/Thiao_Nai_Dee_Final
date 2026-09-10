@@ -11,7 +11,7 @@ export default function FilterBar({ className = "" }: { className?: string }) {
   const { t } = useLang();
   const { filters } = useSearch();
   const [open, setOpen] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const rootRef = useRef<HTMLDivElement>(null);
 
   const activeCount =
@@ -43,8 +43,8 @@ export default function FilterBar({ className = "" }: { className?: string }) {
   const handleCopyLink = async () => {
     const qs = filtersToQuery(filters);
     const url = qs ? `${window.location.origin}/cafes?${qs}` : `${window.location.origin}/cafes`;
-    await navigator.clipboard.writeText(url);
-    setCopyStatus("copied");
+    try { await navigator.clipboard.writeText(url); setCopyStatus("copied"); }
+    catch { setCopyStatus("error"); }
     setTimeout(() => setCopyStatus("idle"), 2000);
   };
 
@@ -69,6 +69,7 @@ export default function FilterBar({ className = "" }: { className?: string }) {
         )}
       </button>
 
+      {copyStatus === "error" && <p role="status" className="w-full text-sm text-rose-700">คัดลอกไม่สำเร็จ กรุณาคัดลอกลิงก์จากแถบที่อยู่ของเบราว์เซอร์</p>}
       <SearchPopover open={open} />
       <ActiveFilterChips />
 

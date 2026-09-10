@@ -4,7 +4,7 @@ import { getCatalog } from "@/lib/catalog";
 export default async function OwnerPage() {
   const sb = await getSupabaseServer();
   const user = sb ? (await sb.auth.getUser()).data.user : null;
-  if (!user || !sb) return <div className="feature-page"><h1>สำหรับเจ้าของร้าน</h1><Link href="/login?next=/owner">เข้าสู่ระบบเพื่อจัดการร้าน →</Link></div>;
+  if (!user || !sb) return <div className="feature-page"><h1>สำหรับเจ้าของร้าน</h1><p>ดูแลข้อมูลคาเฟ่ อัปเดตเมนูและรูปภาพได้ในที่เดียว</p><section className="feature-card"><h2>พร้อมดูแลร้านของคุณ</h2><p className="mb-6">เข้าสู่ระบบด้วยบัญชีที่ได้รับสิทธิ์จากผู้ดูแลเว็บไซต์</p><Link className="feature-button inline-block" href="/login?next=/owner">เข้าสู่ระบบเพื่อจัดการร้าน</Link></section></div>;
   const { data: owners, error } = await sb.from("cafe_owners").select("cafe_slug").eq("user_id", user.id);
   const { data: admin } = await sb.rpc("is_admin");
   const cafes = (await getCatalog()).filter(c => admin || owners?.some(o => o.cafe_slug === c.slug));

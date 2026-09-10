@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useLang } from "@/i18n/LangProvider";
 
-const STACK = ["Next.js 16", "TypeScript", "Tailwind CSS v4", "Leaflet + OpenStreetMap", "Supabase"];
+
 
 export default function AboutView() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <h1 className="text-3xl font-bold text-espresso">{t("about.title")}</h1>
@@ -15,17 +16,12 @@ export default function AboutView() {
         <p>{t("about.p3")}</p>
       </div>
 
-      <section className="mt-8">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-espresso/70">
-          🛠️ {t("about.stackTitle")}
-        </h2>
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {STACK.map((item) => (
-            <li key={item} className="rounded-full bg-sand px-3 py-1.5 text-xs font-semibold text-coffee">
-              {item}
-            </li>
-          ))}
-        </ul>
+      <section className="feature-card">
+        <h2>{lang === "th" ? "เริ่มเที่ยวในแบบของคุณ" : "Explore your way"}</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link className="rounded-xl bg-[#eaf2f0] p-5 font-semibold text-[#285f60]" href="/cafes">{lang === "th" ? "ค้นหาคาเฟ่ตามสไตล์ที่ชอบ" : "Find a cafe for your mood"}</Link>
+          <Link className="rounded-xl bg-sand/50 p-5 font-semibold text-coffee" href="/suggest">{lang === "th" ? "แบ่งปันร้านที่คุณรู้จัก" : "Share a cafe you know"}</Link>
+        </div>
       </section>
     </div>
   );

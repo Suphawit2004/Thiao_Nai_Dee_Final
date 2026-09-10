@@ -8,6 +8,7 @@ import { AREA_META, type Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import { useSearch } from "./SearchProvider";
 import { scoreCafe } from "@/lib/cafe-search";
+import { filtersToQuery } from "@/lib/filters-url";
 import { gradientFor } from "@/lib/thumbs";
 
 interface ScoredCafe {
@@ -82,7 +83,7 @@ export default function SearchSuggestions({ open, onClose }: SearchSuggestionsPr
 
       <button
         type="button"
-        onClick={() => go("/cafes")}
+        onClick={() => go(`/cafes?${filtersToQuery(filters)}`)}
         className="flex w-full items-center justify-between bg-sand/40 px-4 py-2.5 text-xs font-bold text-coffee transition hover:bg-sand"
       >
         <span>🔍 {t("home.viewAll")}</span>

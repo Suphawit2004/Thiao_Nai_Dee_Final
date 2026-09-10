@@ -8,6 +8,7 @@ import { useProfile } from "@/lib/use-profile";
 import { useAuth } from "./AuthProvider";
 import { useFavorites } from "./FavoritesProvider";
 import { useSearch } from "./SearchProvider";
+import { filtersToQuery } from "@/lib/filters-url";
 import SearchSuggestions from "./SearchSuggestions";
 
 const LINKS = [
@@ -94,12 +95,17 @@ export default function Navbar() {
           if (filters.query.trim()) setSugOpen(true);
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && !pathname.startsWith("/cafes")) router.push("/cafes");
+          if (e.key === "Enter") {
+            e.preventDefault();
+            setSugOpen(false);
+            setMobileSearchOpen(false);
+            router.push(`/cafes?${filtersToQuery(filters)}`);
+          }
           if (e.key === "Escape") setSugOpen(false);
         }}
         placeholder={t("cafes.searchPlaceholder")}
         aria-label={t("cafes.searchPlaceholder")}
-        className="w-full rounded-full bg-transparent py-2 pl-10 pr-3 text-sm outline-none"
+        className="w-full min-w-0 rounded-full bg-transparent py-2 pl-10 pr-3 text-sm outline-none"
       />
       <SearchSuggestions open={sugOpen} onClose={() => setSugOpen(false)} />
     </div>
@@ -130,7 +136,7 @@ export default function Navbar() {
           >
             ☕
           </span>
-          <span className="hidden leading-tight sm:block">
+          <span className="leading-tight">
             <span className="block text-base font-bold text-espresso">{t("brand.name")}</span>
             <span className="block text-[11px] font-medium tracking-wide text-coffee">
               {t("brand.sub")}
@@ -139,16 +145,16 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop search — beside the logo */}
-        <div className="relative hidden max-w-md flex-1 md:block">
+        <div className="relative hidden max-w-md flex-1 xl:block">
           <div className="flex items-center rounded-full border border-[#eee3d2] bg-sand/40 p-1 shadow-sm focus-within:border-latte focus-within:bg-white">
             {searchInput}
             {searchClear}
           </div>
         </div>
 
-        <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label={t("nav.main")}>
+        <nav className="ml-auto hidden items-center gap-1 xl:flex" aria-label={t("nav.main")}>
           {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className={linkClass(l.href)}>
+            <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={linkClass(l.href)}>
               {t(l.key)}
             </Link>
           ))}
@@ -189,7 +195,7 @@ export default function Navbar() {
         </nav>
 
         {/* Mobile controls */}
-        <div className="ml-auto flex items-center gap-1.5 md:hidden">
+        <div className="ml-auto flex items-center gap-1.5 xl:hidden">
           <button
             type="button"
             onClick={() => setMobileSearchOpen((v) => !v)}
@@ -229,7 +235,7 @@ export default function Navbar() {
 
       {/* Mobile search row */}
       {mobileSearchOpen && (
-        <div className="border-t border-[#eadfcd] px-4 py-3 md:hidden">
+        <div className="border-t border-[#eadfcd] px-4 py-3 xl:hidden">
           <div className="flex items-center rounded-full border border-[#eee3d2] bg-sand/40 p-1 shadow-sm focus-within:border-latte focus-within:bg-white">
             {searchInput}
             {searchClear}
@@ -240,7 +246,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {open && (
         <nav
-          className="border-t border-[#eadfcd] bg-cream px-4 py-3 md:hidden"
+          className="border-t border-[#eadfcd] bg-cream px-4 py-3 xl:hidden"
           aria-label={t("nav.main")}
         >
           <div className="flex flex-col gap-1">

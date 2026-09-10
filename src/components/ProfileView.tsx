@@ -32,7 +32,7 @@ function avatarPathFromUrl(url: string): string | null {
 
 export default function ProfileView() {
   const CAFES = useCatalog();
-  const { t, tr } = useLang();
+  const { t, tr, lang } = useLang();
   const { user, loading, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { slugs } = useFavorites();
@@ -44,6 +44,7 @@ export default function ProfileView() {
 
   const [myReviews, setMyReviews] = useState<{ userId: string; rows: ReviewRow[] } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [accountError, setAccountError] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -88,6 +89,7 @@ export default function ProfileView() {
     if (!supabase || !user) return;
 
     setAvatarState("uploading");
+    try {
     const oldPath = profile?.avatar_url ? avatarPathFromUrl(profile.avatar_url) : null;
     const path = `${user.id}/${crypto.randomUUID()}.${extFor(file.type)}`;
     const { error } = await supabase.storage
@@ -106,27 +108,33 @@ export default function ProfileView() {
       // Best effort cleanup of the replaced avatar.
       await supabase.storage.from("avatars").remove([oldPath]);
     }
+    if (!ok) await supabase.storage.from("avatars").remove([path]);
     setAvatarState(ok ? "idle" : "error");
+    } catch { setAvatarState("error"); }
   }
 
   async function removeAvatar() {
     const supabase = getSupabaseBrowser();
     if (!supabase || !profile?.avatar_url) return;
-    const oldPath = avatarPathFromUrl(profile.avatar_url);
-    const ok = await updateProfile({ avatar_url: null });
-    if (ok && oldPath) {
-      await supabase.storage.from("avatars").remove([oldPath]);
-    }
+    setAvatarState("uploading");
+    try {
+      const oldPath = avatarPathFromUrl(profile.avatar_url);
+      const ok = await updateProfile({ avatar_url: null });
+      if (ok && oldPath) await supabase.storage.from("avatars").remove([oldPath]);
+      setAvatarState(ok ? "idle" : "error");
+    } catch { setAvatarState("error"); }
   }
 
   async function handleDeleteReview(id: string) {
     if (!window.confirm(t("reviews.deleteConfirm"))) return;
     setDeletingId(id);
+    setAccountError("");
+    try {
     const res = await deleteOwnReview(id);
-    setDeletingId(null);
     if (res.ok) {
       setMyReviews((prev) => (prev ? { ...prev, rows: prev.rows.filter((r) => r.id !== id) } : prev));
-    }
+    } else { setAccountError(t("form.error")); }
+    } catch { setAccountError(t("form.error")); } finally { setDeletingId(null); }
   }
 
   if (loading) {
@@ -138,7 +146,7 @@ export default function ProfileView() {
   if (!user) {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center">
-        <p className="text-lg font-semibold text-espresso/80">🔒 {t("profile.notSignedIn")}</p>
+        <h1 className="text-lg font-semibold text-espresso/80">🔒 {t("profile.notSignedIn")}</h1>
         <Link
           href="/login?next=/profile"
           className="mt-5 inline-block rounded-full bg-coffee px-6 py-2.5 text-sm font-semibold text-cream transition hover:bg-[#684a37]"
@@ -164,11 +172,13 @@ export default function ProfileView() {
       {/* Account */}
       <div className="mt-8 flex flex-col gap-5 rounded-2xl border border-[#eee3d2] bg-white p-6 shadow-sm">
         <div className="flex items-center gap-4">
-          <label className="group relative cursor-pointer">
+          <label className="group relative cursor-pointer rounded-full focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-coffee">
             <input
               type="file"
               accept={AVATAR_TYPES.join(",")}
-              className="hidden"
+              disabled={avatarState === "uploading"}
+              aria-label={lang === "en" ? "Upload profile photo" : "อัปโหลดรูปโปรไฟล์"}
+              className="sr-only"
               onChange={(e) => {
                 replaceAvatar(e.target.files?.[0]);
                 e.target.value = "";
@@ -202,6 +212,7 @@ export default function ProfileView() {
             <button
               type="button"
               onClick={removeAvatar}
+              disabled={avatarState === "uploading"}
               aria-label={t("profile.avatarRemove")}
               className="self-start rounded-lg p-1 text-sm leading-none text-espresso/50 transition hover:bg-sand hover:text-espresso"
             >
@@ -254,13 +265,19 @@ export default function ProfileView() {
 
         <button
           type="button"
-          onClick={() => signOut()}
+          onClick={async () => { try { await signOut(); } catch { setAccountError(t("form.error")); } }}
           className="self-start rounded-full border border-rose-200 px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
         >
           🚪 {t("profile.signOut")}
         </button>
       </div>
 
+      {accountError && <p role="alert" className="mt-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{accountError}</p>}
+      <nav aria-label="บริการสำหรับสมาชิก" className="mt-6 flex flex-wrap gap-3">
+        <Link href="/membership" className="feature-button">บัตรสมาชิก</Link>
+        <Link href="/owner" className="rounded-xl border border-[#d9c9ac] px-5 py-3">จัดการร้านของคุณ</Link>
+        <Link href="/admin" className="rounded-xl border border-[#d9c9ac] px-5 py-3">สำหรับผู้ดูแลระบบ</Link>
+      </nav>
       <PasswordSettings />
       {/* Favorites summary */}
       <section className="mt-6 flex items-center justify-between rounded-2xl border border-[#eee3d2] bg-white p-6 shadow-sm">

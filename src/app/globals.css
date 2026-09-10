@@ -83,3 +83,55 @@ body {
 .feature-button:disabled { opacity: .55; cursor: wait; }
 .feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
 @media(max-width: 640px) { .feature-grid { grid-template-columns: 1fr; } .feature-card { padding: 18px; } }
+
+/* A lakefront cafe guide: warm coffee accents, quiet water tones and spacious photos. */
+:root { --lake: #285f60; --lake-soft: #eaf2f0; --paper: #fcfcf9; }
+body { background: var(--paper); line-height: 1.7; }
+:where(a, button, input, textarea, select, summary):focus-visible { outline: 3px solid var(--lake); outline-offset: 3px; }
+:where(button, summary) { touch-action: manipulation; }
+:where(button:not(:disabled), summary) { cursor: pointer; }
+:where(input, textarea, select) { max-width: 100%; }
+main { min-width: 0; }
+.feature-nav { border-bottom: 1px solid #e2e8e3; background: #fff; }
+.feature-nav > div { display: flex; justify-content: flex-end; gap: 8px; max-width: 1152px; margin: auto; padding: 8px 16px; }
+.feature-nav a { padding: 7px 14px; border-radius: 8px; font-size: 13px; color: #47615d; white-space: nowrap; }
+.feature-nav a:hover, .feature-nav a[aria-current=page] { background: var(--lake-soft); color: #244b47; }
+.home-hero { background: #254e4c; }
+.hero-inner { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
+.hero-copy { min-width: 0; }
+.hero-photo { position: relative; display: block; min-height: 420px; overflow: hidden; border-radius: 120px 16px 16px 16px; background: #63837a; }
+.hero-photo > div:last-child { position: absolute; bottom: 0; left: 0; right: 0; padding: 70px 26px 26px; background: linear-gradient(transparent, #17352ce8); display: grid; gap: 4px; }
+.hero-photo strong { font-size: 26px; }
+.hero-photo span { font-size: 13px; }
+.cafe-card { box-shadow: 0 4px 18px #273f3307; }
+.cafe-card:hover { border-color: #9cb7a8; }
+.feature-page { padding-top: 44px; }
+.feature-page > h1 { font-size: clamp(26px, 3vw, 36px); line-height: 1.4; }
+.feature-page > p { max-width: 68ch; color: #64706a; }
+.feature-card { border-color: #e0e7df; border-radius: 16px; padding: 28px; }
+.feature-grid { align-items: stretch; }
+.feature-button { border-radius: 10px; background: var(--lake); min-height: 46px; }
+.feature-button:hover:not(:disabled) { background: #214e4f; }
+.feature-form textarea { resize: vertical; min-height: 110px; }
+.auth-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; margin: 16px 0 24px; border-radius: 10px; background: #edf2ee; font-size: 14px; }
+.auth-tabs button { flex: 1; padding: 10px 8px; white-space: nowrap; border-radius: 7px; }
+.auth-tabs .is-selected { color: #245653; background: white; box-shadow: 0 2px 5px #1d393810; font-weight: 600; }
+.feature-page.chat-page { max-width: 800px; }
+.chat-page > form { box-shadow: 0 8px 35px #285f600a; }
+.skip-link { position: fixed; top: -100px; left: 16px; z-index: 3000; padding: 10px 16px; background: #fff; color: #244b47; border-radius: 8px; }
+.skip-link:focus { top: 12px; }
+@media(max-width: 1000px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 28px; }
+  .hero-photo { min-height: 270px; border-radius: 60px 12px 12px 12px; }
+  .feature-nav > div { justify-content: flex-start; overflow-x: auto; }
+  .feature-nav a { padding: 8px 10px; }
+  .feature-page { padding: 28px 16px 48px; }
+  .feature-card { padding: 20px; }
+}
+@media(prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+
+@media(max-width: 540px) {
+  .feature-nav > div { display: grid; grid-template-columns: 1fr 1fr; gap: 0; overflow: visible; }
+  .feature-nav a { text-align: center; padding: 8px; }
+  .hero-copy h1 { font-size: 34px; line-height: 1.45; }
+}

@@ -52,7 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       signOut: async () => {
-        await getSupabaseBrowser()?.auth.signOut();
+        const result = await getSupabaseBrowser()?.auth.signOut();
+        if (result?.error) throw result.error;
         setUser(null);
       },
     }),

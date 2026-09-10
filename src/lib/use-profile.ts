@@ -32,7 +32,13 @@ export function useProfile() {
       .then(({ data }) => {
         if (!cancelled && data) setRow({ userId, profile: data as ProfileRow });
       });
+    const onUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId: string; profile: ProfileRow }>).detail;
+      if (detail.userId === userId) setRow(detail);
+    };
+    window.addEventListener("profile-updated", onUpdate);
     return () => {
+      window.removeEventListener("profile-updated", onUpdate);
       cancelled = true;
     };
   }, [userId]);
@@ -41,29 +47,19 @@ export function useProfile() {
     async (patch: Partial<Pick<ProfileRow, "display_name" | "avatar_url">>) => {
       const supabase = getSupabaseBrowser();
       if (!supabase || !userId) return false;
-      const { error } = await supabase.from("profiles").upsert({
+      try {
+      const { data: saved, error } = await supabase.from("profiles").upsert({
         id: userId,
         ...patch,
-      });
-      if (error) {
+      }).select("id, display_name, avatar_url").single();
+      if (error || !saved) {
         console.error("profile update failed:", error);
         return false;
       }
-      setRow((prev) =>
-        prev && prev.userId === userId
-          ? {
-              userId,
-              profile: {
-                ...prev.profile,
-                display_name:
-                  patch.display_name !== undefined ? patch.display_name : prev.profile.display_name,
-                avatar_url:
-                  patch.avatar_url !== undefined ? patch.avatar_url : prev.profile.avatar_url,
-              },
-            }
-          : prev
-      );
+      setRow({ userId, profile: saved as ProfileRow });
+      window.dispatchEvent(new CustomEvent("profile-updated", { detail: { userId, profile: saved } }));
       return true;
+      } catch { return false; }
     },
     [userId]
   );
