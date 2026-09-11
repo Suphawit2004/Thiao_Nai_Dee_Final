@@ -108,6 +108,6 @@ src/
 ├── data/cafes.ts   # ข้อมูลคาเฟ่หลัก (static, typed)
 ├── i18n/           # th/en dictionaries + LangProvider
 └── lib/            # pure logic (hours, fuzzy, filters-url, rate-limit, distance) + supabase clients
-supabase/schema.sql # DB schema — idempotent, รันซ้ำได้
+supabase/schema.sql # Bootstrap สำหรับฐานข้อมูลใหม่ ตามด้วย migrations ตามลำดับ
 pins.txt            # พิกัดร้านสำหรับ apply-pins script
 ```

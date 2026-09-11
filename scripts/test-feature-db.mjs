@@ -73,5 +73,13 @@ await check('member cannot promote own profile', ()=>denied(`update profiles set
 await check('member cannot set admin role during profile upsert', ()=>denied(`insert into profiles(id,role) values ('${owner}','admin') on conflict(id) do update set role=excluded.role`));
 await check('member can save display name through normal upsert', ()=>db.exec(`insert into profiles(id,display_name) values ('${owner}','Updated member') on conflict(id) do update set id=excluded.id,display_name=excluded.display_name`));
 await check('owner cannot move verified location', ()=>denied(`update cafes set lat=19.3 where slug='baan-baann'`));
+await asUser(admin,'admin@test.local');
+await check('allowlisted admin retains access after ordered installation', async()=>assert.equal((await db.query('select is_admin() as allowed')).rows[0].allowed,true));
+await db.exec(`reset role; update profiles set role='admin' where id='${other}'`);
+await asUser(other,'other@test.local');
+await check('profile-role admin works without an email allowlist entry', async()=>assert.equal((await db.query('select is_admin() as allowed')).rows[0].allowed,true));
+await check('profile-role admin can manage cafes', async()=>assert.equal((await db.query(`update cafes set phone='0456' where slug='baan-baann' returning slug`)).rows.length,1));
+await asUser('','','anon');
+await check('guest has no admin access', async()=>assert.equal((await db.query('select is_admin() as allowed')).rows[0].allowed,false));
 console.log(`${count} database checks passed`);
 await db.close();

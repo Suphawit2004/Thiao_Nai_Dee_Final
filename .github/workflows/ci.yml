@@ -34,3 +34,6 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Test database installation and access policies
+        run: npm run test:db
