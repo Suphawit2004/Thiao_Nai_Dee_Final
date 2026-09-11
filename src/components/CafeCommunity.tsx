@@ -6,6 +6,7 @@ import { listPhotos, listMyPhotos, uploadPhoto, changePhoto, type CommunityPhoto
 import { useCatalog } from "./CatalogProvider";
 import { useLang } from "@/i18n/LangProvider";
 import ActionForm from "./ActionForm";
+import styles from "./CafeCommunity.module.css";
 export default function CafeCommunity({ slug, admin = false }: { slug: string; admin?: boolean }) {
   const { user } = useAuth();
   return <PhotoGallery key={`${slug}:${user?.id ?? "guest"}`} slug={slug} admin={admin} />;
@@ -33,23 +34,85 @@ function PhotoGallery({ slug, admin }: { slug?: string; admin: boolean }) {
     void load(); window.addEventListener("focus", load); const timer = setInterval(load, 45000);
     return () => { active = false; clearInterval(timer); window.removeEventListener("focus", load); };
   }, [slug, user?.id]);
-  return <section className="feature-card mt-6"><h2 className="text-xl font-bold">{slug ? "ภาพจากผู้มาเยือน" : "รูปที่ฉันโพสต์"}</h2>
-    <p className="mt-2 text-sm">รูปที่เผยแพร่จะแสดงทั้งในหน้าคาเฟ่และโปรไฟล์ของคุณ ส่วนรูปส่วนตัวจะเห็นเฉพาะคุณและผู้ดูแลระบบ</p>
-    <p role="status" className="my-3 text-sm">{message}</p>
-    <button onClick={refresh} className="text-sm underline">โหลดรูปอีกครั้ง</button>
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 my-5">{photos.map(photo => <figure key={photo.id} className="rounded-xl border border-[#eadfcd] p-3">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={photo.url} alt={photo.caption || "ภาพบรรยากาศร้านจากผู้ใช้"} className="aspect-[4/3] w-full rounded-lg object-cover" />
-      <figcaption className="my-2 text-sm">{!slug && <Link className="mb-2 block font-semibold underline" href={`/cafes/${photo.cafe_slug}`}>{cafes.find(c => c.slug === photo.cafe_slug) ? tr(cafes.find(c => c.slug === photo.cafe_slug)!.name) : "ดูหน้าคาเฟ่"}</Link>}{photo.caption}{!photo.is_public && <span className="block text-coffee">ส่วนตัว</span>}</figcaption>
-      {(photo.user_id === user?.id || admin || isAdmin) && <div className="flex flex-wrap gap-2">
-        <ActionForm label={photo.is_public ? "เก็บเป็นส่วนตัว" : "เผยแพร่"} action={async () => { const result = await changePhoto(photo.id, photo.is_public ? "private" : "public"); if (result.ok) await refresh(); return result; }}>{null}</ActionForm>
-        <ActionForm label="ลบรูป" action={async () => { if (!window.confirm("ลบรูปนี้?")) return { ok: false, message: "ยกเลิกการลบ" }; const result = await changePhoto(photo.id, "delete"); if (result.ok) await refresh(); return result; }}>{null}</ActionForm>
-      </div>}
-    </figure>)}</div>
-    {!photos.length && !message && <p className="mb-4 text-sm">{slug ? "ยังไม่มีภาพ มาแบ่งปันภาพแรกของร้านนี้กัน" : "คุณยังไม่ได้โพสต์รูป เลือกคาเฟ่แล้วแบ่งปันภาพของคุณได้เลย"}</p>}
-    {slug ? loading ? <p role="status">กำลังตรวจสอบการเข้าสู่ระบบ…</p> : user ? <ActionForm reset label="เพิ่มรูป" action={async form => { const result = await uploadPhoto(form); if (result.ok) await refresh(); return result; }}>
-      <input type="hidden" name="slug" value={slug} /><label>รูปภาพ (ไม่เกิน 5 MB)<input required type="file" name="photo" accept="image/jpeg,image/png,image/webp" /></label>
-      <label>คำบรรยาย<input name="caption" maxLength={300} /></label><label><span><input type="checkbox" name="isPublic" defaultChecked /> เผยแพร่ภาพนี้ในหน้าร้าน</span></label>
-    </ActionForm> : <Link href={`/login?next=/cafes/${slug}`} className="underline">เข้าสู่ระบบเพื่อแบ่งปันภาพ</Link> : <Link href="/cafes" className="feature-button">เลือกคาเฟ่เพื่อโพสต์รูป</Link>}
+  return <section className={`feature-card ${styles.section}`}>
+    <header className={styles.header}>
+      <div><h2>{slug ? "ภาพจากผู้มาเยือน" : "รูปที่ฉันโพสต์"}</h2>
+        <p>{slug ? "แบ่งปันมุมโปรด เครื่องดื่ม และบรรยากาศของร้าน" : "เก็บภาพคาเฟ่ที่คุณแบ่งปันไว้ในที่เดียว"}</p></div>
+      {!slug && <Link href="/cafes" className="feature-button">เลือกร้านเพื่อเพิ่มรูป</Link>}
+    </header>
+    {slug && (loading ? <p role="status">กำลังตรวจสอบการเข้าสู่ระบบ…</p> : user ?
+      <PhotoComposer slug={slug} onUploaded={refresh} /> :
+      <div className={styles.signIn}><div><strong>มีมุมโปรดของร้านนี้ไหม?</strong><p>เข้าสู่ระบบเพื่อเพิ่มรูปและเก็บไว้ในโปรไฟล์ของคุณ</p></div>
+        <Link href={`/login?next=/cafes/${slug}`} className="feature-button">เข้าสู่ระบบเพื่อเพิ่มรูป</Link></div>)}
+    <div className={styles.toolbar}><h3>{slug ? "แกลเลอรีของร้าน" : "แกลเลอรีของฉัน"} <span>{photos.length} รูป</span></h3>
+      <button type="button" onClick={refresh}>รีเฟรชรูป</button></div>
+    {message && <p role="status" className={styles.notice}>{message}</p>}
+    <div className={styles.gallery}>{photos.map(photo => {
+      const cafe = cafes.find(c => c.slug === photo.cafe_slug);
+      const canManage = photo.user_id === user?.id || admin || isAdmin;
+      return <figure key={photo.id} className={styles.photo}>
+        <div className={styles.imageWrap}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo.url} alt={photo.caption || "ภาพบรรยากาศร้านจากผู้ใช้"} loading="lazy" />
+          {canManage && <span className={photo.is_public ? styles.publicBadge : styles.privateBadge}>{photo.is_public ? "สาธารณะ" : "ส่วนตัว"}</span>}
+        </div>
+        <figcaption className={styles.caption}>
+          {!slug && <Link href={`/cafes/${photo.cafe_slug}`}>{cafe ? tr(cafe.name) : "ดูหน้าคาเฟ่"}</Link>}
+          <p>{photo.caption || "ภาพบรรยากาศจากผู้มาเยือน"}</p>
+        </figcaption>
+        {canManage && <div className={styles.actions}>
+          <ActionForm label={photo.is_public ? "เก็บเป็นส่วนตัว" : "เผยแพร่"} action={async () => { const result = await changePhoto(photo.id, photo.is_public ? "private" : "public"); if (result.ok) await refresh(); return result; }}>{null}</ActionForm>
+          <div className={styles.deleteAction}><ActionForm label="ลบรูป" action={async () => { if (!window.confirm("ลบรูปนี้? รูปจะถูกนำออกจากหน้าร้านและโปรไฟล์")) return { ok: false, message: "ยกเลิกการลบ" }; const result = await changePhoto(photo.id, "delete"); if (result.ok) await refresh(); return result; }}>{null}</ActionForm></div>
+        </div>}
+      </figure>;
+    })}</div>
+    {!photos.length && !message && <div className={styles.empty}><strong>{slug ? "เป็นคนแรกที่แบ่งปันมุมโปรด" : "เริ่มเก็บความทรงจำจากคาเฟ่"}</strong><p>{slug ? "เพิ่มภาพของคุณผ่านแบบฟอร์มด้านบนได้เลย" : "เลือกร้านที่คุณไป แล้วเพิ่มรูปจากหน้าคาเฟ่ รูปจะมาอยู่ที่นี่ด้วย"}</p></div>}
+    <p className={styles.privacyNote}>รูปสาธารณะแสดงในหน้าร้านและโปรไฟล์ ส่วนรูปส่วนตัวเห็นได้เฉพาะคุณและผู้ดูแลระบบ</p>
   </section>;
+}
+
+function PhotoComposer({ slug, onUploaded }: { slug: string; onUploaded: () => Promise<void> }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState("");
+  const [error, setError] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
+  useEffect(() => {
+    return () => { if (preview) URL.revokeObjectURL(preview); };
+  }, [preview]);
+  return <div className={styles.composer}>
+    <h3>เพิ่มรูปของคุณ</h3>
+    <ActionForm reset label="โพสต์รูป" action={async form => {
+      const result = await uploadPhoto(form);
+      if (result.ok) { setFile(null); setPreview(""); setIsPublic(true); setError(""); await onUploaded(); }
+      return result;
+    }}>
+      <input type="hidden" name="slug" value={slug} />
+      <div className={styles.composeGrid}>
+        <label className={styles.picker}>
+          {preview ? <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="ตัวอย่างรูปที่เลือกก่อนโพสต์" />
+          </> : <span className={styles.placeholder}><span aria-hidden="true">＋</span><strong>เลือกรูปจากอุปกรณ์</strong><small>JPG, PNG หรือ WebP ไม่เกิน 5 MB</small></span>}
+          <span>{file ? "เปลี่ยนรูป" : "เลือกรูปภาพ"}</span>
+          <input required type="file" name="photo" accept="image/jpeg,image/png,image/webp" onChange={e => {
+            const selected = e.target.files?.[0];
+            setPreview(""); setFile(null); setError("");
+            if (!selected) return;
+            if (!["image/jpeg", "image/png", "image/webp"].includes(selected.type) || selected.size > 5 * 1024 * 1024) {
+              setError("กรุณาเลือกไฟล์ JPG, PNG หรือ WebP ขนาดไม่เกิน 5 MB"); e.target.value = ""; return;
+            }
+            setFile(selected);
+            setPreview(URL.createObjectURL(selected));
+          }} />
+          {file && <small className={styles.filename}>{file.name}</small>}
+        </label>
+        <div className={styles.fields}>
+          <label>คำบรรยาย <span className={styles.optional}>(ไม่บังคับ)</span><textarea name="caption" maxLength={300} rows={4} placeholder="มุมที่ชอบ เมนูที่ลอง หรือบรรยากาศของร้าน…" /></label>
+          <label className={styles.visibility}><span><input type="checkbox" name="isPublic" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} /> เผยแพร่ในหน้าร้าน</span>
+            <small>{isPublic ? "ทุกคนเห็นรูปนี้ในหน้าร้าน และรูปจะอยู่ในโปรไฟล์ของคุณด้วย" : "เก็บในโปรไฟล์ของคุณ เห็นได้เฉพาะคุณและผู้ดูแลระบบ"}</small></label>
+        </div>
+      </div>
+      {error && <p role="alert" className={styles.error}>{error}</p>}
+    </ActionForm>
+  </div>;
 }
