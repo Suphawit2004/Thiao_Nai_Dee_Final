@@ -89,7 +89,10 @@ function PhotoComposer({ slug, onUploaded }: { slug: string; onUploaded: () => P
       <input type="hidden" name="slug" value={slug} />
       <div className={styles.composeGrid}>
         <label className={styles.picker}>
-          {preview ? <>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={preview} alt="ตัวอย่างรูปที่เลือกก่อนโพสต์" /></> : <span className={styles.placeholder}><span aria-hidden="true">＋</span><strong>เลือกรูปจากอุปกรณ์</strong><small>JPG, PNG หรือ WebP ไม่เกิน 5 MB</small></span>}
+          {preview ? <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="ตัวอย่างรูปที่เลือกก่อนโพสต์" />
+          </> : <span className={styles.placeholder}><span aria-hidden="true">＋</span><strong>เลือกรูปจากอุปกรณ์</strong><small>JPG, PNG หรือ WebP ไม่เกิน 5 MB</small></span>}
           <span>{file ? "เปลี่ยนรูป" : "เลือกรูปภาพ"}</span>
           <input required type="file" name="photo" accept="image/jpeg,image/png,image/webp" onChange={e => {
             const selected = e.target.files?.[0];
