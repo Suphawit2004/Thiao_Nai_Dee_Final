@@ -8,10 +8,12 @@ import SearchPopover from "./SearchPopover";
 import ActiveFilterChips from "./ActiveFilterChips";
 
 export default function FilterBar({ className = "" }: { className?: string }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { filters } = useSearch();
   const [open, setOpen] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const trigger = useRef<HTMLButtonElement>(null);
+  const close = () => {setOpen(false); trigger.current?.focus();};
   const rootRef = useRef<HTMLDivElement>(null);
 
   const activeCount =
@@ -26,16 +28,13 @@ export default function FilterBar({ className = "" }: { className?: string }) {
   // Close the popover on outside click or Escape
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
-    };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {setOpen(false); trigger.current?.focus();}
     };
-    window.addEventListener("pointerdown", onDown);
+
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("pointerdown", onDown);
+
       window.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -51,6 +50,7 @@ export default function FilterBar({ className = "" }: { className?: string }) {
   return (
     <div ref={rootRef} className={`relative flex flex-wrap items-center gap-2 ${className}`}>
       <button
+        ref={trigger}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -69,8 +69,8 @@ export default function FilterBar({ className = "" }: { className?: string }) {
         )}
       </button>
 
-      {copyStatus === "error" && <p role="status" className="w-full text-sm text-rose-700">คัดลอกไม่สำเร็จ กรุณาคัดลอกลิงก์จากแถบที่อยู่ของเบราว์เซอร์</p>}
-      <SearchPopover open={open} />
+      {copyStatus === "error" && <p role="status" className="w-full text-sm text-rose-700">{lang === "th" ? "คัดลอกไม่สำเร็จ กรุณาคัดลอกจากแถบที่อยู่" : "Copy failed. Copy the address from your browser."}</p>}
+      <SearchPopover open={open} onClose={close} />
       <ActiveFilterChips />
 
       {activeCount > 0 && (

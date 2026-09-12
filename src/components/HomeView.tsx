@@ -2,6 +2,7 @@
 import { useCatalog } from "@/components/CatalogProvider";
 
 import Link from "next/link";
+import CafeSearch from "./CafeSearch";
 import { TAG_META, TAG_ORDER } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import CafeThumb from "./CafeThumb";
@@ -10,8 +11,8 @@ import MapBlock from "./map/MapBlock";
 
 export default function HomeView() {
   const CAFES = useCatalog();
-  const { t, tr } = useLang();
-  const featured = [...CAFES].sort((a, b) => b.baseRating - a.baseRating).slice(0, 3);
+  const { t, tr, lang } = useLang();
+  const featured = [...CAFES].sort((a, b) => b.baseRating - a.baseRating).slice(0, 4);
 
   return (
     <div>
@@ -26,7 +27,8 @@ export default function HomeView() {
             <span>{t("home.heroTitle2")}</span>
           </h1>
           <p className="mt-4 max-w-xl leading-relaxed text-cream/80">{t("home.heroDesc")}</p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="hero-search mt-6"><CafeSearch /><p className="mt-2 text-sm">{lang==="th"?"ลองค้นหา: ริมกว๊าน / อ่านหนังสือ / เปิดดึก":"Try: lakeside / study / open late"}</p></div>
+          <div className="mt-5 flex flex-wrap gap-3">
             <Link
               href="/cafes"
               className="rounded-full bg-latte px-7 py-3 text-sm font-bold text-espresso shadow-lg transition hover:brightness-105"
@@ -53,7 +55,7 @@ export default function HomeView() {
             ))}
           </dl></div>
           {featured[0] && <Link href={`/cafes/${featured[0].slug}`} className="hero-photo">
-            <CafeThumb cafe={featured[0]} sizes="(max-width: 800px) 100vw, 45vw" />
+            <CafeThumb preload cafe={featured[0]} sizes="(max-width: 800px) 100vw, 45vw" />
             <div><span>{t("home.featured")}</span><strong>{tr(featured[0].name)}</strong><span>{featured[0].openTime} – {featured[0].closeTime}</span></div>
           </Link>}
         </div>
@@ -63,14 +65,14 @@ export default function HomeView() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="text-2xl font-bold text-espresso">✨ {t("home.featured")}</h2>
-            <p className="mt-1 text-sm text-espresso/70">{t("home.featuredDesc")}</p>
+            <p className="mt-1 text-sm text-espresso/70">{lang==="th"?"เรียงตามคะแนนตั้งต้นของร้าน ข้อมูลคะแนนแยกจากรีวิวผู้ใช้":"Sorted by reference rating, separately from visitor reviews"}</p>
           </div>
           <Link href="/cafes" className="text-sm font-bold text-coffee underline-offset-4 hover:underline">
             {t("home.viewAll")} →
           </Link>
         </div>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((cafe) => (
+          {featured.slice(1).map((cafe) => (
             <CafeCard key={cafe.slug} cafe={cafe} />
           ))}
         </div>
@@ -110,7 +112,7 @@ export default function HomeView() {
             {t("home.openMap")}
           </Link>
         </div>
-        <MapBlock cafes={CAFES} className="mt-6 h-[420px]" />
+        <MapBlock cafes={CAFES} className="mt-6 h-64 md:h-[420px]" />
       </section>
     </div>
   );

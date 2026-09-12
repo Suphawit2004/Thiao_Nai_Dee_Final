@@ -53,9 +53,11 @@ function FitBounds({ cafes }: { cafes: Cafe[] }) {
 interface MapViewProps {
   cafes: Cafe[];
   className?: string;
+  selectedSlug?: string | null;
+  onSelect?: (slug: string) => void;
 }
 
-export default function MapView({ cafes, className }: MapViewProps) {
+export default function MapView({ cafes, className, selectedSlug, onSelect }: MapViewProps) {
   const { t, tr } = useLang();
   const center: [number, number] =
     cafes.length > 0 ? [cafes[0].lat, cafes[0].lng] : DEFAULT_CENTER;
@@ -72,11 +74,14 @@ export default function MapView({ cafes, className }: MapViewProps) {
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <FitBounds cafes={cafes} />
+      <FocusCafe cafe={cafes.find(c => c.slug === selectedSlug)} />
       {cafes.map((cafe, i) => (
         <Marker
           key={cafe.slug}
           position={[cafe.lat, cafe.lng]}
-          icon={makeIcon(PIN_COLORS[i % PIN_COLORS.length])}
+          icon={makeIcon(cafe.slug === selectedSlug ? "#b45309" : PIN_COLORS[i % PIN_COLORS.length])}
+          eventHandlers={{ click: () => onSelect?.(cafe.slug) }}
+          title={tr(cafe.name)}
         >
           <Popup>
             <div className="w-52">
@@ -111,3 +116,5 @@ export default function MapView({ cafes, className }: MapViewProps) {
     </MapContainer>
   );
 }
+
+function FocusCafe({ cafe }: { cafe?: Cafe }) { const map = useMap(); const lat = cafe?.lat, lng = cafe?.lng; useEffect(() => { if (lat !== undefined && lng !== undefined) map.setView([lat,lng],16); }, [map,lat,lng]); return null; }

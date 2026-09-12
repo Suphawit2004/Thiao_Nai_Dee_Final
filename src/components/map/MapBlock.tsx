@@ -15,12 +15,14 @@ const MapView = dynamic(() => import("./MapView"), {
 interface MapBlockProps {
   cafes: Cafe[];
   className?: string;
+  selectedSlug?: string | null;
+  onSelect?: (slug: string) => void;
 }
 
-export default function MapBlock({ cafes, className }: MapBlockProps) {
+export default function MapBlock({ cafes, className, selectedSlug, onSelect }: MapBlockProps) {
   return (
     <div className={`overflow-hidden rounded-2xl border border-[#eee3d2] shadow-sm ${className ?? ""}`}>
-      <MapView cafes={cafes} className="h-full w-full" />
+      <MapView selectedSlug={selectedSlug} onSelect={onSelect} cafes={cafes} className="h-full w-full" />
     </div>
   );
 }
