@@ -55,7 +55,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
                 {cafe.baseRating.toFixed(1)} <span className="font-normal">{lang==="th"?"คะแนนตั้งต้น":"Reference rating"}</span>
               </span>
               <span className="rounded-full bg-sand px-2.5 py-1 text-xs font-bold text-espresso">
-                {"฿".repeat(cafe.priceRange)} {t(cafe.priceRange===1?"cafes.priceBudget":"cafes.priceMid")}
+                {t(cafe.priceRange===1?"cafes.priceBudget":"cafes.priceMid")}
               </span>
               <FavoriteButton slug={cafe.slug} variant="inline" />
             </div>

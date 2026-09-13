@@ -25,7 +25,7 @@ export default function CafeCard({ cafe }: { cafe: Cafe }) {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         <span className="absolute right-3 top-3 rounded-full bg-white/85 px-2 py-0.5 text-xs font-bold text-espresso">
-          {"฿".repeat(cafe.priceRange)} {t(cafe.priceRange === 1 ? "cafes.priceBudget" : "cafes.priceMid")}
+          {t(cafe.priceRange === 1 ? "cafes.priceBudget" : "cafes.priceMid")}
         </span>
       </div>
 

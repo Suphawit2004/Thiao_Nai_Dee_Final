@@ -22,7 +22,7 @@ interface SearchPopoverProps {
 }
 
 const chipBase =
-  "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition";
+  "rounded-chip inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition";
 const chipOff = `${chipBase} border border-[#e8dcc8] bg-white text-espresso/80 hover:border-latte hover:bg-sand/60`;
 const chipOn = `${chipBase} border-coffee bg-coffee text-cream`;
 
@@ -147,7 +147,7 @@ export default function SearchPopover({ open, onClose }: SearchPopoverProps) {
             const label =
               p === 0
                 ? t("cafes.priceAll")
-                : `${"฿".repeat(p)} ${t(p === 2 ? "cafes.priceMid" : "cafes.priceBudget")}`;
+                : t(p === 2 ? "cafes.priceMid" : "cafes.priceBudget");
             return (
               <button
                 key={p}

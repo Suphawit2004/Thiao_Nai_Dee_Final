@@ -2,8 +2,8 @@
 
 import L from "leaflet";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { useEffect, useMemo, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { mapsUrl, type Cafe } from "@/data/cafes";
 import { useLang } from "@/i18n/LangProvider";
 import { PIN_COLORS } from "@/lib/thumbs";
@@ -55,9 +55,11 @@ interface MapViewProps {
   className?: string;
   selectedSlug?: string | null;
   onSelect?: (slug: string) => void;
+  onSearchArea?: (bounds: [number,number,number,number]) => void;
+  areaActive?: boolean;
 }
 
-export default function MapView({ cafes, className, selectedSlug, onSelect }: MapViewProps) {
+export default function MapView({ cafes, className, selectedSlug, onSelect, onSearchArea, areaActive }: MapViewProps) {
   const { t, tr } = useLang();
   const center: [number, number] =
     cafes.length > 0 ? [cafes[0].lat, cafes[0].lng] : DEFAULT_CENTER;
@@ -73,7 +75,8 @@ export default function MapView({ cafes, className, selectedSlug, onSelect }: Ma
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FitBounds cafes={cafes} />
+      {!areaActive && <FitBounds cafes={cafes} />}
+      {onSearchArea && <SearchArea onSearch={onSearchArea} />}
       <FocusCafe cafe={cafes.find(c => c.slug === selectedSlug)} />
       {cafes.map((cafe, i) => (
         <Marker
@@ -118,3 +121,9 @@ export default function MapView({ cafes, className, selectedSlug, onSelect }: Ma
 }
 
 function FocusCafe({ cafe }: { cafe?: Cafe }) { const map = useMap(); const lat = cafe?.lat, lng = cafe?.lng; useEffect(() => { if (lat !== undefined && lng !== undefined) map.setView([lat,lng],16); }, [map,lat,lng]); return null; }
+
+function SearchArea({onSearch}:{onSearch:(bounds:[number,number,number,number])=>void}) {
+ const {lang}=useLang();const [moved,setMoved]=useState(false);
+ const map=useMapEvents({moveend:()=>setMoved(true)});
+ return moved ? <button type="button" className="absolute left-1/2 top-3 z-[1000] -translate-x-1/2 rounded-lg border bg-white px-4 py-2 text-sm shadow" onClick={e=>{e.stopPropagation();const b=map.getBounds();onSearch([b.getSouth(),b.getWest(),b.getNorth(),b.getEast()]);setMoved(false);}}>{lang==="th"?"ค้นหาในบริเวณนี้":"Search this area"}</button> : null;
+}
