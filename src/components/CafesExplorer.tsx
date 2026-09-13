@@ -1,4 +1,5 @@
 "use client";
+import Icon from "./Icon";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -61,13 +62,13 @@ export default function CafesExplorer() {
           href={`/map?${filtersToQuery(filters)}`}
           className="inline-block rounded-full bg-coffee px-6 py-2.5 text-sm font-semibold text-cream transition hover:bg-[#684a37]"
         >
-          📍 {t("home.openMap")}
+          <Icon name="map" /> {t("home.openMap")}
         </Link>
         <Link
           href="/suggest"
           className="inline-block rounded-full border border-coffee/40 bg-white px-6 py-2.5 text-sm font-semibold text-coffee transition hover:bg-sand"
         >
-          ➕ {t("cafes.suggest")}
+          <Icon name="plus" /> {t("cafes.suggest")}
         </Link>
       </div>
     </div>

@@ -1,4 +1,5 @@
 "use client";
+import Icon from "./Icon";
 
 import { useRef, useState } from "react";
 import BackToResults from "./BackToResults";
@@ -89,14 +90,14 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
                 rel="noreferrer"
                 className="rounded-full bg-coffee px-5 py-2.5 text-sm font-semibold text-cream transition hover:bg-[#684a37]"
               >
-                📍 {t("detail.directions")}
+                <Icon name="pin" /> {t("detail.directions")}
               </a>
               {cafe.phone && (
                 <a
                   href={`tel:${cafe.phone.replace(/\s/g, "")}`}
                   className="rounded-full border border-latte px-5 py-2.5 text-sm font-semibold text-coffee transition hover:bg-latte/20"
                 >
-                  📞 {t("detail.call")} {cafe.phone}
+                  <Icon name="phone" /> {t("detail.call")} {cafe.phone}
                 </a>
               )}
             </div>
@@ -107,7 +108,7 @@ export default function DetailView({ cafe }: { cafe: Cafe }) {
             onClick={() => setReportOpen(true)}
             className="self-start text-xs font-semibold text-espresso/50 underline underline-offset-2 transition hover:text-coffee"
           >
-            ⚠️ {t("report.open")}
+            <Icon name="alert" /> {t("report.open")}
           </button>
 
           <div className="rounded-2xl border border-[#eee3d2] bg-white p-5 shadow-sm">

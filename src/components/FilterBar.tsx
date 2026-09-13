@@ -1,4 +1,5 @@
 "use client";
+import Icon from "./Icon";
 
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n/LangProvider";
@@ -61,7 +62,7 @@ export default function FilterBar({ className = "" }: { className?: string }) {
             : "border border-[#e8dcc8] bg-white text-espresso hover:bg-sand"
         }`}
       >
-        <span aria-hidden>⚙️</span> {t("filter.open")}
+        <Icon name="filter" /> {t("filter.open")}
         {activeCount > 0 && (
           <span className="grid min-w-5 place-items-center rounded-full bg-latte px-1.5 text-xs font-extrabold text-espresso">
             {activeCount}
@@ -84,7 +85,7 @@ export default function FilterBar({ className = "" }: { className?: string }) {
               : "border border-[#e8dcc8] bg-white text-espresso hover:bg-sand"
           }`}
         >
-          {copyStatus === "copied" ? "✓" : "🔗"} {t("filter.copyLink")}
+          {copyStatus === "copied" ? "✓" : <Icon name="link" />} {t("filter.copyLink")}
         </button>
       )}
     </div>

@@ -1,4 +1,5 @@
 "use client";
+import Icon from "./Icon";
 import { useCatalog } from "@/components/CatalogProvider";
 
 import Link from "next/link";
@@ -33,13 +34,13 @@ export default function HomeView() {
               href="/cafes"
               className="rounded-full bg-latte px-7 py-3 text-sm font-bold text-espresso shadow-lg transition hover:brightness-105"
             >
-              ☕ {t("home.ctaExplore")}
+              <Icon name="coffee" /> {t("home.ctaExplore")}
             </Link>
             <Link
               href="/map"
               className="rounded-full border border-cream/40 px-7 py-3 text-sm font-bold transition hover:bg-white/10"
             >
-              🗺️ {t("home.ctaMap")}
+              <Icon name="map" /> {t("home.ctaMap")}
             </Link>
           </div>
           <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-3 text-sm">

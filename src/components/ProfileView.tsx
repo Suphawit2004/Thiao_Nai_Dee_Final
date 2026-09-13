@@ -1,4 +1,5 @@
 "use client";
+import Icon from "./Icon";
 import {useUi} from "@/i18n/UiText";
 import { useCatalog } from "@/components/CatalogProvider";
 
@@ -276,7 +277,7 @@ export default function ProfileView() {
           onClick={async () => { try { await signOut(); } catch { setAccountError(t("form.error")); } }}
           className="self-start rounded-full border border-rose-200 px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
         >
-          🚪 {t("profile.signOut")}
+          <Icon name="logout" /> {t("profile.signOut")}
         </button>
       </div>
 
